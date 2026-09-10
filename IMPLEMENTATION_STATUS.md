@@ -75,7 +75,7 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 | D2 — hạn 24 giờ | ✅ | ✅ mọi chỗ đọc từ bảng `settings`, không còn chữ viết cứng |
 | D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ✅ form mới đủ 6 tiêu chí, hiện điểm ngay khi gõ |
 | D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | ✅ trang `/payroll` + cờ thiếu bằng chứng |
-| D6 — AI viết feedback | ✅ cột `authored_by` | 🟡 đã nối Gemini miễn phí; **chưa gọi thử với khoá thật** |
+| D6 — AI viết feedback | ✅ cột `authored_by` | ✅ đã nối Gemini miễn phí, **đã gọi thử thật và chạy đúng** |
 | D7 — cho học vượt | ✅ đã kiểm thử | ✅ thẻ "Sắp hết buổi / đã học vượt" trên dashboard |
 | D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ✅ trang `/review` |
 | D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ✅ form "Đổi đơn giá học phí" + lịch sử các mốc |
@@ -83,10 +83,9 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 | A13 — gửi phụ huynh là bước riêng | ✅ cột `sent_to_parent_at` | ✅ có nút "Đánh dấu đã gửi" |
 
 **Hệ quả thực tế còn lại:** giao diện đã bám đúng cả 14 quyết định và đủ để nhập 21 lớp
-thật. Phần AI (D6) đã nối xong vào Google Gemini gói miễn phí, nhưng **chưa gọi thử lần
-nào với khoá thật** — Founder phải tự tạo khoá ở Google AI Studio (cần đăng nhập tài
-khoản Google của trung tâm). Xem `docs/AI_SETUP.md`. Chưa có khoá thì tính năng tự tắt
-và mọi phần khác chạy bình thường.
+thật. Phần AI (D6) đã nối vào Google Gemini gói miễn phí và **đã gọi thử thật, chạy đúng**
+(xem mục 7 của `docs/AI_SETUP.md`). Chưa đặt khoá thì tính năng tự tắt và mọi phần
+khác chạy bình thường.
 
 ---
 
@@ -292,11 +291,10 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
 4. Hiển thị thực tế trên điện thoại và iPad (đã thiết kế mobile-first, chưa chụp
    màn hình kiểm chứng)
 5. Biểu đồ Recharts với dữ liệu thật
-6. **Lần gọi thật tới Gemini** — đã kiểm thử 11 trường hợp của phần soạn prompt, đọc
-   kết quả và chặn bịa đặt (`npm run test:unit`), nhưng chưa có khoá API nên chưa
-   gọi API thật lần nào. Đã xác nhận máy chủ truy cập được
-   `generativelanguage.googleapis.com`, và đã kiểm tra bundle trình duyệt không
-   chứa khoá, endpoint hay header xác thực nào
+6. ~~Lần gọi thật tới Gemini~~ — **đã kiểm ngày 10/09/2026** bằng khoá thật, cả hai
+   trường hợp (recording Google Drive và có bản ghi lời thoại) đều chạy đúng. Đã
+   kiểm bundle trình duyệt không chứa khoá, endpoint hay header xác thực nào.
+   Còn lại: chưa chạy qua giao diện web thật vì chưa có tài khoản Founder
 
 Chưa nhập dữ liệu học viên thật nào — cố ý, vì project còn ở gói Free và chưa có
 tài khoản Founder.

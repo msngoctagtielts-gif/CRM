@@ -65,11 +65,12 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [x] **Nối AI viết feedback** (D6) — dùng **Google Gemini gói miễn phí**; nút "AI viết
       nháp" trong form báo cáo; giữ bước người bấm gửi phụ huynh (giả định A13).
       Chặn bịa trích dẫn ở hai lớp, có 11 kiểm thử đơn vị (`npm run test:unit`)
-- [ ] ⛔ **Founder tạo khoá Google AI Studio** rồi đặt `GOOGLE_AI_API_KEY` — việc này
-      cần đăng nhập tài khoản Google của trung tâm nên tôi không làm hộ được.
-      Hướng dẫn 3 bước: `docs/AI_SETUP.md`. Chưa có khoá thì tính năng tự tắt
-- [ ] **Chạy thử AI với khoá thật** — đã kiểm thử toàn bộ phần logic, nhưng lần gọi
-      thật tới Gemini thì chưa chạy được vì chưa có khoá
+- [x] **Chạy thử AI với khoá thật** (10/09/2026) — phát hiện và vá 2 lỗi chỉ lộ ra
+      khi gọi thật: `gemini-2.0-flash` đã bị Google khai tử, và thinking token của
+      Gemini 3.x ăn hết hạn mức output làm JSON đứt ngang
+- [ ] ⛔ **Đổi khoá Google AI Studio** — khoá hiện tại đã bị dán vào khung chat nên
+      coi như lộ. Vào https://aistudio.google.com/apikey xoá khoá cũ, tạo khoá mới,
+      và từ nay chỉ đặt thẳng vào biến môi trường
 
 ## P1b — Hoàn thiện Giai đoạn 1
 

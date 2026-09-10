@@ -130,6 +130,24 @@ export function buildFeedbackPrompt(input: FeedbackInput): string {
 }
 
 /**
+ * Gộp phần chữ từ câu trả lời của model.
+ *
+ * Gemini 3.x trả về cả phần "suy nghĩ" của nó trong `parts`, đánh dấu
+ * `thought: true`. Ghép nhầm phần đó vào sẽ làm JSON hỏng, nên phải lọc ra —
+ * đây là hàm thuần để kiểm thử được, vì lỗi ghép chuỗi kiểu này chỉ lộ ra khi
+ * gọi API thật.
+ */
+export function extractModelText(
+  parts: { text?: string; thought?: boolean }[] | undefined,
+): string {
+  return (parts ?? [])
+    .filter((p) => p.thought !== true)
+    .map((p) => p.text ?? '')
+    .join('')
+    .trim()
+}
+
+/**
  * Đọc JSON từ câu trả lời của model.
  *
  * Có bật `responseMimeType: application/json` nhưng vẫn phải phòng trường hợp

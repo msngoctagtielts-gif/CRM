@@ -129,11 +129,28 @@ học, ghi chú giáo viên và transcript nếu có. Không gửi số điện 
 phụ huynh, hay bất kỳ số liệu học phí/lương/doanh thu nào. Chi tiết và cách tắt
 hẳn: `docs/AI_SETUP.md`.
 
-### Việc Founder phải tự làm
+### Đã gọi thử thật (10/09/2026)
 
-Tạo khoá ở <https://aistudio.google.com/apikey> — cần đăng nhập tài khoản Google
-của trung tâm nên không ai làm hộ được. Ba bước, khoảng 2 phút. Chưa có khoá thì
-tính năng tự tắt, mọi phần khác chạy bình thường.
+Founder cấp khoá, đã chạy thử cả hai trường hợp và **đều đúng**: recording trên
+Drive thì để trống trích dẫn; có bản ghi lời thoại thì trích đúng câu thật học
+viên nói, kể cả câu sai ngữ pháp.
+
+Hai lỗi chỉ lộ ra khi gọi thật, đã vá:
+
+1. `gemini-2.0-flash` **đã bị Google khai tử** (404). Đổi mặc định sang
+   `gemini-3.6-flash`. Không dùng bí danh `gemini-flash-latest` vì lúc kiểm nó
+   trả 503 quá tải và bí danh có thể đổi model bên dưới mà mình không biết.
+2. **Thinking token tính vào `maxOutputTokens`.** Gemini 3.x suy nghĩ trước khi
+   trả lời; đo thật 620 token prompt sinh ~1.550 token suy nghĩ để viết ~330
+   token nội dung. Hạn mức 2.048 là sát mép, có lần JSON đứt ngang và giáo viên
+   mất cả bản nháp. Nâng lên 8.192, báo lỗi riêng khi bị cắt, thử lại một lần
+   khi quá tải.
+
+### ⚠ Khoá hiện tại coi như đã lộ
+
+Khoá được dán vào khung chat nên đã nằm trong lịch sử hội thoại. Cần vào
+<https://aistudio.google.com/apikey> **xoá khoá cũ và tạo khoá mới**, rồi chỉ đặt
+thẳng vào biến môi trường. Khoá chưa bao giờ được ghi vào Git.
 
 ---
 

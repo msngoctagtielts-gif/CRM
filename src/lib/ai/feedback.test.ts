@@ -13,6 +13,7 @@ import {
   buildFeedbackPrompt,
   classifyVideoSource,
   enforceNoFabrication,
+  extractModelText,
   hasQuotableSource,
   parseFeedbackJSON,
   studentLabelFor,
@@ -136,4 +137,27 @@ test('chỉ gửi biệt danh hoặc tên gọi ra dịch vụ ngoài', () => {
   assert.equal(studentLabelFor('Nguyễn Văn Tân', '  '), 'Tân')
   assert.equal(studentLabelFor('Bé Ngân', 'Ngân'), 'Ngân')
   assert.equal(studentLabelFor('   ', null), 'học viên')
+})
+
+test('bỏ phần "suy nghĩ" của model khi gộp câu trả lời', () => {
+  // Gemini 3.x trả về cả phần suy nghĩ trong parts. Ghép nhầm vào là JSON hỏng.
+  assert.equal(
+    extractModelText([
+      { text: 'Người dùng muốn JSON. Để tôi nghĩ…', thought: true },
+      { text: '{"strengths":"ok"}' },
+    ]),
+    '{"strengths":"ok"}',
+  )
+  assert.equal(extractModelText([{ text: ' a ' }, { text: 'b' }]), 'a b')
+  assert.equal(extractModelText([{ thought: true, text: 'chỉ có suy nghĩ' }]), '')
+  assert.equal(extractModelText([]), '')
+  assert.equal(extractModelText(undefined), '')
+  assert.equal(extractModelText([{}]), '')
+})
+
+test('JSON bị cắt giữa dòng thì trả null thay vì nội dung nửa vời', () => {
+  // Đây là lỗi thật gặp khi gọi API: thinking token ăn hết maxOutputTokens nên
+  // câu trả lời đứt ngang, finishReason = MAX_TOKENS.
+  const truncated = '{"student_quote":"She go to school at seven.","strengths":"Tân trả lời rõ ràn'
+  assert.equal(parseFeedbackJSON(truncated), null)
 })

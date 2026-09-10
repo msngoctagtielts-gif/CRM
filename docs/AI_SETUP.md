@@ -16,9 +16,9 @@ tâm. Không ai khác lấy hộ được.
 2. Bấm **Create API key** → chọn hoặc để hệ thống tự tạo một project
 3. Sao chép chuỗi khoá (dạng `AIza...`)
 
-Gói miễn phí của Gemini hiện cho khoảng **15 lượt/phút và 1.500 lượt/ngày** với
-model `gemini-2.0-flash`. Trung tâm dạy vài chục buổi mỗi tuần nên còn rất xa
-mức đó — thực tế sẽ không tốn đồng nào. Google có thể đổi hạn mức, xem
+Gói miễn phí của Gemini cho vài trăm tới hơn nghìn lượt mỗi ngày. Trung tâm dạy
+vài chục buổi mỗi tuần nên còn rất xa mức đó — thực tế sẽ không tốn đồng nào.
+Google đổi hạn mức khá thường xuyên, xem
 <https://ai.google.dev/gemini-api/docs/rate-limits> để biết con số hiện hành.
 
 > **Khoá này là bí mật.** Ai có nó cũng gọi được API bằng hạn mức của trung tâm.
@@ -31,9 +31,23 @@ mức đó — thực tế sẽ không tốn đồng nào. Google có thể đ�
 Thêm vào `.env.local` khi chạy máy cá nhân:
 
 ```bash
-GOOGLE_AI_API_KEY=AIza...          # khoá vừa lấy ở bước 1
-GOOGLE_AI_MODEL=gemini-2.0-flash   # không bắt buộc, đây là mặc định
+GOOGLE_AI_API_KEY=...              # khoá vừa lấy ở bước 1
+GOOGLE_AI_MODEL=gemini-3.6-flash   # không bắt buộc, đây là mặc định
 ```
+
+> **Về tên model.** Google khai tử model khá nhanh: `gemini-2.0-flash` đã ngừng
+> hoạt động và trả về lỗi 404. Mặc định hiện tại là `gemini-3.6-flash`, đã kiểm
+> bằng lần gọi thật. Nếu một ngày nút "AI viết nháp" báo *"Không tìm thấy
+> model"*, chạy lệnh dưới đây để xem danh sách còn dùng được rồi đặt lại
+> `GOOGLE_AI_MODEL`:
+>
+> ```bash
+> curl -s "https://generativelanguage.googleapis.com/v1beta/models" \
+>   -H "x-goog-api-key: $GOOGLE_AI_API_KEY" | grep '"name"'
+> ```
+>
+> Không dùng bí danh `gemini-flash-latest`: lúc kiểm nó trả lỗi 503 quá tải, và
+> bí danh có thể đổi model bên dưới mà mình không hay biết.
 
 Khi triển khai thật (ví dụ Vercel): **Project Settings → Environment Variables**,
 thêm đúng hai tên trên. Đừng dùng tiền tố `NEXT_PUBLIC_` — biến có tiền tố đó bị
@@ -49,7 +63,7 @@ lỗi, và mọi phần khác của hệ thống chạy bình thường.
 
 ```bash
 curl -s -X POST \
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent" \
   -H "x-goog-api-key: $GOOGLE_AI_API_KEY" \
   -H "content-type: application/json" \
   -d '{"contents":[{"parts":[{"text":"Trả lời đúng một từ: OK"}]}]}'
@@ -128,3 +142,24 @@ Chạy kiểm thử phần logic này:
 ```bash
 npm run test:unit
 ```
+
+---
+
+## 7. Đã kiểm thật những gì
+
+Ngày 10/09/2026, gọi API thật bằng khoá của trung tâm:
+
+| Trường hợp | Kết quả |
+|---|---|
+| Recording là link Google Drive | Viết được điểm mạnh, cần cải thiện, mẫu câu; **để trống** trích dẫn và timestamp; `source_note` nói rõ lý do |
+| Giáo viên dán bản ghi lời thoại | Trích **đúng câu thật** học viên đã nói, kể cả câu sai ngữ pháp ("She go to school at seven.") — đúng thứ phụ huynh cần thấy |
+
+Hai lỗi chỉ lộ ra khi gọi thật, đã vá:
+
+1. **`gemini-2.0-flash` đã bị khai tử** — trả về 404, tính năng chết hẳn. Đổi
+   mặc định sang `gemini-3.6-flash`.
+2. **Thinking token ăn hết hạn mức output.** Gemini 3.x "suy nghĩ" trước khi trả
+   lời, và số token suy nghĩ tính chung vào `maxOutputTokens`. Đo thật: 620 token
+   prompt sinh ra ~1.550 token suy nghĩ chỉ để viết ~330 token nội dung. Đặt
+   2.048 là sát mép — có lần JSON đứt ngang, giáo viên mất cả bản nháp. Đã nâng
+   lên 8.192, báo lỗi riêng khi bị cắt, và thử lại một lần khi model quá tải.
