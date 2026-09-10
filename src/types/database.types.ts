@@ -198,6 +198,8 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          needs_review: boolean
+          review_note: string | null
         }
         Insert: {
           id?: string
@@ -217,6 +219,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Update: {
           id?: string
@@ -236,6 +240,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Relationships: [
           { foreignKeyName: "classes_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -317,6 +323,7 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          sentence_patterns: string | null
         }
         Insert: {
           id?: string
@@ -332,6 +339,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          sentence_patterns?: string | null
         }
         Update: {
           id?: string
@@ -347,6 +355,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          sentence_patterns?: string | null
         }
         Relationships: [
           { foreignKeyName: "homework_assigned_by_fkey"; columns: ["assigned_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -770,6 +779,9 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          needs_review: boolean
+          review_note: string | null
+          statement_id: string | null
         }
         Insert: {
           id?: string
@@ -787,6 +799,9 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
+          statement_id?: string | null
         }
         Update: {
           id?: string
@@ -804,11 +819,15 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
+          statement_id?: string | null
         }
         Relationships: [
           { foreignKeyName: "payments_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
           { foreignKeyName: "payments_enrollment_id_fkey"; columns: ["enrollment_id"]; isOneToOne: false; referencedRelation: "student_enrollments"; referencedColumns: ["id"] },
           { foreignKeyName: "payments_recorded_by_fkey"; columns: ["recorded_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "payments_statement_id_fkey"; columns: ["statement_id"]; isOneToOne: false; referencedRelation: "tuition_statements"; referencedColumns: ["id"] },
           { foreignKeyName: "payments_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
         ]
       }
@@ -1033,12 +1052,12 @@ export type Database = {
           class_id: string | null
           program_id: string | null
           tuition_package_id: string | null
-          lessons_purchased: number
+          lessons_purchased: number | null
           price_per_lesson: number
           discount_amount: number
           discount_percent: number
           gross_amount: number | null
-          net_amount: number
+          net_amount: number | null
           currency: string
           start_date: string
           end_date: string | null
@@ -1049,6 +1068,13 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          needs_review: boolean
+          review_note: string | null
+          billing_mode: Database["public"]["Enums"]["billing_mode"]
+          headcount: number
+          monthly_discount_amount: number
+          payer_student_id: string | null
+          paid_in_full_until: string | null
         }
         Insert: {
           id?: string
@@ -1057,12 +1083,12 @@ export type Database = {
           class_id?: string | null
           program_id?: string | null
           tuition_package_id?: string | null
-          lessons_purchased: number
+          lessons_purchased?: number | null
           price_per_lesson: number
           discount_amount?: number
           discount_percent?: number
           gross_amount?: number | null
-          net_amount: number
+          net_amount?: number | null
           currency?: string
           start_date?: string
           end_date?: string | null
@@ -1073,6 +1099,13 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
+          billing_mode?: Database["public"]["Enums"]["billing_mode"]
+          headcount?: number
+          monthly_discount_amount?: number
+          payer_student_id?: string | null
+          paid_in_full_until?: string | null
         }
         Update: {
           id?: string
@@ -1081,12 +1114,12 @@ export type Database = {
           class_id?: string | null
           program_id?: string | null
           tuition_package_id?: string | null
-          lessons_purchased?: number
+          lessons_purchased?: number | null
           price_per_lesson?: number
           discount_amount?: number
           discount_percent?: number
           gross_amount?: number | null
-          net_amount?: number
+          net_amount?: number | null
           currency?: string
           start_date?: string
           end_date?: string | null
@@ -1097,10 +1130,18 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
+          billing_mode?: Database["public"]["Enums"]["billing_mode"]
+          headcount?: number
+          monthly_discount_amount?: number
+          payer_student_id?: string | null
+          paid_in_full_until?: string | null
         }
         Relationships: [
           { foreignKeyName: "student_enrollments_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "student_enrollments_payer_student_id_fkey"; columns: ["payer_student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_program_id_fkey"; columns: ["program_id"]; isOneToOne: false; referencedRelation: "programs"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_tuition_package_id_fkey"; columns: ["tuition_package_id"]; isOneToOne: false; referencedRelation: "tuition_packages"; referencedColumns: ["id"] },
@@ -1162,6 +1203,8 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          needs_review: boolean
+          review_note: string | null
         }
         Insert: {
           id?: string
@@ -1184,6 +1227,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Update: {
           id?: string
@@ -1206,6 +1251,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Relationships: [
           { foreignKeyName: "students_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -1231,6 +1278,10 @@ export type Database = {
           generated_at: string
           created_at: string
           updated_at: string
+          has_evidence: boolean
+          has_video: boolean
+          qc_score: number | null
+          sent_to_parent: boolean
         }
         Insert: {
           id?: string
@@ -1249,6 +1300,10 @@ export type Database = {
           generated_at?: string
           created_at?: string
           updated_at?: string
+          has_evidence?: boolean
+          has_video?: boolean
+          qc_score?: number | null
+          sent_to_parent?: boolean
         }
         Update: {
           id?: string
@@ -1267,6 +1322,10 @@ export type Database = {
           generated_at?: string
           created_at?: string
           updated_at?: string
+          has_evidence?: boolean
+          has_video?: boolean
+          qc_score?: number | null
+          sent_to_parent?: boolean
         }
         Relationships: [
           { foreignKeyName: "fk_payable_payroll"; columns: ["payroll_id"]; isOneToOne: false; referencedRelation: "teacher_payroll"; referencedColumns: ["id"] },
@@ -1297,6 +1356,11 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          lessons_missing_evidence: number
+          lessons_missing_video: number
+          avg_qc_score: number | null
+          kpi_target: number | null
+          kpi_met: boolean | null
         }
         Insert: {
           id?: string
@@ -1319,6 +1383,11 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          lessons_missing_evidence?: number
+          lessons_missing_video?: number
+          avg_qc_score?: number | null
+          kpi_target?: number | null
+          kpi_met?: boolean | null
         }
         Update: {
           id?: string
@@ -1341,6 +1410,11 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          lessons_missing_evidence?: number
+          lessons_missing_video?: number
+          avg_qc_score?: number | null
+          kpi_target?: number | null
+          kpi_met?: boolean | null
         }
         Relationships: [
           { foreignKeyName: "teacher_payroll_approved_by_fkey"; columns: ["approved_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -1451,6 +1525,8 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          needs_review: boolean
+          review_note: string | null
         }
         Insert: {
           id?: string
@@ -1469,6 +1545,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Update: {
           id?: string
@@ -1487,6 +1565,8 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          needs_review?: boolean
+          review_note?: string | null
         }
         Relationships: [
           { foreignKeyName: "teachers_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -1560,6 +1640,22 @@ export type Database = {
           created_at: string
           updated_at: string
           created_by: string | null
+          student_quote: string | null
+          strengths: string | null
+          improvements: string | null
+          video_timestamp: string | null
+          qc_has_video: boolean
+          qc_has_timestamp: boolean
+          qc_has_student_quote: boolean
+          qc_homework_has_pattern: boolean
+          qc_strengths_deep: boolean | null
+          qc_improvements_deep: boolean | null
+          qc_score: number | null
+          qc_notes: string | null
+          qc_scored_at: string | null
+          sent_to_parent_at: string | null
+          sent_to_parent_by: string | null
+          authored_by: Database["public"]["Enums"]["report_author"]
         }
         Insert: {
           id?: string
@@ -1585,6 +1681,22 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          student_quote?: string | null
+          strengths?: string | null
+          improvements?: string | null
+          video_timestamp?: string | null
+          qc_has_video?: boolean
+          qc_has_timestamp?: boolean
+          qc_has_student_quote?: boolean
+          qc_homework_has_pattern?: boolean
+          qc_strengths_deep?: boolean | null
+          qc_improvements_deep?: boolean | null
+          qc_score?: number | null
+          qc_notes?: string | null
+          qc_scored_at?: string | null
+          sent_to_parent_at?: string | null
+          sent_to_parent_by?: string | null
+          authored_by?: Database["public"]["Enums"]["report_author"]
         }
         Update: {
           id?: string
@@ -1610,12 +1722,29 @@ export type Database = {
           created_at?: string
           updated_at?: string
           created_by?: string | null
+          student_quote?: string | null
+          strengths?: string | null
+          improvements?: string | null
+          video_timestamp?: string | null
+          qc_has_video?: boolean
+          qc_has_timestamp?: boolean
+          qc_has_student_quote?: boolean
+          qc_homework_has_pattern?: boolean
+          qc_strengths_deep?: boolean | null
+          qc_improvements_deep?: boolean | null
+          qc_score?: number | null
+          qc_notes?: string | null
+          qc_scored_at?: string | null
+          sent_to_parent_at?: string | null
+          sent_to_parent_by?: string | null
+          authored_by?: Database["public"]["Enums"]["report_author"]
         }
         Relationships: [
           { foreignKeyName: "teaching_reports_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
           { foreignKeyName: "teaching_reports_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
           { foreignKeyName: "teaching_reports_lesson_id_fkey"; columns: ["lesson_id"]; isOneToOne: true; referencedRelation: "lessons"; referencedColumns: ["id"] },
           { foreignKeyName: "teaching_reports_reviewed_by_fkey"; columns: ["reviewed_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "teaching_reports_sent_to_parent_by_fkey"; columns: ["sent_to_parent_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
           { foreignKeyName: "teaching_reports_teacher_id_fkey"; columns: ["teacher_id"]; isOneToOne: false; referencedRelation: "teachers"; referencedColumns: ["id"] },
         ]
       }
@@ -1737,6 +1866,115 @@ export type Database = {
           { foreignKeyName: "tuition_packages_program_id_fkey"; columns: ["program_id"]; isOneToOne: false; referencedRelation: "programs"; referencedColumns: ["id"] },
         ]
       }
+      tuition_rates: {
+        Row: {
+          id: string
+          enrollment_id: string
+          price_per_lesson: number
+          currency: string
+          effective_from: string
+          effective_to: string | null
+          evidence_note: string | null
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          enrollment_id: string
+          price_per_lesson: number
+          currency?: string
+          effective_from?: string
+          effective_to?: string | null
+          evidence_note?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          enrollment_id?: string
+          price_per_lesson?: number
+          currency?: string
+          effective_from?: string
+          effective_to?: string | null
+          evidence_note?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "tuition_rates_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "tuition_rates_enrollment_id_fkey"; columns: ["enrollment_id"]; isOneToOne: false; referencedRelation: "student_enrollments"; referencedColumns: ["id"] },
+        ]
+      }
+      tuition_statements: {
+        Row: {
+          id: string
+          enrollment_id: string
+          student_id: string
+          period_start: string
+          period_end: string
+          period_label: string | null
+          lessons_count: number
+          gross_amount: number
+          discount_amount: number
+          net_amount: number
+          paid_amount: number
+          status: string
+          issued_at: string | null
+          due_date: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          enrollment_id: string
+          student_id: string
+          period_start: string
+          period_end: string
+          period_label?: string | null
+          lessons_count?: number
+          gross_amount?: number
+          discount_amount?: number
+          net_amount?: number
+          paid_amount?: number
+          status?: string
+          issued_at?: string | null
+          due_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          enrollment_id?: string
+          student_id?: string
+          period_start?: string
+          period_end?: string
+          period_label?: string | null
+          lessons_count?: number
+          gross_amount?: number
+          discount_amount?: number
+          net_amount?: number
+          paid_amount?: number
+          status?: string
+          issued_at?: string | null
+          due_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "tuition_statements_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "tuition_statements_enrollment_id_fkey"; columns: ["enrollment_id"]; isOneToOne: false; referencedRelation: "student_enrollments"; referencedColumns: ["id"] },
+          { foreignKeyName: "tuition_statements_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
+        ]
+      }
       users: {
         Row: {
           id: string
@@ -1796,6 +2034,17 @@ export type Database = {
         }
         Relationships: []
       }
+      v_data_review: {
+        Row: {
+          entity_type: string | null
+          entity_id: string | null
+          code: string | null
+          label: string | null
+          review_note: string | null
+          created_at: string | null
+        }
+        Relationships: []
+      }
       v_enrollment_balances: {
         Row: {
           enrollment_id: string | null
@@ -1804,8 +2053,13 @@ export type Database = {
           class_id: string | null
           program_id: string | null
           status: Database["public"]["Enums"]["enrollment_status"] | null
+          billing_mode: Database["public"]["Enums"]["billing_mode"] | null
+          headcount: number | null
+          monthly_discount_amount: number | null
+          needs_review: boolean | null
           start_date: string | null
           end_date: string | null
+          paid_in_full_until: string | null
           price_per_lesson: number | null
           lessons_purchased: number | null
           lessons_used: number | null
@@ -1851,6 +2105,10 @@ export type Database = {
           submitted_at: string | null
           completed_at: string | null
           is_late: boolean | null
+          qc_score: number | null
+          authored_by: Database["public"]["Enums"]["report_author"] | null
+          sent_to_parent_at: string | null
+          blocks_payroll: boolean | null
           is_overdue: boolean | null
           has_recording: boolean | null
           has_homework: boolean | null
@@ -1896,6 +2154,7 @@ export type Database = {
           total_paid: number | null
           outstanding_amount: number | null
           revenue_recognized: number | null
+          needs_review: boolean | null
         }
         Relationships: []
       }
@@ -1954,8 +2213,24 @@ export type Database = {
       }
     }
     Functions: {
+      fn_alert_lesson_balance: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      fn_alert_missing_lesson_time: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      fn_alert_not_sent_to_parent: {
+        Args: Record<string, never>
+        Returns: number
+      }
       fn_build_payroll: {
         Args: { p_teacher_id: string; p_period_start: string; p_period_end: string }
+        Returns: string
+      }
+      fn_build_tuition_statement: {
+        Args: { p_enrollment_id: string; p_period_start: string; p_period_end: string }
         Returns: string
       }
       fn_consume_lesson: {
@@ -1974,6 +2249,10 @@ export type Database = {
         Args: { p_student_id: string; p_class_id: string }
         Returns: string
       }
+      fn_qc_criterion_label: {
+        Args: { p_key: string }
+        Returns: string
+      }
       fn_recalc_payroll: {
         Args: { p_payroll_id: string }
         Returns: undefined
@@ -1990,13 +2269,22 @@ export type Database = {
         Args: { p_teacher_id: string; p_duration_minutes: number; p_class_id: string; p_on_date?: string }
         Returns: number
       }
+      fn_resolve_tuition_rate: {
+        Args: { p_enrollment_id: string; p_on_date?: string }
+        Returns: number
+      }
       fn_scan_overdue_reports: {
         Args: Record<string, never>
         Returns: unknown[]
       }
+      fn_score_report_qc: {
+        Args: { p_report_id: string }
+        Returns: number
+      }
     }
     Enums: {
       attendance_status: "present" | "late" | "absent_excused" | "absent_unexcused" | "no_show"
+      billing_mode: "prepaid_package" | "monthly_postpaid" | "undetermined"
       class_status: "draft" | "active" | "paused" | "completed" | "cancelled"
       class_type: "one_to_one" | "one_to_two" | "small_group"
       enrollment_status: "draft" | "active" | "paused" | "completed" | "cancelled"
@@ -2010,6 +2298,7 @@ export type Database = {
       payment_status: "pending" | "confirmed" | "refunded" | "cancelled"
       payroll_status: "draft" | "pending_review" | "approved" | "paid"
       record_status: "active" | "archived"
+      report_author: "teacher" | "ai" | "ai_edited_by_teacher"
       report_status: "draft" | "submitted" | "incomplete" | "needs_review" | "approved"
       student_status: "lead" | "placement" | "trial" | "active" | "paused" | "completed" | "inactive"
     }

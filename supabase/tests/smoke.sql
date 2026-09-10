@@ -152,21 +152,21 @@ do $$ begin
 end $$;
 
 -- -----------------------------------------------------------------------------
--- 4. A lesson that finished 12 hours ago ⇒ already past the 10-hour deadline
+-- 4. Buổi học kết thúc 26 giờ trước ⇒ đã quá hạn 24 giờ (D2)
 -- -----------------------------------------------------------------------------
 insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
                             actual_start_at, actual_end_at, status)
 values ('ffffffff-0000-0000-0000-000000000001', 'dddddddd-0000-0000-0000-000000000001',
-        current_date, now() - interval '13 hours', now() - interval '12 hours',
-        now() - interval '13 hours', now() - interval '12 hours', 'completed');
+        current_date, now() - interval '27 hours', now() - interval '26 hours',
+        now() - interval '27 hours', now() - interval '26 hours', 'completed');
 
 do $$
 declare l public.lessons;
 begin
   select * into l from public.lessons where id = 'ffffffff-0000-0000-0000-000000000001';
   perform public.t_assert(l.duration_minutes = 60, 'thời lượng tính từ giờ bắt đầu/kết thúc thực tế');
-  perform public.t_assert(l.report_due_at = l.actual_end_at + interval '10 hours',
-    'hạn nộp báo cáo = giờ kết thúc + 10 giờ');
+  perform public.t_assert(l.report_due_at = l.actual_end_at + interval '24 hours',
+    'hạn nộp báo cáo = giờ kết thúc + 24 giờ (D2)');
   perform public.t_assert(l.report_due_at < now(), 'buổi học này đã quá hạn nộp');
   perform public.t_assert(l.teacher_id = 'aaaaaaaa-0000-0000-0000-000000000001',
     'giáo viên được lấy từ lớp học nếu không chỉ định');
@@ -194,17 +194,22 @@ end $$;
 -- -----------------------------------------------------------------------------
 insert into public.teaching_reports (id, lesson_id, start_time, end_time, lesson_content, submitted_at)
 values ('99999999-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000001',
-        now() - interval '13 hours', now() - interval '12 hours',
-        'Unit 4: Daily routines', now() - interval '11 hours');
+        now() - interval '27 hours', now() - interval '26 hours',
+        'Unit 4: Daily routines', now() - interval '25 hours');
 
 do $$
 declare r public.teaching_reports;
 begin
   select * into r from public.teaching_reports where id = '99999999-0000-0000-0000-000000000001';
   perform public.t_assert(r.status = 'incomplete',
-    'thiếu trường bắt buộc + quá hạn ⇒ trạng thái INCOMPLETE');
-  perform public.t_assert(r.missing_fields @> array['homework','recording','teacher_comments'],
-    'đúng 3 trường còn thiếu: bài tập, recording, nhận xét');
+    'thiếu tiêu chí chất lượng + quá hạn ⇒ trạng thái INCOMPLETE');
+  perform public.t_assert(
+    r.missing_fields @> array['video','timestamp','student_quote',
+                              'strengths_deep','improvements_deep','homework_pattern'],
+    'đúng 6 tiêu chí chất lượng còn thiếu (D3)');
+  perform public.t_assert(not (r.missing_fields @> array['start_time']),
+    'đã ghi giờ dạy nên start_time KHÔNG nằm trong danh sách thiếu');
+  perform public.t_assert(r.qc_score = 0, 'điểm QC = 0 khi chưa đạt tiêu chí nào');
   perform public.t_assert(r.class_id = 'dddddddd-0000-0000-0000-000000000001',
     'class_id được suy ra từ buổi học');
 end $$;
@@ -221,9 +226,12 @@ begin
   perform public.t_assert(n.severity = 'critical',  'mức độ: critical');
   perform public.t_assert(n.body like '%Tân%',      'cảnh báo nêu tên học viên');
   perform public.t_assert(n.body like '%Ms. Sheba%','cảnh báo nêu tên giáo viên');
-  perform public.t_assert(n.body like '%Link recording%', 'cảnh báo liệt kê: Link recording');
-  perform public.t_assert(n.body like '%Bài tập về nhà%', 'cảnh báo liệt kê: Bài tập về nhà');
-  perform public.t_assert(n.body like '%10 giờ%',   'cảnh báo nêu mốc quá hạn 10 giờ');
+  perform public.t_assert(n.body like '%Link video%', 'cảnh báo liệt kê: Link video');
+  perform public.t_assert(n.body like '%Trích nguyên văn%',
+    'cảnh báo liệt kê: Trích nguyên văn lời học viên');
+  perform public.t_assert(n.body like '%Homework có mẫu câu%',
+    'cảnh báo liệt kê: Homework có mẫu câu');
+  perform public.t_assert(n.body like '%24 giờ%',   'cảnh báo nêu mốc quá hạn 24 giờ (D2)');
   perform public.t_assert(n.body like '%Cần xem xét%', 'trạng thái: Cần xem xét');
 
   -- Running the scan twice must not create a second alert.
@@ -235,42 +243,73 @@ begin
     'quét lại không sinh cảnh báo trùng');
 end $$;
 
--- No payable lesson yet: the report is not valid
-do $$ begin
-  perform public.t_assert(
-    (select count(*) from public.teacher_payable_lessons
-      where lesson_id = 'ffffffff-0000-0000-0000-000000000001') = 0,
-    'báo cáo chưa hợp lệ ⇒ CHƯA sinh buổi tính lương');
+-- D4: báo cáo thiếu bằng chứng nhưng ĐÃ có giờ dạy ⇒ VẪN sinh buổi tính lương,
+-- chỉ gắn cờ. Đây là thay đổi so với thiết kế ban đầu (xem DECISIONS.md D4).
+do $$
+declare p public.teacher_payable_lessons;
+begin
+  select * into p from public.teacher_payable_lessons
+   where lesson_id = 'ffffffff-0000-0000-0000-000000000001';
+  perform public.t_assert(p.id is not null,
+    'có giờ dạy + đã điểm danh ⇒ VẪN sinh buổi tính lương dù báo cáo thiếu (D4)');
+  perform public.t_assert(p.amount = 300000, 'vẫn tính đủ 300.000 ₫');
+  perform public.t_assert(p.has_video is false,  'gắn cờ: thiếu video');
+  perform public.t_assert(p.has_evidence is false, 'gắn cờ: thiếu timestamp bằng chứng');
+  perform public.t_assert(p.sent_to_parent is false, 'gắn cờ: chưa gửi phụ huynh');
 end $$;
 
 -- -----------------------------------------------------------------------------
 -- 6. Teacher completes the report ⇒ payable lesson appears with frozen rate
 -- -----------------------------------------------------------------------------
-insert into public.homework (lesson_id, class_id, title, description, due_date)
+-- Bài tập có mẫu câu bắt buộc — một trong 6 tiêu chí (D3)
+insert into public.homework (lesson_id, class_id, title, description, due_date, sentence_patterns)
 values ('ffffffff-0000-0000-0000-000000000001', 'dddddddd-0000-0000-0000-000000000001',
-        'Workbook p.32-33', 'Viết 5 câu về thói quen buổi sáng', current_date + 2);
+        'Workbook p.32-33', 'Viết 5 câu về thói quen buổi sáng', current_date + 2,
+        'I usually ... at ... / I never ... before ...');
 
 insert into public.recordings (lesson_id, url, provider)
 values ('ffffffff-0000-0000-0000-000000000001',
         'https://drive.google.com/file/d/abc123/view', 'google_drive');
 
+-- Kiểm thử từng bước để thấy điểm QC tăng dần theo số tiêu chí đạt.
+do $$ begin
+  perform public.t_assert(
+    (select qc_score from public.teaching_reports
+      where id = '99999999-0000-0000-0000-000000000001') = 33,
+    'có video + homework mẫu câu ⇒ 2/6 tiêu chí ⇒ điểm QC = 33');
+  perform public.t_assert(
+    (select status from public.teaching_reports
+      where id = '99999999-0000-0000-0000-000000000001') = 'incomplete',
+    '33 điểm < ngưỡng 60 ⇒ vẫn INCOMPLETE');
+end $$;
+
 update public.teaching_reports
-   set teacher_comments = 'Tân phát âm tốt, cần luyện thêm thì hiện tại đơn.'
+   set teacher_comments = 'Tân phát âm tốt, cần luyện thêm thì hiện tại đơn.',
+       student_quote    = 'I wake up at six o''clock and I brush my teeth.',
+       strengths        = 'Phát âm /s/ cuối từ đã rõ ở 4/5 câu.',
+       improvements     = 'Còn nói "he go" thay vì "he goes" ở phút 12:40.',
+       video_timestamp  = '12:40',
+       qc_strengths_deep    = true,
+       qc_improvements_deep = true
  where id = '99999999-0000-0000-0000-000000000001';
 
 do $$
 declare r public.teaching_reports; p public.teacher_payable_lessons;
 begin
   select * into r from public.teaching_reports where id = '99999999-0000-0000-0000-000000000001';
-  perform public.t_assert(array_length(r.missing_fields, 1) is null, 'không còn trường thiếu');
-  perform public.t_assert(r.status = 'submitted', 'báo cáo đủ ⇒ trạng thái submitted');
-  perform public.t_assert(r.is_late is true, 'vẫn ghi nhận là nộp trễ so với hạn 10 giờ');
+  perform public.t_assert(r.qc_score = 100, 'đủ 6/6 tiêu chí ⇒ điểm QC = 100');
+  perform public.t_assert(array_length(r.missing_fields, 1) is null, 'không còn tiêu chí thiếu');
+  perform public.t_assert(r.status = 'submitted', 'đạt ngưỡng 60 ⇒ trạng thái submitted');
+  perform public.t_assert(r.is_late is true, 'vẫn ghi nhận là nộp trễ so với hạn 24 giờ');
+  perform public.t_assert(r.authored_by = 'teacher', 'mặc định: nội dung do giáo viên viết (D6)');
 
   select * into p from public.teacher_payable_lessons
    where lesson_id = 'ffffffff-0000-0000-0000-000000000001';
-  perform public.t_assert(p.id is not null, 'buổi tính lương được sinh tự động');
   perform public.t_assert(p.amount = 300000, 'đơn giá 60 phút của Ms. Sheba = 300.000');
   perform public.t_assert(p.rate_source = 'duration', 'nguồn đơn giá: theo thời lượng');
+  perform public.t_assert(p.has_video is true, 'cờ video đã bật');
+  perform public.t_assert(p.has_evidence is true, 'cờ bằng chứng timestamp đã bật');
+  perform public.t_assert(p.qc_score = 100, 'điểm QC được chuyển sang bảng lương');
   perform public.t_assert(p.status = 'pending', 'trạng thái: chờ đưa vào kỳ lương');
 end $$;
 
@@ -499,6 +538,421 @@ do $$ begin
     (select count(*) from public.audit_logs where table_name = 'teacher_payroll') >= 1,
     'thay đổi bảng lương được ghi vào audit_logs');
 end $$;
+
+-- =============================================================================
+-- 11. MÔ HÌNH NGHIỆP VỤ THẬT (DECISIONS.md D1, D5, D7, D8, D11, D13)
+--     Dùng đúng số liệu từ hệ thống Google Sheets để đối chiếu.
+-- =============================================================================
+
+\echo ''
+\echo '--- 11a. Đơn giá học phí có ngày hiệu lực — ca Bé Ngân (D11) ---'
+
+insert into public.students (id, full_name, nickname, status)
+values ('cccccccc-0000-0000-0000-000000000010', 'Bé Ngân', 'Ngân', 'active');
+
+insert into public.classes (id, name, teacher_id, class_type, max_students,
+                            default_duration_minutes, status)
+values ('dddddddd-0000-0000-0000-000000000010', 'Bé Ngân - 1:1 pre A1',
+        'aaaaaaaa-0000-0000-0000-000000000001', 'one_to_one', 1, 60, 'active');
+
+insert into public.class_students (class_id, student_id)
+values ('dddddddd-0000-0000-0000-000000000010', 'cccccccc-0000-0000-0000-000000000010');
+
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, lessons_purchased, price_per_lesson,
+   net_amount, start_date, status, needs_review, review_note)
+values ('eeeeeeee-0000-0000-0000-000000000010', 'cccccccc-0000-0000-0000-000000000010',
+        'dddddddd-0000-0000-0000-000000000010', 'monthly_postpaid',
+        null, 190000, null, date '2026-07-01', 'active',
+        true, 'Ô đơn giá trong sheet gốc là 1.790.009.190 ₫ — đã thay bằng bảng giá có căn cứ (D8, D11)');
+
+-- Hai mốc giá đúng như bảng giá của Founder.
+insert into public.tuition_rates (enrollment_id, price_per_lesson, effective_from, effective_to, evidence_note)
+values ('eeeeeeee-0000-0000-0000-000000000010', 179000, date '2026-07-01', date '2026-08-31',
+        'Founder xác nhận. Chứng từ: 716.000 = 4 buổi (09/07), 1.432.000 = 8 buổi (09/08)'),
+       ('eeeeeeee-0000-0000-0000-000000000010', 190000, date '2026-09-01', null,
+        'Founder xác nhận: từ tháng 9/2026 áp dụng 190.000/60 phút');
+
+do $$ begin
+  perform public.t_assert(
+    public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000010', date '2026-08-20') = 179000,
+    'buổi ngày 20/08/2026 ⇒ đơn giá 179.000 ₫');
+  perform public.t_assert(
+    public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000010', date '2026-09-05') = 190000,
+    'buổi ngày 05/09/2026 ⇒ đơn giá 190.000 ₫');
+end $$;
+
+-- Một buổi trước mốc đổi giá, một buổi sau mốc.
+insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
+                            actual_start_at, actual_end_at, status)
+values ('ffffffff-0000-0000-0000-000000000010', 'dddddddd-0000-0000-0000-000000000010',
+        date '2026-08-20', timestamptz '2026-08-20 20:00+07', timestamptz '2026-08-20 21:00+07',
+        timestamptz '2026-08-20 20:00+07', timestamptz '2026-08-20 21:00+07', 'completed'),
+       ('ffffffff-0000-0000-0000-000000000011', 'dddddddd-0000-0000-0000-000000000010',
+        date '2026-09-05', timestamptz '2026-09-05 20:00+07', timestamptz '2026-09-05 21:00+07',
+        timestamptz '2026-09-05 20:00+07', timestamptz '2026-09-05 21:00+07', 'completed');
+
+insert into public.attendance (lesson_id, student_id, status) values
+  ('ffffffff-0000-0000-0000-000000000010', 'cccccccc-0000-0000-0000-000000000010', 'present'),
+  ('ffffffff-0000-0000-0000-000000000011', 'cccccccc-0000-0000-0000-000000000010', 'present');
+
+do $$
+declare v_aug numeric; v_sep numeric;
+begin
+  select recognized_amount into v_aug from public.lesson_consumptions
+   where lesson_id = 'ffffffff-0000-0000-0000-000000000010';
+  select recognized_amount into v_sep from public.lesson_consumptions
+   where lesson_id = 'ffffffff-0000-0000-0000-000000000011';
+  perform public.t_assert(v_aug = 179000, 'doanh thu buổi tháng 8 ghi nhận 179.000 ₫');
+  perform public.t_assert(v_sep = 190000, 'doanh thu buổi tháng 9 ghi nhận 190.000 ₫');
+  perform public.t_assert(v_aug <> v_sep,
+    'đổi giá giữa kỳ KHÔNG làm sai doanh thu buổi cũ (D11)');
+end $$;
+
+\echo ''
+\echo '--- 11b. Lớp nhóm trả sau theo tháng — ca Y Khoa (D1, D13) ---'
+-- Công thức Founder: 120.000 × 3 người × số buổi − 150.000/tháng.
+-- Chứng từ thật: 7 buổi tháng 7/2026 = 2.370.000 ₫.
+
+insert into public.students (id, full_name, status) values
+  ('cccccccc-0000-0000-0000-000000000021', 'Ms. Min', 'active'),
+  ('cccccccc-0000-0000-0000-000000000022', 'Mr. Max', 'active'),
+  ('cccccccc-0000-0000-0000-000000000023', 'Mr. John', 'active');
+
+insert into public.classes (id, name, teacher_id, class_type, max_students,
+                            default_duration_minutes, status)
+values ('dddddddd-0000-0000-0000-000000000020', 'Y Khoa - nhóm 3 người',
+        'aaaaaaaa-0000-0000-0000-000000000001', 'small_group', 3, 60, 'active');
+
+insert into public.class_students (class_id, student_id) values
+  ('dddddddd-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000021'),
+  ('dddddddd-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000022'),
+  ('dddddddd-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000023');
+
+-- Một hợp đồng cho cả nhóm, Ms. Min đứng tên đóng (D13).
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, headcount, lessons_purchased,
+   price_per_lesson, monthly_discount_amount, net_amount, payer_student_id,
+   start_date, status, paid_in_full_until, agreement_notes)
+values ('eeeeeeee-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000021',
+        'dddddddd-0000-0000-0000-000000000020', 'monthly_postpaid', 3, null,
+        360000, 150000, null, 'cccccccc-0000-0000-0000-000000000021',
+        date '2026-07-01', 'active', date '2026-07-31',
+        'Công thức Founder: 120.000 × 3 người × số buổi − 150.000/tháng');
+
+-- 7 buổi trong tháng 7/2026.
+do $$
+declare i int; d date; v_lesson uuid;
+begin
+  for i in 1..7 loop
+    d := date '2026-07-06' + ((i - 1) * 3);
+    v_lesson := gen_random_uuid();
+    insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
+                                actual_start_at, actual_end_at, status)
+    values (v_lesson, 'dddddddd-0000-0000-0000-000000000020', d,
+            d + time '19:00', d + time '20:00', d + time '19:00', d + time '20:00', 'completed');
+    insert into public.attendance (lesson_id, student_id, status)
+    select v_lesson, cs.student_id, 'present'
+      from public.class_students cs
+     where cs.class_id = 'dddddddd-0000-0000-0000-000000000020';
+  end loop;
+end $$;
+
+do $$
+declare v_rows int; v_total numeric;
+begin
+  select count(*), coalesce(sum(recognized_amount), 0) into v_rows, v_total
+    from public.lesson_consumptions
+   where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000020';
+  perform public.t_assert(v_rows = 7,
+    '7 buổi ⇒ 7 dòng doanh thu (một dòng mỗi buổi cho cả nhóm, không nhân theo đầu người)');
+  perform public.t_assert(v_total = 2520000, 'doanh thu gộp = 7 × 360.000 = 2.520.000 ₫');
+end $$;
+
+set session "test.user_id" = '11111111-1111-1111-1111-111111111111';  -- Founder
+
+do $$
+declare v_id uuid; st public.tuition_statements;
+begin
+  v_id := public.fn_build_tuition_statement(
+    'eeeeeeee-0000-0000-0000-000000000020', date '2026-07-01', date '2026-07-31');
+  select * into st from public.tuition_statements where id = v_id;
+  perform public.t_assert(st.lessons_count = 7,       'phiếu tháng 7: 7 buổi');
+  perform public.t_assert(st.gross_amount = 2520000,  'phiếu tháng 7: gộp 2.520.000 ₫');
+  perform public.t_assert(st.discount_amount = 150000,'phiếu tháng 7: chiết khấu 150.000 ₫/tháng');
+  perform public.t_assert(st.net_amount = 2370000,
+    'phiếu tháng 7 phải trả = 2.370.000 ₫ — ĐÚNG BẰNG chứng từ thật ngày 12/08/2026');
+  perform public.t_assert(st.status = 'draft', 'phiếu mới lập ở trạng thái nháp');
+end $$;
+
+-- Không có buổi nào trong tháng thì KHÔNG trừ chiết khấu.
+do $$
+declare v_id uuid; st public.tuition_statements;
+begin
+  v_id := public.fn_build_tuition_statement(
+    'eeeeeeee-0000-0000-0000-000000000020', date '2026-06-01', date '2026-06-30');
+  select * into st from public.tuition_statements where id = v_id;
+  perform public.t_assert(st.lessons_count = 0, 'tháng 6 không có buổi nào');
+  perform public.t_assert(st.discount_amount = 0,
+    'tháng không dạy ⇒ không trừ chiết khấu (tránh tạo số âm vô lý)');
+  perform public.t_assert(st.net_amount = 0, 'phải trả = 0 ₫');
+end $$;
+
+reset "test.user_id";
+
+\echo ''
+\echo '--- 11c. Cho học vượt số buổi đã đóng (D7) ---'
+-- Học viên riêng, chỉ có MỘT gói, để số dư thực sự đi xuống âm.
+
+insert into public.students (id, full_name, status)
+values ('cccccccc-0000-0000-0000-000000000040', 'Học viên học vượt', 'active');
+
+insert into public.classes (id, name, teacher_id, class_type, max_students,
+                            default_duration_minutes, status)
+values ('dddddddd-0000-0000-0000-000000000040', 'Lớp kiểm thử học vượt',
+        'aaaaaaaa-0000-0000-0000-000000000001', 'one_to_one', 1, 60, 'active');
+
+insert into public.class_students (class_id, student_id)
+values ('dddddddd-0000-0000-0000-000000000040', 'cccccccc-0000-0000-0000-000000000040');
+
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, lessons_purchased, price_per_lesson,
+   net_amount, start_date, status)
+values ('eeeeeeee-0000-0000-0000-000000000030', 'cccccccc-0000-0000-0000-000000000040',
+        'dddddddd-0000-0000-0000-000000000040', 'prepaid_package',
+        1, 280000, 280000, date '2026-09-01', 'active');
+
+insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
+                            actual_start_at, actual_end_at, status)
+values ('ffffffff-0000-0000-0000-000000000030', 'dddddddd-0000-0000-0000-000000000040',
+        date '2026-09-02', timestamptz '2026-09-02 09:00+07', timestamptz '2026-09-02 10:00+07',
+        timestamptz '2026-09-02 09:00+07', timestamptz '2026-09-02 10:00+07', 'completed'),
+       ('ffffffff-0000-0000-0000-000000000031', 'dddddddd-0000-0000-0000-000000000040',
+        date '2026-09-03', timestamptz '2026-09-03 09:00+07', timestamptz '2026-09-03 10:00+07',
+        timestamptz '2026-09-03 09:00+07', timestamptz '2026-09-03 10:00+07', 'completed');
+
+insert into public.attendance (lesson_id, student_id, status) values
+  ('ffffffff-0000-0000-0000-000000000030', 'cccccccc-0000-0000-0000-000000000040', 'present'),
+  ('ffffffff-0000-0000-0000-000000000031', 'cccccccc-0000-0000-0000-000000000040', 'present');
+
+do $$
+declare b record;
+begin
+  select * into b from public.v_enrollment_balances
+   where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000030';
+  perform public.t_assert(b.lessons_used = 2,      'đã dạy 2 buổi');
+  perform public.t_assert(b.lessons_remaining = -1,
+    'mua 1 buổi, học 2 buổi ⇒ còn lại = -1 (cho học vượt, không chặn — D7)');
+  perform public.t_assert(b.revenue_recognized = 560000, 'doanh thu ghi nhận 2 × 280.000');
+  perform public.t_assert(b.outstanding_amount = 280000,
+    'công nợ = 280.000 ₫ (đã cam kết 1 buổi, chưa trả đồng nào)');
+end $$;
+
+-- Học viên có NHIỀU gói thì buổi tự chuyển sang gói kế tiếp theo thứ tự mua
+-- (FIFO), chỉ hết gói cuối mới đi xuống âm.
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, lessons_purchased, price_per_lesson,
+   net_amount, start_date, status)
+values ('eeeeeeee-0000-0000-0000-000000000031', 'cccccccc-0000-0000-0000-000000000040',
+        'dddddddd-0000-0000-0000-000000000040', 'prepaid_package',
+        5, 280000, 1400000, date '2026-09-15', 'active');
+
+insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
+                            actual_start_at, actual_end_at, status)
+values ('ffffffff-0000-0000-0000-000000000032', 'dddddddd-0000-0000-0000-000000000040',
+        date '2026-09-16', timestamptz '2026-09-16 09:00+07', timestamptz '2026-09-16 10:00+07',
+        timestamptz '2026-09-16 09:00+07', timestamptz '2026-09-16 10:00+07', 'completed');
+
+insert into public.attendance (lesson_id, student_id, status)
+values ('ffffffff-0000-0000-0000-000000000032', 'cccccccc-0000-0000-0000-000000000040', 'present');
+
+do $$ begin
+  perform public.t_assert(
+    (select enrollment_id from public.lesson_consumptions
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000032')
+      = 'eeeeeeee-0000-0000-0000-000000000031',
+    'gói đầu đã hết ⇒ buổi mới trừ vào gói còn buổi (FIFO), không tiếp tục làm âm gói cũ');
+  perform public.t_assert(
+    (select lessons_remaining from public.v_enrollment_balances
+      where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000030') = -1,
+    'gói đầu giữ nguyên -1, không bị trừ thêm');
+end $$;
+
+do $$
+declare n public.notifications;
+begin
+  perform public.fn_alert_lesson_balance();
+  select * into n from public.notifications
+   where type = 'lessons_overdrawn' and entity_id = 'eeeeeeee-0000-0000-0000-000000000030';
+  perform public.t_assert(n.id is not null, 'sinh cảnh báo học vượt');
+  perform public.t_assert(n.severity = 'critical', 'mức độ: KHẨN');
+  perform public.t_assert(n.body like '%-1%', 'cảnh báo nêu số buổi âm');
+end $$;
+
+\echo ''
+\echo '--- 11d. Thiếu ngày giờ dạy ⇒ KHÔNG tính lương + báo động đỏ cho GV (D5) ---'
+
+insert into public.lessons (id, class_id, teacher_id, lesson_date,
+                            scheduled_start_at, scheduled_end_at, status)
+values ('ffffffff-0000-0000-0000-000000000040', 'dddddddd-0000-0000-0000-000000000001',
+        'aaaaaaaa-0000-0000-0000-000000000001', current_date - 2,
+        now() - interval '50 hours', now() - interval '49 hours', 'completed');
+
+insert into public.attendance (lesson_id, student_id, status)
+values ('ffffffff-0000-0000-0000-000000000040', 'cccccccc-0000-0000-0000-000000000001', 'present');
+
+do $$ begin
+  perform public.t_assert(
+    (select count(*) from public.teacher_payable_lessons
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000040') = 0,
+    'chưa ghi giờ dạy thực tế ⇒ KHÔNG sinh buổi tính lương (D5)');
+end $$;
+
+do $$
+declare n public.notifications;
+begin
+  perform public.fn_alert_missing_lesson_time();
+  select * into n from public.notifications
+   where type = 'lesson_time_missing' and entity_id = 'ffffffff-0000-0000-0000-000000000040';
+  perform public.t_assert(n.id is not null, 'sinh báo động đỏ thiếu ngày giờ dạy');
+  perform public.t_assert(n.title like '%BÁO ĐỘNG ĐỎ%', 'tiêu đề: BÁO ĐỘNG ĐỎ');
+  perform public.t_assert(n.body like '%KHÔNG ĐƯỢC TÍNH LƯƠNG%',
+    'nội dung nói rõ không cung cấp thì không tính lương');
+  perform public.t_assert(n.target_user_id = '22222222-2222-2222-2222-222222222222',
+    'cảnh báo gửi RIÊNG cho giáo viên phụ trách, không chỉ cho Founder');
+  perform public.t_assert((n.payload ->> 'blocks_payroll') = 'true',
+    'payload ghi rõ buổi này đang bị giữ lương');
+end $$;
+
+-- Bổ sung giờ dạy ⇒ buổi được tính lương ngay.
+update public.lessons
+   set actual_start_at = now() - interval '50 hours',
+       actual_end_at   = now() - interval '49 hours'
+ where id = 'ffffffff-0000-0000-0000-000000000040';
+
+do $$ begin
+  perform public.t_assert(
+    (select count(*) from public.teacher_payable_lessons
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000040') = 1,
+    'bổ sung giờ dạy ⇒ buổi vào bảng lương ngay, không cần báo cáo đủ (D4, D5)');
+end $$;
+
+\echo ''
+\echo '--- 11e. Cảnh báo chưa gửi phụ huynh ---'
+-- Cảnh báo chỉ nổ khi buổi đã học quá 3 ngày mà chưa gửi.
+-- Buổi hôm nay chưa tới hạn nên dùng buổi ngày 20/08/2026 của Bé Ngân.
+insert into public.teaching_reports (id, lesson_id, start_time, end_time, lesson_content)
+values ('99999999-0000-0000-0000-000000000010', 'ffffffff-0000-0000-0000-000000000010',
+        timestamptz '2026-08-20 20:00+07', timestamptz '2026-08-20 21:00+07',
+        'Unit 2: My family');
+
+do $$
+declare n public.notifications; v_n int;
+begin
+  v_n := public.fn_alert_not_sent_to_parent();
+  perform public.t_assert(v_n >= 1, 'quét ra buổi đã học quá 3 ngày mà chưa gửi phụ huynh');
+
+  select * into n from public.notifications
+   where type = 'report_not_sent_to_parent'
+     and entity_id = '99999999-0000-0000-0000-000000000010';
+  perform public.t_assert(n.id is not null, 'sinh cảnh báo chưa gửi phụ huynh');
+  perform public.t_assert(n.body like '%3 ngày%', 'cảnh báo nêu mốc 3 ngày');
+
+  -- Buổi của hôm nay thì CHƯA cảnh báo, vì chưa quá 3 ngày.
+  perform public.t_assert(
+    (select count(*) from public.notifications
+      where type = 'report_not_sent_to_parent'
+        and entity_id = '99999999-0000-0000-0000-000000000001') = 0,
+    'buổi mới học hôm nay chưa bị cảnh báo (chưa quá 3 ngày)');
+
+  update public.teaching_reports
+     set sent_to_parent_at = now(),
+         sent_to_parent_by = '22222222-2222-2222-2222-222222222222'
+   where id = '99999999-0000-0000-0000-000000000001';
+
+  -- Buổi này đã nằm trong kỳ lương ĐÃ TRẢ nên không được ghi đè nữa.
+  perform public.t_assert(
+    (select status from public.teacher_payable_lessons
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000001') = 'paid',
+    'buổi đã trả lương vẫn ở trạng thái paid');
+  perform public.t_assert(
+    (select sent_to_parent from public.teacher_payable_lessons
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000001') is false,
+    'kỳ lương ĐÃ TRẢ không bị sửa lại khi báo cáo thay đổi về sau');
+end $$;
+
+-- Với buổi còn đang chờ (pending) thì cờ "đã gửi PH" cập nhật được.
+insert into public.teaching_reports (id, lesson_id, start_time, end_time,
+                                     lesson_content, sent_to_parent_at, sent_to_parent_by)
+values ('99999999-0000-0000-0000-000000000040', 'ffffffff-0000-0000-0000-000000000040',
+        now() - interval '50 hours', now() - interval '49 hours',
+        'Unit 5: Free time', now(), '22222222-2222-2222-2222-222222222222');
+
+do $$
+declare p public.teacher_payable_lessons;
+begin
+  select * into p from public.teacher_payable_lessons
+   where lesson_id = 'ffffffff-0000-0000-0000-000000000040';
+  perform public.t_assert(p.status = 'pending', 'buổi này còn chờ đưa vào kỳ lương');
+  perform public.t_assert(p.sent_to_parent is true,
+    'đánh dấu đã gửi PH ⇒ cờ trong bảng lương bật theo');
+end $$;
+
+\echo ''
+\echo '--- 11f. AI viết feedback (D6) ---'
+do $$ begin
+  update public.teaching_reports
+     set authored_by = 'ai'
+   where id = '99999999-0000-0000-0000-000000000001';
+  perform public.t_assert(
+    (select authored_by from public.teaching_reports
+      where id = '99999999-0000-0000-0000-000000000001') = 'ai',
+    'ghi nhận được nội dung do AI viết');
+  update public.teaching_reports
+     set authored_by = 'ai_edited_by_teacher'
+   where id = '99999999-0000-0000-0000-000000000001';
+  perform public.t_assert(
+    (select authored_by from public.teaching_reports
+      where id = '99999999-0000-0000-0000-000000000001') = 'ai_edited_by_teacher',
+    'ghi nhận được AI viết rồi giáo viên sửa');
+end $$;
+
+\echo ''
+\echo '--- 11g. Trang "Cần đối soát" sau di trú (D8) ---'
+do $$
+declare v_rows int; v_note text;
+begin
+  select count(*) into v_rows from public.v_data_review;
+  perform public.t_assert(v_rows >= 1, 'view v_data_review liệt kê dòng cần đối soát');
+  select review_note into v_note from public.v_data_review
+   where entity_type = 'enrollment' and entity_id = 'eeeeeeee-0000-0000-0000-000000000010';
+  perform public.t_assert(v_note like '%1.790.009.190%',
+    'giữ lại nguyên văn giá trị nghi vấn để Founder đối chiếu (D8)');
+end $$;
+
+\echo ''
+\echo '--- 11h. RLS trên các bảng tiền mới ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';  -- giáo viên
+  do $$ begin
+    perform public.t_assert((select count(*) from public.tuition_rates) = 0,
+      'giáo viên KHÔNG đọc được lịch sử đơn giá học phí');
+    perform public.t_assert((select count(*) from public.tuition_statements) = 0,
+      'giáo viên KHÔNG đọc được phiếu học phí tháng');
+  end $$;
+rollback;
+
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '11111111-1111-1111-1111-111111111111';  -- Founder
+  do $$ begin
+    perform public.t_assert((select count(*) from public.tuition_rates) = 2,
+      'Founder đọc được 2 mốc đơn giá của Bé Ngân');
+    perform public.t_assert((select count(*) from public.tuition_statements) = 2,
+      'Founder đọc được phiếu học phí tháng');
+  end $$;
+rollback;
 
 \echo ''
 \echo '======================================================'

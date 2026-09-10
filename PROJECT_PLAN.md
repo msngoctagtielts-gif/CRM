@@ -185,22 +185,27 @@ Báo cáo học tập · Recording · Phân tích bằng AI
 
 ## 6. Giả định đã ghi nhận (chưa được Founder xác nhận)
 
+> **Cập nhật 10/09/2026:** A3, A4, A6, A11, A12 đã được Founder chốt và chuyển thành
+> quyết định chính thức — xem `DECISIONS.md` (D2, D3, D4, D5, D7). Bảng dưới đây chỉ
+> còn các giả định **chưa** được xác nhận.
+
 Những điểm dưới đây **là giả định**, không phải quy tắc nghiệp vụ đã được duyệt. Đã ghi lại thay vì tự bịa ra rồi coi là đúng.
 
 | # | Giả định | Ảnh hưởng nếu sai |
 |---|---|---|
 | A1 | Tiền tệ duy nhất là **VND**, không có ngoại tệ | Phải thêm bảng tỷ giá |
 | A2 | Múi giờ vận hành **Asia/Ho_Chi_Minh (UTC+7)** | Sai toàn bộ deadline & lịch |
-| A3 | Deadline báo cáo **10 giờ** tính từ **giờ kết thúc thực tế**; nếu giáo viên không bấm giờ kết thúc thì tính từ **giờ kết thúc theo lịch** | Cảnh báo sai thời điểm |
-| A4 | Ba trường bắt buộc để báo cáo được coi là ĐỦ: **bài tập về nhà, link recording, nhận xét giáo viên** | Cảnh báo sai/thiếu |
+| ~~A3~~ | → **D2**: hạn 24 giờ, tính từ giờ kết thúc thực tế, thiếu thì lấy giờ theo lịch | đã chốt |
+| ~~A4~~ | → **D3**: 6 tiêu chí + điểm QC, ngưỡng 60 | đã chốt |
 | A5 | Học viên vắng **không báo trước** vẫn **bị trừ buổi** (`is_billable = true`); vắng **có phép** thì **không trừ** | Sai số dư buổi học của học viên |
-| A6 | Giáo viên **vẫn được tính lương** cho buổi học viên vắng không phép (vì giáo viên đã có mặt) | Sai bảng lương |
+| ~~A6~~ | → **D4, D5**: vẫn tính lương; chỉ thiếu ngày/giờ dạy mới bị giữ | đã chốt |
 | A7 | Lớp nhóm: lương giáo viên tính **theo buổi dạy**, không nhân theo số học viên | Sai bảng lương lớp nhóm |
 | A8 | Một học viên có thể học **nhiều chương trình song song** ⇒ nhiều hợp đồng `student_enrollments` cùng lúc | Phải chuyển sang mô hình 1-1 |
 | A9 | Một tài khoản người dùng có **đúng một vai trò** | Founder kiêm dạy phải có 2 tài khoản |
 | A10 | Buổi học được coi là **hoàn tất** khi trạng thái = `completed` **và** đã có điểm danh cho toàn bộ học viên | Sinh lương/doanh thu sai thời điểm |
-| A11 | Buổi học chỉ được tính lương khi báo cáo **đã đủ** toàn bộ trường bắt buộc. Báo cáo `INCOMPLETE` làm buổi đó **chưa** vào bảng lương (bổ sung đủ thì tự vào lại) | Nếu sai: lương phải tính ngay cả khi báo cáo thiếu |
-| A12 | Buổi học của học viên **không có hợp đồng học phí hiệu lực** thì **không** trừ buổi và **không** ghi nhận doanh thu (hiện lên như dữ liệu thiếu, thay vì âm thầm tính sai) | Nếu sai: cần cho phép số dư buổi âm |
+| ~~A11~~ | → **D4**: báo cáo thiếu VẪN được tính lương, chỉ gắn cờ | đã chốt |
+| ~~A12~~ | → **D7**: cho học vượt, số buổi còn lại được phép âm | đã chốt |
+| A13 | Gửi báo cáo cho phụ huynh là **một bước riêng do người bấm**, không tự động — kể cả khi nội dung do AI viết | Nếu sai: cần bật gửi tự động sau khi AI viết |
 
 ---
 

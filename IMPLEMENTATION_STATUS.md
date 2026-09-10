@@ -1,6 +1,6 @@
 # IMPLEMENTATION_STATUS.md
 
-**Cập nhật:** 10/09/2026
+**Cập nhật:** 10/09/2026 (vòng 2 — sau khi đối soát Google Sheets)
 **Nhánh:** `claude/mnee-system-architecture-oxsrc4`
 
 Tài liệu này nói thẳng cái gì đã chạy và đã kiểm thử, cái gì chỉ mới có cấu trúc,
@@ -35,12 +35,38 @@ Supabase project `yevsupsuelpbodwawfyw` đang **INACTIVE (tạm dừng)**, nên 
 |---|---|---|
 | Next.js 15 + React 19 + TypeScript strict | ✅ | `npm run build` thành công, 19 route |
 | Tailwind CSS v4 + hệ màu thương hiệu | ✅ | Navy/Gold/White/Burgundy khai báo bằng `@theme` |
-| 12 file migration | ✅ | áp sạch trên PostgreSQL 16 và 17 |
+| 13 file migration | ✅ | áp sạch trên PostgreSQL 16 và 17 |
 | Sinh type TypeScript từ schema | ✅ | `src/types/database.types.ts`, 1.8k dòng, có cả quan hệ khoá ngoại |
-| Row Level Security 33 bảng | ✅ | 19 assertion riêng cho RLS |
-| Bộ kiểm thử nghiệp vụ | ✅ | 86 assertion, `./supabase/tests/run-local.sh` |
+| Row Level Security 35 bảng | ✅ | 21 assertion riêng cho RLS |
+| Bộ kiểm thử nghiệp vụ | ✅ | **146 assertion**, `./supabase/tests/run-local.sh` |
+| Công cụ soát dữ liệu Sheets | ✅ | `scripts/migration/` — chuẩn hoá level, bóc lịch học |
 | CI (typecheck + lint + build + test CSDL) | ✅ | `.github/workflows/ci.yml` |
 | ESLint | ✅ | `npm run lint` sạch |
+
+---
+
+## ⚠ 2b. GIAO DIỆN ĐANG CHẬM HƠN CƠ SỞ DỮ LIỆU
+
+Ngày 10/09/2026, sau khi đối soát hệ thống Google Sheets đang chạy, Founder chốt 13
+quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). **Cơ sở dữ liệu đã
+được cập nhật và kiểm thử đầy đủ. Giao diện thì chưa.**
+
+| Quyết định | CSDL | Giao diện |
+|---|---|---|
+| D1 — hai hình thức đóng học phí | ✅ đã kiểm thử | ⬜ form hợp đồng chưa có ô chọn hình thức |
+| D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ⬜ chưa có trang nào |
+| D2 — hạn 24 giờ | ✅ | 🟡 trang báo cáo vẫn ghi chữ "10 giờ" |
+| D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ⬜ form vẫn hỏi 3 trường cũ, chưa có ô trích lời học viên / timestamp / mẫu câu |
+| D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | ⬜ chưa có trang bảng lương |
+| D6 — AI viết feedback | ✅ cột `authored_by` | ⬜ chưa nối AI |
+| D7 — cho học vượt | ✅ đã kiểm thử | 🟡 dashboard hiển thị được số âm nhưng chưa có cảnh báo riêng |
+| D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ⬜ chưa có trang "Cần đối soát" |
+| D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ⬜ form chỉ nhập được một đơn giá |
+| D13 — lớp nhóm một người đóng | ✅ đã kiểm thử | ⬜ form chưa có ô người đại diện đóng |
+
+**Hệ quả thực tế:** nếu dùng giao diện hiện tại để nhập dữ liệu, hợp đồng sẽ mặc định
+là gói trả trước và báo cáo sẽ luôn thiếu 3 trong 6 tiêu chí chất lượng. Phải làm xong
+mục P1 trong `TODO.md` trước khi cho giáo viên dùng thật.
 
 ---
 
@@ -107,7 +133,12 @@ Supabase project `yevsupsuelpbodwawfyw` đang **INACTIVE (tạm dừng)**, nên 
 | Ba trường bắt buộc (bài tập, recording, nhận xét) | ✅ |
 | Nhận xét riêng từng học viên (hỗ trợ lớp nhóm) | 🟡 |
 | Lưu thời điểm nộp báo cáo | ✅ |
-| **Hạn 10 giờ tính từ giờ kết thúc buổi học** | ✅ |
+| **Hạn 24 giờ tính từ giờ kết thúc buổi học** (D2) | ✅ CSDL / 🟡 giao diện còn ghi 10 giờ |
+| **6 tiêu chí chấm chất lượng + điểm QC 0–100** (D3) | ✅ CSDL / ⬜ giao diện |
+| **Lương không bị giữ vì báo cáo thiếu, chỉ gắn cờ** (D4) | ✅ |
+| **Thiếu ngày/giờ dạy ⇒ không tính lương + báo động đỏ cho GV** (D5) | ✅ |
+| **Ghi nhận nội dung do AI viết** (D6) | ✅ CSDL / ⬜ chưa nối AI |
+| **Mốc gửi phụ huynh + cảnh báo sau 3 ngày** | ✅ CSDL / ⬜ giao diện |
 | **Tự chuyển `INCOMPLETE` khi quá hạn mà còn thiếu** | ✅ |
 | **Sinh cảnh báo chất lượng đúng định dạng yêu cầu** | ✅ |
 | Cảnh báo không trùng khi quét lại | ✅ |
@@ -199,12 +230,19 @@ phải sửa cấu trúc production về sau.
 
 ## 5. Đã kiểm thử những gì
 
-### Đã kiểm thử tự động (86 assertion, `./supabase/tests/run-local.sh`)
+### Đã kiểm thử tự động (146 assertion, `./supabase/tests/run-local.sh`)
 
-Xem danh sách chi tiết ở mục 6 của `DATABASE_SCHEMA.md`. Bao phủ: vai trò mặc
-định, mã tự sinh, tuổi suy ra, đơn giá riêng từng học viên, tách ba khái niệm tài
-chính, hạn 10 giờ, cảnh báo chất lượng đúng định dạng, chống cảnh báo trùng, đóng
-băng đơn giá, quy trình duyệt lương, logic trừ/hoàn buổi, và 19 kiểm tra RLS.
+Xem danh sách chi tiết ở mục 6 của `DATABASE_SCHEMA.md`. Ngoài các quy tắc nền,
+bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheets**:
+
+- **Y Khoa**: 7 buổi tháng 7/2026 ⇒ phiếu tháng **2.370.000 ₫**, khớp chứng từ thật
+  ngày 12/08/2026 (360.000 × 7 − 150.000)
+- **Bé Ngân**: buổi 20/08 ghi nhận 179.000 ₫, buổi 05/09 ghi nhận 190.000 ₫
+- **Học vượt**: mua 1 buổi học 2 buổi ⇒ còn lại −1 kèm cảnh báo KHẨN
+- **Thiếu giờ dạy**: không vào bảng lương, báo động đỏ gửi riêng giáo viên
+- **Điểm QC**: 2/6 tiêu chí = 33 điểm (chưa đạt) → 6/6 = 100 điểm (đạt)
+- **Kỳ lương đã trả**: không bị ghi đè khi báo cáo thay đổi về sau
+- 21 kiểm tra RLS, gồm hai bảng tiền mới
 
 ### Đã kiểm thử bằng tay
 
@@ -237,6 +275,7 @@ Lý do: Supabase project đang tạm dừng và việc kích hoạt lại cần 
 
 | # | Khác biệt | Lý do |
 |---|---|---|
+| 0 | **13 quyết định ngày 10/09/2026 thay đổi mô hình nghiệp vụ** so với bản mô tả ban đầu | Bản mô tả ban đầu khác với hệ thống Google Sheets đang chạy thật. Chi tiết và căn cứ ở `DECISIONS.md` |
 | 1 | Biểu mẫu hợp đồng học phí làm sớm ở Giai đoạn 1 | Dashboard Giai đoạn 1 yêu cầu "Công nợ học phí", mà công nợ chỉ tính được khi có hợp đồng |
 | 2 | Thêm bảng `lesson_consumptions` (không có trong danh sách mục III) | Bắt buộc để tách doanh thu ghi nhận khỏi dòng tiền theo mục XII |
 | 3 | Thêm `teacher_payable_lessons`, `audit_logs`, `settings`, `teacher_rates`, `student_parents`, `lead_activities`, `teaching_report_students` | Hiện thực các yêu cầu về lương tự động, duyệt điều chỉnh, đơn giá riêng từng giáo viên, nhận xét từng học viên trong lớp nhóm |

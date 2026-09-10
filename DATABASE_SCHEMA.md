@@ -2,6 +2,7 @@
 
 **Hệ quản trị:** PostgreSQL 17 trên Supabase
 **Nguồn sự thật:** các file trong `supabase/migrations/`. Tài liệu này mô tả, không thay thế.
+**Quy tắc nghiệp vụ:** `DECISIONS.md` — mọi mục D1–D13 dưới đây đã được Founder chốt ngày 10/09/2026.
 **Khoá chính:** UUID (`gen_random_uuid()`) trên mọi bảng nghiệp vụ.
 **Tiền tệ:** `numeric(14,2)`, đơn vị VND. Không dùng float cho tiền.
 **Thời gian:** `timestamptz` cho mốc thời điểm, `date` cho ngày thuần.
@@ -136,17 +137,41 @@ Cột trạng thái:
 | Cột | Ý nghĩa |
 |---|---|
 | `status` | `draft` → `submitted` → `approved`, hoặc `incomplete` khi quá hạn mà còn thiếu |
-| `missing_fields` | `text[]` các trường bắt buộc còn thiếu |
+| `missing_fields` | `text[]` các tiêu chí còn thiếu |
 | `submitted_at` | lần bấm nộp đầu tiên (có thể còn thiếu) |
-| `completed_at` | thời điểm báo cáo ĐỦ mọi trường bắt buộc |
-| `is_late` | `completed_at > report_due_at`; nếu chưa đủ mà đã quá hạn thì `true` ngay |
+| `completed_at` | thời điểm báo cáo ĐẠT (đủ giờ dạy và điểm QC ≥ ngưỡng) |
+| `is_late` | `completed_at > report_due_at`; nếu chưa đạt mà đã quá hạn thì `true` ngay |
+| `qc_score` | 0–100, tính từ 6 tiêu chí chất lượng |
+| `authored_by` | `teacher` · `ai` · `ai_edited_by_teacher` (D6) |
+| `sent_to_parent_at` | mốc gửi phụ huynh — bước riêng do người bấm |
 
-**Quy tắc ĐỦ** (hàm `fn_report_missing_fields`):
+**Hạn nộp: 24 giờ** kể từ giờ kết thúc buổi học (D2, `settings.report_deadline_hours`).
 
-1. **Bài tập** — có dòng `homework` cho buổi học, **hoặc** `homework_summary` khác rỗng
-2. **Recording** — có dòng `recordings` cho buổi học
-3. **Nhận xét giáo viên** — `teacher_comments` khác rỗng
-4. `start_time`, `end_time` — cần cho thời lượng và lương
+### Hai tầng điều kiện khác nhau — đừng trộn lẫn
+
+**Tầng 1 — điều kiện CỨNG để tính lương (D5):** chỉ cần `start_time` và `end_time`.
+Thiếu thì buổi **không vào bảng lương** và sinh báo động đỏ gửi riêng giáo viên
+(`fn_alert_missing_lesson_time`).
+
+**Tầng 2 — 6 tiêu chí chất lượng (D3):** quyết định báo cáo ĐẠT hay chưa, nhưng
+**không giữ lương** (D4) — chỉ gắn cờ `has_video` / `has_evidence` trong
+`teacher_payable_lessons`.
+
+| # | Tiêu chí | Máy tự kiểm được? | Nguồn |
+|---|---|---|---|
+| 1 | Link video | Có | có dòng `recordings` |
+| 2 | Timestamp đối chiếu | Có | `video_timestamp` khác rỗng |
+| 3 | Trích nguyên văn lời học viên | Có | `student_quote` khác rỗng |
+| 4 | Điểm mạnh đủ sâu | **Không** | `qc_strengths_deep` — AI hoặc Founder chấm |
+| 5 | Phần cần cải thiện đủ sâu | **Không** | `qc_improvements_deep` — AI hoặc Founder chấm |
+| 6 | Homework có mẫu câu | Có | `homework.sentence_patterns` khác rỗng |
+
+`fn_score_report_qc()` cho mỗi tiêu chí trọng số bằng nhau ⇒ `qc_score` = số tiêu
+chí đạt × 100 / 6. Hai tiêu chí "đủ sâu" chưa chấm (`NULL`) tính là **chưa đạt**,
+nên một báo cáo mới nhập không bao giờ tự nhiên đạt 100 điểm.
+
+Báo cáo **ĐẠT** khi có đủ giờ dạy **và** `qc_score >= settings.qc_min_score` (mặc
+định 60).
 
 `fn_refresh_report_status()` tính lại trạng thái; chạy tự động qua trigger khi
 báo cáo, bài tập hoặc recording thay đổi. **Báo cáo đã `approved` không bị hạ cấp.**
@@ -160,9 +185,55 @@ báo cáo, bài tập hoặc recording thay đổi. **Báo cáo đã `approved` 
 |---|---|
 | `tuition_packages` | **catalogue gợi ý**. `default_price_per_lesson` chỉ để điền nhanh |
 | `student_enrollments` | **hợp đồng học phí** — nơi chứa giá thật của từng học viên |
+| `tuition_rates` | **lịch sử đơn giá theo ngày hiệu lực** (D11) |
+| `tuition_statements` | **phiếu đối soát tháng** cho hình thức đóng cuối tháng (D1) |
 | `lesson_consumptions` | cầu nối dạy học ↔ tiền: mỗi buổi hoàn tất sinh 1 dòng/học viên |
 | `payments` | **DÒNG TIỀN VÀO**. `payment_code` tự sinh `TT25090001` |
 | `expenses` | chi phí; `payroll_id` để không đếm hai lần với lương giáo viên |
+
+### Hai hình thức đóng học phí (D1)
+
+`student_enrollments.billing_mode`:
+
+| Giá trị | Nghĩa | `lessons_purchased` / `net_amount` | Số buổi còn lại |
+|---|---|---|---|
+| `prepaid_package` | Mua gói trước ("Gói 10 buổi") | **bắt buộc** | có, được phép ÂM |
+| `monthly_postpaid` | Học trước, đối soát cuối tháng ("Cuối tháng") | để trống | không áp dụng (`NULL`) |
+| `undetermined` | Chưa chốt | để trống | không áp dụng |
+
+Ràng buộc `chk_enrollment_prepaid_shape` bắt buộc gói trả trước phải có số buổi và
+tổng tiền; trả sau theo tháng thì hai cột đó trống vì **chỉ biết khi chốt tháng**.
+
+### Đơn giá học phí có ngày hiệu lực (D11)
+
+`tuition_rates` hoạt động giống `teacher_rates`: `fn_resolve_tuition_rate(enrollment, ngày)`
+trả về đơn giá có hiệu lực vào **ngày buổi học diễn ra**, nếu bảng trống thì lấy
+`student_enrollments.price_per_lesson`.
+
+Ca thật: Bé Ngân **179.000 ₫ đến 31/08/2026**, rồi **190.000 ₫ từ 01/09/2026**. Buổi
+ngày 20/08 ghi nhận 179.000, buổi ngày 05/09 ghi nhận 190.000 — đổi giá không làm
+sai doanh thu buổi cũ.
+
+### Lớp nhóm và chiết khấu tháng (D13)
+
+`headcount` (số người) và `monthly_discount_amount` (chiết khấu cố định mỗi tháng).
+Lớp nhóm dùng **một hợp đồng** do một người đại diện đóng (`payer_student_id`), nhưng
+vẫn là **nhiều học viên riêng** trong `class_students` để điểm danh và nhận xét từng người.
+
+Ca thật Y Khoa: 3 người, 360.000 ₫/buổi cho cả nhóm (= 120.000 × 3), chiết khấu
+150.000 ₫/tháng. 7 buổi tháng 7/2026 ⇒ phiếu tháng **2.370.000 ₫**, đúng bằng chứng
+từ thật ngày 12/08/2026.
+
+`fn_build_tuition_statement()` chỉ trừ chiết khấu khi tháng đó **thực sự có buổi học** —
+tránh tạo ra số phải trả âm cho tháng không dạy.
+
+### Cho học vượt (D7)
+
+`fn_pick_enrollment()` **không** đòi còn buổi. Thứ tự chọn: đúng lớp → cùng chương
+trình → còn lại; trong đó gói còn buổi được ưu tiên trước gói đã hết. Hệ quả:
+
+- Học viên có nhiều gói: buổi mới tự trừ vào gói còn buổi (FIFO)
+- Học viên hết gói: số buổi còn lại đi xuống **âm**, sinh cảnh báo `lessons_overdrawn` mức KHẨN
 
 `student_enrollments` quan trọng nhất:
 
@@ -192,14 +263,23 @@ buổi học thay đổi:
 | `teacher_payroll` | kỳ lương: `draft` → `pending_review` → `approved` → `paid` |
 | `teacher_payroll_adjustments` | thưởng/trừ; `amount` âm là trừ |
 
-Điều kiện sinh `teacher_payable_lessons` (`fn_generate_payable_lesson`):
+Điều kiện sinh `teacher_payable_lessons` (`fn_generate_payable_lesson`) — **đã đổi
+theo D4/D5**:
 
 1. `lessons.status = 'completed'`
-2. báo cáo tồn tại với `status ∈ ('submitted','approved')` và **không còn trường thiếu**
+2. **có ngày và giờ dạy** — từ `teaching_reports.start_time/end_time` hoặc
+   `lessons.actual_start_at/actual_end_at`. Đây là điều kiện CỨNG duy nhất (D5)
 3. đã điểm danh cho **toàn bộ** học viên đang hoạt động của lớp
 
+Báo cáo thiếu video / bài tập / nhận xét **vẫn được tính lương** (D4); chỉ gắn cờ
+`has_video`, `has_evidence`, `qc_score`, `sent_to_parent` để Founder thấy.
+
 Nếu một trong ba điều kiện mất đi, dòng `pending` bị rút lại. Dòng đã
-`included`/`paid` trong kỳ lương đã duyệt thì không bị sửa.
+`included`/`paid` trong kỳ lương đã duyệt thì **không bao giờ** bị sửa — kể cả khi
+báo cáo thay đổi về sau.
+
+`teacher_payroll` còn gộp thêm: `lessons_missing_evidence`, `lessons_missing_video`,
+`avg_qc_score`, `kpi_target`, `kpi_met` (KPI mặc định 20 buổi/tháng).
 
 Đơn giá do `fn_resolve_teacher_rate()` chọn: theo lớp → theo thời lượng → mặc định.
 `rate_source` ghi lại đã dùng loại nào; `missing` nghĩa là chưa cấu hình đơn giá.
@@ -266,12 +346,13 @@ viên truy vấn view tài chính chỉ nhận về 0 dòng.
 | `v_expenses_daily` | chi phí theo ngày và hạng mục |
 | `v_teacher_payroll_summary` | kỳ lương + số giờ dạy |
 | `v_quality_alerts` | cảnh báo báo cáo đang mở |
+| `v_data_review` | dòng di trú cần Founder đối soát (D8) |
 
 ---
 
 ## 5. Row Level Security
 
-RLS được bật trên **toàn bộ 33 bảng**. Không dùng `FORCE ROW LEVEL SECURITY` —
+RLS được bật trên **toàn bộ 35 bảng** (thêm `tuition_rates`, `tuition_statements`). Không dùng `FORCE ROW LEVEL SECURITY` —
 chủ bảng cần bỏ qua RLS để các trigger SECURITY DEFINER (audit, tính lại báo cáo,
 sinh buổi tính lương) và các hàm kiểm quyền đọc `users` không bị đệ quy vào chính
 policy của mình.
@@ -287,7 +368,7 @@ policy của mình.
 | `lessons` | toàn quyền | đọc lớp mình; sửa buổi mình dạy (ghi giờ, đánh dấu đã dạy); **không tạo/xoá** |
 | `attendance` | toàn quyền | ghi cho buổi mình dạy, **chỉ học viên có trong lớp đó** |
 | `teaching_reports`, `teaching_report_students`, `homework`, `recordings` | toàn quyền | đọc/ghi trong phạm vi lớp mình; báo cáo đã `approved` thành chỉ đọc |
-| `student_enrollments`, `lesson_consumptions`, `payments`, `expenses` | toàn quyền | **không có policy nào ⇒ hoàn toàn vô hình** |
+| `student_enrollments`, `tuition_rates`, `tuition_statements`, `lesson_consumptions`, `payments`, `expenses` | toàn quyền | **không có policy nào ⇒ hoàn toàn vô hình** |
 | `teacher_payable_lessons`, `teacher_payroll`, `teacher_payroll_adjustments` | toàn quyền + duyệt | **chỉ đọc của chính mình** |
 | `leads`, `lead_activities` | toàn quyền | không truy cập |
 | `placement_tests`, `trial_classes` | toàn quyền | chỉ bản ghi mình phụ trách |
@@ -295,21 +376,22 @@ policy của mình.
 | `audit_logs` | chỉ đọc | không truy cập |
 
 Điểm mấu chốt: **không tồn tại policy nào** cho giáo viên trên `payments`,
-`expenses`, `student_enrollments`, `lesson_consumptions`. Lợi nhuận và doanh thu
+`expenses`, `student_enrollments`, `tuition_rates`, `tuition_statements`,
+`lesson_consumptions`. Lợi nhuận và doanh thu
 của trung tâm không thể rò rỉ qua API, kể cả khi code frontend có lỗi.
 
 ---
 
 ## 6. Kiểm thử
 
-`supabase/tests/smoke.sql` — **86 assertion** chạy trên cluster PostgreSQL sạch,
+`supabase/tests/smoke.sql` — **146 assertion** chạy trên cluster PostgreSQL sạch,
 bao gồm:
 
 - hồ sơ người dùng tự tạo, vai trò mặc định là `teacher`
 - hai học viên với hai đơn giá khác nhau (250.000 và 280.000)
 - tiền mặt 3.000.000 vào nhưng doanh thu ghi nhận = 0 (chưa dạy buổi nào)
 - dạy 1 buổi → trừ 1 buổi, ghi nhận đúng 250.000, tiền mặt **không** đổi
-- hạn nộp = giờ kết thúc + 10 giờ
+- hạn nộp = giờ kết thúc + 24 giờ (D2)
 - báo cáo thiếu + quá hạn → `INCOMPLETE` + cảnh báo đúng nội dung; quét lại không trùng
 - bổ sung đủ → `submitted`, sinh buổi tính lương 300.000, vẫn ghi nhận là nộp trễ
 - tăng đơn giá sau đó **không** làm sai lương buổi đã dạy
@@ -318,5 +400,19 @@ bao gồm:
 - RLS: giáo viên không đọc được thanh toán/chi phí/hợp đồng/doanh thu; không thấy
   đơn giá hay bảng lương của giáo viên khác; không tự nâng quyền; không điểm danh
   học viên ngoài lớp
+
+Và các ca nghiệp vụ thật lấy từ Google Sheets (mục 11 của `smoke.sql`):
+
+- **Bé Ngân** — đơn giá đổi giữa kỳ, buổi tháng 8 và tháng 9 ghi nhận hai mức khác nhau
+- **Y Khoa** — lớp nhóm 3 người trả sau theo tháng, phiếu tháng 7 ra đúng **2.370.000 ₫**
+  bằng chứng từ thật
+- **Học vượt** — mua 1 buổi học 2 buổi ⇒ còn lại −1, cảnh báo KHẨN; có gói thứ hai thì
+  buổi mới trừ theo FIFO
+- **Thiếu giờ dạy** — không vào bảng lương, báo động đỏ gửi riêng giáo viên; bổ sung giờ
+  thì vào lương ngay
+- **Chưa gửi phụ huynh quá 3 ngày** — có cảnh báo; buổi mới học hôm nay thì chưa
+- **Kỳ lương đã trả** — không bị ghi đè khi báo cáo thay đổi về sau
+- **Điểm QC** — 2/6 tiêu chí = 33 điểm (chưa đạt), 6/6 = 100 điểm (đạt)
+- **RLS** — giáo viên không đọc được `tuition_rates` và `tuition_statements`
 
 Chạy: `./supabase/tests/run-local.sh` (không cần Docker).

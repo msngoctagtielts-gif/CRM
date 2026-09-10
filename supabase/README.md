@@ -23,6 +23,7 @@ File migration đã push thì **không sửa nội dung nữa** — sai thì vi�
 | `0010_views.sql` | view báo cáo (`security_invoker = on`) |
 | `0011_rls.sql` | Row Level Security cho toàn bộ bảng |
 | `0012_seed_reference.sql` | dữ liệu tham chiếu (chương trình, cấp độ CEFR, gói mẫu) |
+| `0013_business_model_alignment.sql` | chỉnh theo mô hình nghiệp vụ thật sau khi đối soát Google Sheets — xem `DECISIONS.md` |
 
 ## Chạy lần đầu
 

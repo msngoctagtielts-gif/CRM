@@ -111,14 +111,67 @@ export const LEAD_STATUS: Record<Enums<'lead_status'>, { label: string; tone: To
   lost: { label: 'Không thành', tone: 'danger' },
 }
 
-/** Trường bắt buộc còn thiếu trong báo cáo giảng dạy. */
+/**
+ * Trường còn thiếu trong báo cáo giảng dạy.
+ *
+ * `start_time` / `end_time` là điều kiện CỨNG — thiếu thì buổi không được tính
+ * lương (DECISIONS.md D5). Sáu khoá còn lại là bộ tiêu chí chấm chất lượng (D3);
+ * thiếu thì vẫn tính lương, chỉ gắn cờ (D4).
+ */
 export const MISSING_FIELD: Record<string, string> = {
-  homework: 'Bài tập về nhà',
-  recording: 'Link recording',
-  teacher_comments: 'Nhận xét của giáo viên',
   start_time: 'Giờ bắt đầu',
   end_time: 'Giờ kết thúc',
+  video: 'Link video',
+  timestamp: 'Timestamp đối chiếu',
+  student_quote: 'Trích nguyên văn lời học viên',
+  strengths_deep: 'Điểm mạnh đủ sâu',
+  improvements_deep: 'Phần cần cải thiện đủ sâu',
+  homework_pattern: 'Homework có mẫu câu',
+  // Khoá cũ, giữ lại để báo cáo di trú từ trước vẫn hiển thị đúng.
+  recording: 'Link video',
+  homework: 'Bài tập về nhà',
+  teacher_comments: 'Nhận xét của giáo viên',
   report: 'Chưa nộp báo cáo',
+}
+
+/** Sáu tiêu chí chấm chất lượng feedback, theo đúng thứ tự của bảng chấm (D3). */
+export const QC_CRITERIA = [
+  { key: 'video', label: 'Link video', auto: true },
+  { key: 'timestamp', label: 'Timestamp đối chiếu', auto: true },
+  { key: 'student_quote', label: 'Trích nguyên văn lời học viên', auto: true },
+  { key: 'strengths_deep', label: 'Điểm mạnh đủ sâu', auto: false },
+  { key: 'improvements_deep', label: 'Phần cần cải thiện đủ sâu', auto: false },
+  { key: 'homework_pattern', label: 'Homework có mẫu câu', auto: true },
+] as const
+
+/** Ngưỡng điểm QC đạt. Giá trị thật đọc từ bảng settings; đây là mặc định. */
+export const QC_MIN_SCORE = 60
+
+export function qcTone(score: number | null | undefined): Tone {
+  if (score === null || score === undefined) return 'neutral'
+  if (score >= 80) return 'success'
+  if (score >= QC_MIN_SCORE) return 'gold'
+  return 'danger'
+}
+
+export const BILLING_MODE: Record<Enums<'billing_mode'>, { label: string; short: string }> = {
+  prepaid_package: { label: 'Gói trả trước', short: 'Gói' },
+  monthly_postpaid: { label: 'Đóng cuối tháng', short: 'Cuối tháng' },
+  undetermined: { label: 'Chưa xác định', short: 'Chưa rõ' },
+}
+
+export const REPORT_AUTHOR: Record<Enums<'report_author'>, string> = {
+  teacher: 'Giáo viên viết',
+  ai: 'AI viết',
+  ai_edited_by_teacher: 'AI viết, giáo viên sửa',
+}
+
+export const STATEMENT_STATUS: Record<string, { label: string; tone: Tone }> = {
+  draft: { label: 'Nháp', tone: 'neutral' },
+  issued: { label: 'Đã gửi', tone: 'warning' },
+  partial: { label: 'Trả một phần', tone: 'warning' },
+  paid: { label: 'Đã thu đủ', tone: 'success' },
+  cancelled: { label: 'Đã huỷ', tone: 'danger' },
 }
 
 export const ATTITUDE: Record<string, string> = {

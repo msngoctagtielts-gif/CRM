@@ -26,10 +26,33 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [ ] **Lên lịch quét cảnh báo mỗi giờ** — pg_cron hoặc n8n gọi
       `POST /api/cron/scan-reports`. *Không có bước này thì cảnh báo 10 giờ
       không bao giờ tự phát sinh.*
-- [ ] **Xác nhận giả định A1–A10** trong `PROJECT_PLAN.md` mục 6
+- [ ] **Xác nhận giả định A1–A13** còn lại trong `PROJECT_PLAN.md` mục 6
+      (A1–A12 về tiền tệ, múi giờ, lớp nhóm; A13 về việc gửi phụ huynh có cần người duyệt)
+- [ ] **Điền dữ liệu còn thiếu** của 21 lớp — danh sách ở cuối `DECISIONS.md`:
+      6 lớp chưa có lịch học, 3 lớp thiếu giờ kết thúc, 1 lớp không rõ sáng/chiều,
+      hình thức đóng của Bảo Ngọc, tình trạng của Công Duy, ai đứng tên đóng lớp Y Khoa
 - [ ] **Bật sao lưu** (gói Pro tự sao lưu hằng ngày; gói Free cần `supabase db dump` định kỳ)
 
-## P1 — Hoàn thiện Giai đoạn 1
+## P1 — Đồng bộ giao diện với mô hình nghiệp vụ mới
+
+*CSDL đã xong và đã kiểm thử; đây là phần giao diện còn thiếu. Xem `DECISIONS.md`.*
+
+- [ ] **Form báo cáo giảng dạy theo 6 tiêu chí** (D3) — thêm ô: trích nguyên văn lời
+      học viên, timestamp đối chiếu, điểm mạnh, phần cần cải thiện, mẫu câu cho
+      homework. Hiện điểm QC và cho biết còn thiếu tiêu chí nào
+- [ ] **Sửa chữ "10 giờ" thành "24 giờ"** trong trang báo cáo và trang cảnh báo (D2)
+- [ ] **Ô chọn hình thức đóng** trong form hợp đồng (D1): gói trả trước / cuối tháng
+- [ ] **Nhập nhiều mốc đơn giá** theo ngày hiệu lực (D11) — ca Bé Ngân
+- [ ] **Ô người đại diện đóng** cho lớp nhóm (D13) — ca Y Khoa
+- [ ] **Trang phiếu học phí tháng** (D1): lập phiếu → gửi → ghi nhận thu
+- [ ] **Trang "Cần đối soát"** đọc từ `v_data_review` (D8)
+- [ ] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7)
+- [ ] Gọi thêm `fn_alert_missing_lesson_time`, `fn_alert_lesson_balance`,
+      `fn_alert_not_sent_to_parent` trong `/api/cron/scan-reports`
+- [ ] **Nối AI viết feedback từ link video** (D6) — chọn model, và giữ bước người
+      bấm gửi phụ huynh (giả định A13)
+
+## P1b — Hoàn thiện Giai đoạn 1
 
 - [ ] Trang **sửa hồ sơ học viên** (`/students/[id]/edit`) — server action `updateStudent` đã có, thiếu giao diện
 - [ ] **Nút duyệt báo cáo** cho Founder trong trang báo cáo — action `approveReport` đã có, chưa gắn vào UI
