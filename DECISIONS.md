@@ -152,6 +152,54 @@ Khoá được dán vào khung chat nên đã nằm trong lịch sử hội tho�
 <https://aistudio.google.com/apikey> **xoá khoá cũ và tạo khoá mới**, rồi chỉ đặt
 thẳng vào biến môi trường. Khoá chưa bao giờ được ghi vào Git.
 
+## 10/09/2026 — Chạy thật trên gói Free thay vì nâng Pro
+
+Founder chưa có ngân sách nâng Pro (~25 USD/tháng). Trước đó tôi đã khuyến nghị
+phải nâng Pro trước khi nhập dữ liệu thật; khuyến nghị đó vẫn đúng về mặt kỹ
+thuật, nhưng **không nâng vẫn chạy thật được** nếu bù hai thứ mà Pro cho sẵn.
+
+| Thiếu gì ở gói Free | Bù bằng gì, miễn phí |
+|---|---|
+| Project tạm dừng sau 7 ngày ít hoạt động | `.github/workflows/keepalive.yml` — một truy vấn mỗi ngày |
+| Không có sao lưu hằng ngày, không tải được bản sao lưu | `.github/workflows/backup.yml` — `pg_dump` + mã hoá AES-256 mỗi đêm, giữ 90 ngày |
+
+Dung lượng 500 MB không phải vấn đề: toàn bộ dữ liệu kiểm thử nén lại chỉ 72 KB.
+
+### Đã kiểm thật quy trình phục hồi
+
+Một bản sao lưu không phục hồi được thì không phải bản sao lưu. Đã dump từ CSDL
+có đủ 35 bảng và dữ liệu, phục hồi sang CSDL trắng khác, đối chiếu: **mọi số liệu
+khớp tuyệt đối** (kể cả tổng doanh thu 4.598.000 ₫), đủ 35 bảng, 10 view, 69
+policy RLS, 106 khoá ngoại. Mật khẩu sai thì không giải mã được.
+
+Hai lỗi phát hiện khi kiểm và đã vá:
+
+1. `pg_dump --schema=public` **không ghi câu `CREATE EXTENSION`** — thiếu `citext`
+   ở đích là bảng không tạo được, lần thử đầu hỏng 142 câu lệnh. Nay danh sách
+   extension được đọc từ CSDL và lưu kèm.
+2. **Thứ tự nạp sai.** `public.users` có khoá ngoại tới `auth.users`, phải nạp tài
+   khoản đăng nhập trước. Nạp ngược thì bảng phục hồi xong nhưng **mất khoá
+   ngoại** — lỗi âm thầm, nhiều tháng sau mới lộ.
+
+Ngoài ra: kết nối trực tiếp `db.<ref>.supabase.co` **chỉ có IPv6**, mà máy chạy
+GitHub Actions chỉ có IPv4 — bắt buộc dùng chuỗi Session pooler.
+
+### ⚠ Rủi ro chấp nhận một cách có ý thức
+
+**Cửa sổ mất dữ liệu tối đa 24 giờ.** Sao lưu chạy mỗi đêm; CSDL hỏng lúc 4h
+chiều thì mọi thứ nhập từ 1h30 sáng hôm đó mất hẳn. Pro + PITR thu hẹp còn vài
+giây. Với trung tâm, mất một ngày nhập liệu là nhập lại được — khó chịu, không
+phải thảm hoạ. Muốn giảm còn 12 giờ thì thêm một mốc chạy buổi trưa, vẫn 0 đồng.
+
+Nên nâng Pro khi: có người ngoài Founder phụ thuộc hệ thống để làm việc, hoặc
+CSDL vượt 400 MB, hoặc đã từng xoá nhầm dữ liệu thật.
+
+### Về "dùng Claude miễn phí"
+
+Anthropic **không có gói API miễn phí** cho Claude. Claude Code (công cụ đang
+dựng hệ thống này) cũng không gọi được từ trong ứng dụng. Nên phần AI của hệ
+thống dùng Gemini; Claude chỉ tham gia ở khâu phát triển.
+
 ---
 
 ## Còn thiếu để hoàn tất việc nhập dữ liệu

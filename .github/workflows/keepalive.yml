@@ -1,0 +1,65 @@
+name: Keep Supabase awake
+
+# Gói Free của Supabase tạm dừng project sau 7 ngày ít hoạt động. Vài truy vấn
+# mỗi ngày là đủ để không bị dừng, nên job này gửi một truy vấn nhẹ hằng ngày.
+# Nếu project bị dừng, app sập cho tới khi có người vào bấm "Resume" — với một
+# trung tâm đang dạy thật thì đó là mất buổi làm việc.
+#
+# Miễn phí: GitHub Actions cho 2.000 phút/tháng với repo riêng tư. Job này chạy
+# vài giây mỗi ngày.
+#
+# ⚠ GitHub TỰ TẮT workflow theo lịch nếu repo không có commit nào trong 60 ngày.
+#    Nhận email báo thì vào tab Actions bấm bật lại.
+
+on:
+  schedule:
+    # 01:00 UTC = 08:00 giờ Việt Nam, mỗi ngày.
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Gửi truy vấn giữ project hoạt động
+    runs-on: ubuntu-latest
+    # Đưa secret lên env ở cấp job vì ngữ cảnh `secrets` KHÔNG dùng được trong
+    # `if:` của step — viết `if: secrets.X != ''` sẽ luôn sai.
+    env:
+      APP_URL: ${{ secrets.APP_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Truy vấn Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "Thiếu secret SUPABASE_URL hoặc SUPABASE_ANON_KEY — xem docs/FREE_TIER.md" >&2
+            exit 1
+          fi
+
+          # Gọi PostgREST để truy vấn thật sự chạm vào PostgreSQL. RLS sẽ trả 0
+          # dòng cho vai trò anon — không sao, cái cần là có hoạt động ở CSDL.
+          code=$(curl -s -o /tmp/out.txt -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/settings?select=key&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --max-time 30)
+
+          echo "HTTP $code"
+          # 200 và 206 là bình thường. 401/403 nghĩa là khoá sai. 5xx hoặc lỗi
+          # mạng nghĩa là project có thể đã bị dừng — phải biết ngay.
+          case "$code" in
+            200|206) echo "Project đang hoạt động." ;;
+            401|403) echo "Khoá anon bị từ chối — kiểm tra lại secret." >&2; exit 1 ;;
+            *) echo "Bất thường. Nội dung trả về:" >&2; cat /tmp/out.txt >&2; exit 1 ;;
+          esac
+
+      - name: Quét cảnh báo (nếu app đã triển khai)
+        # Không bắt buộc. Chưa triển khai app thì bỏ qua, không làm hỏng job.
+        if: env.APP_URL != '' && env.CRON_SECRET != ''
+        run: |
+          set -euo pipefail
+          curl -sS -X POST "$APP_URL/api/cron/scan-reports" \
+            -H "Authorization: Bearer $CRON_SECRET" --max-time 60 | head -c 500
+          echo

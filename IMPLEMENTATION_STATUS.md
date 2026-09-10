@@ -296,8 +296,9 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
    kiểm bundle trình duyệt không chứa khoá, endpoint hay header xác thực nào.
    Còn lại: chưa chạy qua giao diện web thật vì chưa có tài khoản Founder
 
-Chưa nhập dữ liệu học viên thật nào — cố ý, vì project còn ở gói Free và chưa có
-tài khoản Founder.
+Chưa nhập dữ liệu học viên thật nào — vì chưa có tài khoản Founder. Gói Free không
+còn là rào cản: đã có phương án sao lưu và chống tạm dừng bằng GitHub Actions, kiểm
+thật xong (`docs/FREE_TIER.md`).
 
 ---
 

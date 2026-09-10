@@ -12,9 +12,18 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       (Singapore). Project cũ ở Sydney không bị chạm tới.
 - [x] ~~Áp migration~~ → 16/16 đã áp, đối chiếu schema khớp tuyệt đối
 - [x] ~~Kiểm tra Advisors~~ → đã vá lỗ hổng quyền gọi hàm (0015, 0016)
-- [ ] **NÂNG LÊN GÓI PRO** trước khi nhập dữ liệu học viên thật. Gói Free tự tạm
-      dừng khi không dùng và **không có sao lưu hằng ngày** — chính lý do project
-      cũ bị ngừng. Đây là việc quan trọng nhất còn lại ở mức P0.
+- [x] ~~**NÂNG LÊN GÓI PRO**~~ → Founder chưa có ngân sách. Đã làm phương án miễn phí
+      thay thế, xem `docs/FREE_TIER.md`:
+      - `.github/workflows/keepalive.yml` — truy vấn mỗi ngày để project không bị
+        tạm dừng
+      - `.github/workflows/backup.yml` — dump + mã hoá AES-256 mỗi đêm, giữ 90 ngày
+      - `scripts/backup/{dump,restore}.sh` — **đã kiểm thật**: dump rồi phục hồi
+        sang CSDL trắng, mọi số liệu khớp tuyệt đối
+      - ⚠ Rủi ro còn lại không bù được: **cửa sổ mất dữ liệu tối đa 24 giờ**
+- [ ] ⛔ **Đặt 4 secret trên GitHub** để hai workflow trên chạy được:
+      `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_DB_URL` (chuỗi **Session
+      pooler**, không phải kết nối trực tiếp), `BACKUP_PASSPHRASE`.
+      Hướng dẫn: `docs/FREE_TIER.md` mục 6
 - [ ] **Tạo tài khoản Founder** trong Supabase Studio, rồi nâng quyền:
       ```sql
       update public.users set role_code = 'founder' where email = '<email>';

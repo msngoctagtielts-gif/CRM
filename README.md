@@ -65,6 +65,8 @@ npm run dev
 | `npm run lint` | kiểm tra ESLint |
 | `npm run test:unit` | kiểm thử phần logic AI (không cần mạng, không cần khoá) |
 | `./supabase/tests/run-local.sh` | kiểm thử nghiệp vụ trên PostgreSQL tạm (không cần Docker) |
+| `./scripts/backup/dump.sh` | sao lưu CSDL ra tệp đã mã hoá (xem `docs/FREE_TIER.md`) |
+| `./scripts/backup/restore.sh` | phục hồi từ bản sao lưu |
 | `npm run db:types` | sinh lại type từ Supabase (cần Docker) |
 | `python3 scripts/gen-types.py <DB_URL>` | sinh lại type khi không có Docker |
 | `./supabase/tests/run-local.sh` | **chạy 86 kiểm thử nghiệp vụ** trên PostgreSQL tạm |
