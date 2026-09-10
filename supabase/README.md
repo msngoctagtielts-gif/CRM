@@ -24,13 +24,19 @@ File migration đã push thì **không sửa nội dung nữa** — sai thì vi�
 | `0011_rls.sql` | Row Level Security cho toàn bộ bảng |
 | `0012_seed_reference.sql` | dữ liệu tham chiếu (chương trình, cấp độ CEFR, gói mẫu) |
 | `0013_business_model_alignment.sql` | chỉnh theo mô hình nghiệp vụ thật sau khi đối soát Google Sheets — xem `DECISIONS.md` |
+| `0014_payer_can_be_guardian.sql` | người đóng học phí có thể không phải học viên (D14) |
+| `0015_lock_down_function_execute.sql` | **vá bảo mật**: thu hồi quyền gọi hàm của `anon` |
+| `0016_tuition_functions_security_invoker.sql` | **vá bảo mật**: hai hàm học phí chịu RLS |
 
 ## Chạy lần đầu
+
+**Project đang dùng:** `zyzxqthlgrunkxohvhku` — vùng ap-southeast-1 (Singapore),
+PostgreSQL 17.6. Toàn bộ 16 migration đã được áp ngày 10/09/2026.
 
 ```bash
 # 1. Đăng nhập & liên kết project
 supabase login
-supabase link --project-ref <project-ref>
+supabase link --project-ref zyzxqthlgrunkxohvhku
 
 # 2. Áp toàn bộ migration
 supabase db push

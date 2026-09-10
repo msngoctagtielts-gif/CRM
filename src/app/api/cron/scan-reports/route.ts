@@ -31,17 +31,28 @@ export async function POST(request: Request) {
 
   try {
     const supabase = createAdminClient()
-    const { data, error } = await supabase.rpc('fn_scan_overdue_reports')
 
-    if (error) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    // Bốn phép quét chạy cùng lúc; mỗi phép sinh một loại cảnh báo riêng.
+    const [overdue, missingTime, balance, notSent] = await Promise.all([
+      supabase.rpc('fn_scan_overdue_reports'),
+      supabase.rpc('fn_alert_missing_lesson_time'),
+      supabase.rpc('fn_alert_lesson_balance'),
+      supabase.rpc('fn_alert_not_sent_to_parent'),
+    ])
+
+    const failed = [overdue, missingTime, balance, notSent].find((r) => r.error)
+    if (failed?.error) {
+      return NextResponse.json({ ok: false, error: failed.error.message }, { status: 500 })
     }
 
-    const rows = Array.isArray(data) ? data : []
+    const rows = Array.isArray(overdue.data) ? overdue.data : []
     return NextResponse.json({
       ok: true,
       scanned_at: new Date().toISOString(),
-      overdue_lessons: rows.length,
+      overdue_reports: rows.length,
+      lessons_missing_time: missingTime.data ?? 0,
+      lesson_balance_alerts: balance.data ?? 0,
+      reports_not_sent_to_parent: notSent.data ?? 0,
       lessons: rows,
     })
   } catch (error) {

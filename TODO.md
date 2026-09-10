@@ -8,10 +8,13 @@
 
 Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thống.
 
-- [ ] **Quyết định về Supabase project.** `yevsupsuelpbodwawfyw` đang tạm dừng.
-      Founder xác nhận: dùng project này (và có dữ liệu cũ không?) hay tạo project mới?
-      *Không áp migration cho tới khi có câu trả lời.*
-- [ ] **Áp migration** lên project đã chọn: `supabase link` → `supabase db push`
+- [x] ~~Quyết định về Supabase project~~ → đã dùng project mới `zyzxqthlgrunkxohvhku`
+      (Singapore). Project cũ ở Sydney không bị chạm tới.
+- [x] ~~Áp migration~~ → 16/16 đã áp, đối chiếu schema khớp tuyệt đối
+- [x] ~~Kiểm tra Advisors~~ → đã vá lỗ hổng quyền gọi hàm (0015, 0016)
+- [ ] **NÂNG LÊN GÓI PRO** trước khi nhập dữ liệu học viên thật. Gói Free tự tạm
+      dừng khi không dùng và **không có sao lưu hằng ngày** — chính lý do project
+      cũ bị ngừng. Đây là việc quan trọng nhất còn lại ở mức P0.
 - [ ] **Tạo tài khoản Founder** trong Supabase Studio, rồi nâng quyền:
       ```sql
       update public.users set role_code = 'founder' where email = '<email>';
@@ -22,7 +25,9 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [ ] **Kiểm thử end-to-end trên Supabase thật** — toàn bộ mục 5 "Chưa kiểm thử"
       trong `IMPLEMENTATION_STATUS.md`: đăng nhập, tạo học viên, tạo lớp, sinh buổi,
       nộp báo cáo, ghi nhận thanh toán, xem dashboard
-- [ ] **Kiểm tra Advisors** trong Supabase Studio → Security, xử lý mọi cảnh báo
+- [ ] Xem xét chuyển extension `citext` ra khỏi schema `public` (Advisor báo WARN).
+      Tôi chưa làm vì việc này có thể làm hỏng các cột dùng kiểu citext trên một
+      CSDL đang chạy — cần kiểm thử riêng trước.
 - [ ] **Lên lịch quét cảnh báo mỗi giờ** — pg_cron hoặc n8n gọi
       `POST /api/cron/scan-reports`. *Không có bước này thì cảnh báo 10 giờ
       không bao giờ tự phát sinh.*

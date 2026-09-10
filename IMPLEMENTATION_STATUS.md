@@ -24,8 +24,24 @@ cái gì chưa làm. **Không có hạng mục nào được đánh dấu xong n
 Repository `msngoctagtielts-gif/CRM` **rỗng hoàn toàn** — không có commit nào.
 **Không có chức năng nào bị xoá hay ghi đè.**
 
-Supabase project `yevsupsuelpbodwawfyw` đang **INACTIVE (tạm dừng)**, nên chưa đọc
-được schema và **chưa áp migration nào lên đó**. Cần Founder xác nhận trước.
+## 1b. Cơ sở dữ liệu thật — ĐÃ DỰNG ✅
+
+| | |
+|---|---|
+| Project | `zyzxqthlgrunkxohvhku` |
+| Vùng | ap-southeast-1 (Singapore) — gần Việt Nam hơn project cũ ở Sydney |
+| PostgreSQL | 17.6 |
+| Gói | Free (0 ₫/tháng) |
+| Migration đã áp | **16/16** |
+| Đối chiếu với bản kiểm thử cục bộ | **khớp tuyệt đối** trên 12 chỉ số, gồm 4 mã băm MD5 |
+
+35 bảng · 10 view · 69 policy RLS · 18 enum · 100 trigger · 660 cột.
+
+Project cũ `yevsupsuelpbodwawfyw` (Sydney) **không bị chạm tới** — vẫn đang tạm dừng.
+
+> ⚠ **Gói Free tự tạm dừng khi không dùng và không có sao lưu hằng ngày.** Phải
+> nâng lên Pro trước khi nhập dữ liệu học viên thật. Đây chính là lý do project cũ
+> bị ngừng.
 
 ---
 
@@ -35,10 +51,11 @@ Supabase project `yevsupsuelpbodwawfyw` đang **INACTIVE (tạm dừng)**, nên 
 |---|---|---|
 | Next.js 15 + React 19 + TypeScript strict | ✅ | `npm run build` thành công, 19 route |
 | Tailwind CSS v4 + hệ màu thương hiệu | ✅ | Navy/Gold/White/Burgundy khai báo bằng `@theme` |
-| 13 file migration | ✅ | áp sạch trên PostgreSQL 16 và 17 |
+| 16 file migration | ✅ | đã áp lên Supabase thật và đối chiếu khớp tuyệt đối |
 | Sinh type TypeScript từ schema | ✅ | `src/types/database.types.ts`, 1.8k dòng, có cả quan hệ khoá ngoại |
 | Row Level Security 35 bảng | ✅ | 21 assertion riêng cho RLS |
-| Bộ kiểm thử nghiệp vụ | ✅ | **146 assertion**, `./supabase/tests/run-local.sh` |
+| Bộ kiểm thử nghiệp vụ | ✅ | **166 assertion**, `./supabase/tests/run-local.sh` |
+| Vá lỗ hổng quyền gọi hàm | ✅ | migration 0015, 0016 — xem `DECISIONS.md` |
 | Công cụ soát dữ liệu Sheets | ✅ | `scripts/migration/` — chuẩn hoá level, bóc lịch học |
 | CI (typecheck + lint + build + test CSDL) | ✅ | `.github/workflows/ci.yml` |
 | ESLint | ✅ | `npm run lint` sạch |
@@ -255,19 +272,26 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
 - `POST /api/cron/scan-reports` sai secret → 401
 - `POST /api/cron/scan-reports` đúng secret, thiếu service role key → 500 kèm thông báo rõ ràng
 
+### Đã kiểm thử trên Supabase thật
+
+- 16 migration áp sạch, dấu vân tay schema khớp tuyệt đối với bản cục bộ
+- Security Advisor: **không còn cảnh báo nào cho `anon`** sau khi vá
+- Tham số vận hành đọc về đúng: hạn 24 giờ, QC 60, KPI 20
+
 ### ❗ Chưa kiểm thử
 
-**Chưa có luồng nào được chạy trên một Supabase project thật.** Cụ thể chưa xác minh:
+**Chưa có luồng người dùng nào chạy end-to-end trên Supabase thật.** Cụ thể:
 
-1. Đăng nhập và đăng xuất thật qua Supabase Auth
+1. Đăng nhập và đăng xuất qua Supabase Auth — **chưa có tài khoản Founder nào**
 2. Các server action ghi dữ liệu qua PostgREST (đã kiểm logic ở tầng SQL, chưa
    kiểm qua tầng HTTP)
-3. Hành vi RLS qua PostgREST (đã kiểm trực tiếp trong PostgreSQL)
-4. Hiển thị thực tế trên điện thoại và iPad (đã thiết kế mobile-first, chưa chụp màn hình kiểm chứng)
+3. Hành vi RLS qua PostgREST (đã kiểm rất kỹ trực tiếp trong PostgreSQL)
+4. Hiển thị thực tế trên điện thoại và iPad (đã thiết kế mobile-first, chưa chụp
+   màn hình kiểm chứng)
 5. Biểu đồ Recharts với dữ liệu thật
 
-Lý do: Supabase project đang tạm dừng và việc kích hoạt lại cần Founder xác nhận
-(xem rủi ro R1). Không tự ý áp migration lên một project có thể đang chứa dữ liệu thật.
+Chưa nhập dữ liệu học viên thật nào — cố ý, vì giao diện còn chậm hơn CSDL (mục 2b)
+và project còn ở gói Free.
 
 ---
 

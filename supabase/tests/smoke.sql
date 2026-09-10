@@ -629,16 +629,52 @@ insert into public.class_students (class_id, student_id) values
   ('dddddddd-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000022'),
   ('dddddddd-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000023');
 
--- Một hợp đồng cho cả nhóm, Ms. Min đứng tên đóng (D13).
+-- Một hợp đồng cho cả nhóm. Người đứng tên đóng là Hoàng Uyên — vợ anh Max,
+-- KHÔNG phải học viên của lớp (D14).
+insert into public.parents (id, full_name, phone)
+values ('bbbbbbbb-0000-0000-0000-000000000020', 'Hoàng Uyên', '0900000020');
+
+insert into public.student_parents (student_id, parent_id, relationship, is_primary)
+values ('cccccccc-0000-0000-0000-000000000022',
+        'bbbbbbbb-0000-0000-0000-000000000020', 'spouse', true);
+
 insert into public.student_enrollments
   (id, student_id, class_id, billing_mode, headcount, lessons_purchased,
-   price_per_lesson, monthly_discount_amount, net_amount, payer_student_id,
+   price_per_lesson, monthly_discount_amount, net_amount, payer_parent_id, payer_note,
    start_date, status, paid_in_full_until, agreement_notes)
 values ('eeeeeeee-0000-0000-0000-000000000020', 'cccccccc-0000-0000-0000-000000000021',
         'dddddddd-0000-0000-0000-000000000020', 'monthly_postpaid', 3, null,
-        360000, 150000, null, 'cccccccc-0000-0000-0000-000000000021',
+        360000, 150000, null, 'bbbbbbbb-0000-0000-0000-000000000020', 'vợ anh Max',
         date '2026-07-01', 'active', date '2026-07-31',
         'Công thức Founder: 120.000 × 3 người × số buổi − 150.000/tháng');
+
+do $$
+declare b record;
+begin
+  perform public.t_assert(
+    public.fn_enrollment_payer_name('eeeeeeee-0000-0000-0000-000000000020') = 'Hoàng Uyên',
+    'người đứng tên đóng lớp Y Khoa là Hoàng Uyên, không phải học viên nào trong lớp (D14)');
+  select * into b from public.v_enrollment_balances
+   where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000020';
+  perform public.t_assert(b.payer_name = 'Hoàng Uyên', 'view số dư hiện đúng tên người đóng');
+  perform public.t_assert(b.payer_note = 'vợ anh Max',  'ghi rõ quan hệ với học viên');
+  perform public.t_assert(b.headcount = 3,              'lớp nhóm 3 người');
+
+  -- Không chỉ định người đóng ⇒ chính học viên của hợp đồng đóng.
+  perform public.t_assert(
+    public.fn_enrollment_payer_name('eeeeeeee-0000-0000-0000-000000000001') = 'Nguyễn Văn Tân',
+    'hợp đồng không chỉ định người đóng ⇒ mặc định là học viên của hợp đồng');
+
+  -- Không được đặt hai người đóng cùng lúc.
+  begin
+    update public.student_enrollments
+       set payer_student_id = 'cccccccc-0000-0000-0000-000000000021'
+     where id = 'eeeeeeee-0000-0000-0000-000000000020';
+    perform public.t_assert(false, 'lẽ ra phải chặn việc đặt hai người đóng');
+  exception when check_violation then
+    perform public.t_assert(true, 'chặn được việc đặt hai người đóng cùng một hợp đồng');
+  end;
+end $$;
 
 -- 7 buổi trong tháng 7/2026.
 do $$
@@ -951,6 +987,132 @@ begin;
       'Founder đọc được 2 mốc đơn giá của Bé Ngân');
     perform public.t_assert((select count(*) from public.tuition_statements) = 2,
       'Founder đọc được phiếu học phí tháng');
+  end $$;
+rollback;
+
+-- =============================================================================
+-- 12. QUYỀN THỰC THI HÀM (migration 0015 — vá lỗi Security Advisor)
+-- =============================================================================
+
+\echo ''
+\echo '--- 12a. anon KHÔNG gọi được hàm nhạy cảm nào ---'
+begin;
+  set local role anon;
+  do $$
+  declare v_blocked int := 0;
+  begin
+    begin perform public.fn_resolve_teacher_rate(
+      'aaaaaaaa-0000-0000-0000-000000000001', 60, null, current_date);
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_consume_lesson('00000000-0000-0000-0000-000000000000');
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_generate_payable_lesson('00000000-0000-0000-0000-000000000000');
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_recalc_payroll('00000000-0000-0000-0000-000000000000');
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_refresh_report_status('00000000-0000-0000-0000-000000000000');
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_scan_overdue_reports();
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.is_founder();
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    perform public.t_assert(v_blocked = 7,
+      'anon bị chặn cả 7 hàm thử gọi (đơn giá lương, ghi nhận doanh thu, bảng lương, báo cáo, quét)');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 12b. Giáo viên KHÔNG đọc được đơn giá lương qua hàm ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+  do $$
+  declare v_blocked int := 0;
+  begin
+    begin perform public.fn_resolve_teacher_rate(
+      'aaaaaaaa-0000-0000-0000-000000000002', 60, null, current_date);
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_consume_lesson('00000000-0000-0000-0000-000000000000');
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    begin perform public.fn_scan_overdue_reports();
+    exception when insufficient_privilege then v_blocked := v_blocked + 1; end;
+
+    perform public.t_assert(v_blocked = 3,
+      'giáo viên bị chặn: đọc đơn giá lương, ghi nhận doanh thu, quét cảnh báo');
+
+    -- Hai hàm học phí gọi được nhưng là SECURITY INVOKER nên chịu RLS:
+    -- giáo viên nhận NULL thay vì con số thật (migration 0016).
+    perform public.t_assert(
+      public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000010',
+                                     date '2026-08-20') is null,
+      'giáo viên gọi fn_resolve_tuition_rate ⇒ NULL, không lộ đơn giá học phí');
+    perform public.t_assert(
+      public.fn_enrollment_payer_name('eeeeeeee-0000-0000-0000-000000000020') is null,
+      'giáo viên gọi fn_enrollment_payer_name ⇒ NULL, không lộ tên người đóng tiền');
+
+    -- Nhưng các hàm RLS vẫn gọi được, nếu không thì không đọc được bảng nào.
+    perform public.t_assert(public.is_teacher(), 'vẫn gọi được is_teacher() cho RLS');
+    perform public.t_assert(public.current_teacher_id() is not null,
+      'vẫn gọi được current_teacher_id() cho RLS');
+    -- Mục 11 đã thêm lớp cho Ms. Sheba nên không chốt con số cụ thể ở đây;
+    -- điều cần khẳng định là RLS vẫn trả về dữ liệu, không phải 0 dòng.
+    perform public.t_assert((select count(*) from public.classes) >= 1,
+      'RLS vẫn hoạt động: đọc được lớp của mình');
+    perform public.t_assert(
+      (select bool_and(teacher_id = public.current_teacher_id())
+         from public.classes),
+      'và chỉ đọc được lớp của chính mình, không lọt lớp người khác');
+    perform public.t_assert((select count(*) from public.students) >= 1,
+      'RLS vẫn hoạt động: đọc được học viên của lớp mình');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 12c. Trigger vẫn chạy dù giáo viên không có quyền gọi hàm trigger ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+
+  -- Giáo viên sửa giờ dạy: trigger tg_lessons_derive, tg_payable_from_lesson,
+  -- tg_lesson_consume_all đều phải chạy được dù giáo viên không có EXECUTE.
+  update public.lessons
+     set actual_end_at = actual_end_at + interval '5 minutes'
+   where id = 'ffffffff-0000-0000-0000-000000000040';
+
+  do $$ begin
+    perform public.t_assert(
+      (select duration_minutes from public.lessons
+        where id = 'ffffffff-0000-0000-0000-000000000040') = 65,
+      'trigger tg_lessons_derive vẫn tính lại thời lượng (65 phút)');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 12d. Founder vẫn dùng được các hàm của mình ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '11111111-1111-1111-1111-111111111111';
+  do $$ begin
+    perform public.t_assert(public.is_founder(), 'Founder được nhận diện');
+    perform public.t_assert(
+      public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000010',
+                                     date '2026-08-20') = 179000,
+      'Founder vẫn đọc được đơn giá học phí (hàm dùng trong view)');
+    perform public.t_assert(
+      public.fn_enrollment_payer_name('eeeeeeee-0000-0000-0000-000000000020') = 'Hoàng Uyên',
+      'Founder vẫn đọc được tên người đóng (hàm dùng trong view)');
+    perform public.t_assert(
+      (select count(*) from public.v_enrollment_balances) >= 1,
+      'view số dư vẫn đọc được — chứng tỏ hàm trong view còn quyền');
   end $$;
 rollback;
 
