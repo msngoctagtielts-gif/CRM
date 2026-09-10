@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  web:
+    name: Typecheck & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Build
+        run: npm run build
+        env:
+          # Giá trị giả - build chỉ cần biến tồn tại, không gọi ra Supabase.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+
+  database:
+    name: Migrations & business-logic tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cai PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-client
+      - name: Chay kiem thu CSDL
+        run: |
+          chmod -R a+rx "${{ github.workspace }}"
+          sudo -u postgres env PGBIN="$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)" \
+            "${{ github.workspace }}/supabase/tests/run-local.sh"
