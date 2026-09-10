@@ -71,21 +71,20 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 | Quyết định | CSDL | Giao diện |
 |---|---|---|
 | D1 — hai hình thức đóng học phí | ✅ đã kiểm thử | ✅ form hỏi khác nhau theo từng hình thức |
-| D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ⬜ chưa có trang nào |
+| D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ✅ trang `/statements`: lập → chốt → thu |
 | D2 — hạn 24 giờ | ✅ | ✅ mọi chỗ đọc từ bảng `settings`, không còn chữ viết cứng |
 | D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ✅ form mới đủ 6 tiêu chí, hiện điểm ngay khi gõ |
 | D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | 🟡 form nói rõ thiếu giờ là không tính lương; chưa có trang bảng lương |
 | D6 — AI viết feedback | ✅ cột `authored_by` | 🟡 hiện được nhãn "AI viết"; chưa nối AI |
-| D7 — cho học vượt | ✅ đã kiểm thử | 🟡 dashboard hiển thị được số âm nhưng chưa có cảnh báo riêng |
-| D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ⬜ chưa có trang "Cần đối soát" |
+| D7 — cho học vượt | ✅ đã kiểm thử | ✅ thẻ "Sắp hết buổi / đã học vượt" trên dashboard |
+| D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ✅ trang `/review` |
 | D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ✅ form "Đổi đơn giá học phí" + lịch sử các mốc |
 | D13, D14 — lớp nhóm một người đóng | ✅ đã kiểm thử | ✅ chọn hoặc tạo mới người đứng tên đóng |
 | A13 — gửi phụ huynh là bước riêng | ✅ cột `sent_to_parent_at` | ✅ có nút "Đánh dấu đã gửi" |
 
-**Hệ quả thực tế còn lại:** hai biểu mẫu nhập liệu chính — báo cáo giảng dạy và hợp
-đồng học phí — đã đúng mô hình mới, đủ để bắt đầu nhập 21 lớp. Còn thiếu các màn hình
-theo dõi: phiếu học phí tháng, trang "Cần đối soát", cảnh báo học vượt trên dashboard
-và bảng lương. Xem mục P1 trong `TODO.md`.
+**Hệ quả thực tế còn lại:** giao diện đã bám đúng mô hình nghiệp vụ mới và đủ để nhập
+21 lớp thật. Hai việc còn lại của mục P1 là **trang bảng lương** (D4, D5) và **nối AI viết
+feedback từ link video** (D6). Xem `TODO.md`.
 
 ---
 

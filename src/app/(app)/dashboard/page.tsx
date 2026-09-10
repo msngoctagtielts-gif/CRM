@@ -36,7 +36,7 @@ export default async function DashboardPage({
   const supabase = await createClient()
   const settings = await getOperatingSettings()
 
-  const [metrics, alerts, dues, upcoming, recentPayments] = await Promise.all([
+  const [metrics, alerts, dues, lowBalance, upcoming, recentPayments] = await Promise.all([
     getFounderMetrics(period),
     supabase
       .from('v_quality_alerts')
@@ -50,6 +50,16 @@ export default async function DashboardPage({
       .gt('outstanding_amount', 0)
       .order('outstanding_amount', { ascending: false })
       .limit(6),
+    // D7: cho học vượt buổi, nhưng số buổi còn lại phải đập vào mắt Founder.
+    // Chỉ có nghĩa với gói trả trước; hợp đồng cuối tháng trả NULL nên bị loại.
+    supabase
+      .from('v_enrollment_balances')
+      .select('enrollment_id, student_id, lessons_remaining, price_per_lesson, payer_name, billing_mode')
+      .eq('status', 'active')
+      .eq('billing_mode', 'prepaid_package')
+      .lte('lessons_remaining', settings.alertLessonsRemaining)
+      .order('lessons_remaining', { ascending: true })
+      .limit(8),
     supabase
       .from('v_lesson_reports')
       .select('lesson_id, class_name, class_type, teacher_name, scheduled_start_at, duration_minutes, student_names')
@@ -66,8 +76,8 @@ export default async function DashboardPage({
       .limit(6),
   ])
 
-  // Công nợ cần tên học viên; view không join để RLS đơn giản.
-  const dueStudentIds = (dues.data ?? [])
+  // Công nợ và số buổi còn lại cần tên học viên; view không join để RLS đơn giản.
+  const dueStudentIds = [...(dues.data ?? []), ...(lowBalance.data ?? [])]
     .map((d) => d.student_id)
     .filter((id): id is string => !!id)
   const { data: dueStudents } = dueStudentIds.length
@@ -225,6 +235,65 @@ export default async function DashboardPage({
         </Card>
 
         {/* Hàng 4 — học phí đến hạn */}
+        {/* Hàng 5b — sắp hết buổi hoặc đã học vượt (D7) */}
+        <Card>
+          <CardHeader
+            title="Số buổi sắp hết / đã học vượt"
+            description={`Còn ${settings.alertLessonsRemaining} buổi trở xuống. Số âm là đã học vượt gói.`}
+            action={
+              <Link href="/payments" className="text-[0.8125rem] font-medium text-navy-600 hover:text-navy-900">
+                Gia hạn gói
+              </Link>
+            }
+          />
+          {(lowBalance.data ?? []).length === 0 ? (
+            <EmptyState
+              title="Không có học viên nào sắp hết buổi"
+              description="Mọi gói trả trước đều còn đủ buổi."
+            />
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Học viên</Th>
+                  <Th>Người đóng</Th>
+                  <Th align="right">Buổi còn lại</Th>
+                  <Th align="right">Đơn giá</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {(lowBalance.data ?? []).map((b) => {
+                  const s = b.student_id ? nameOf.get(b.student_id) : undefined
+                  const remaining = Number(b.lessons_remaining ?? 0)
+                  return (
+                    <tr key={b.enrollment_id}>
+                      <Td>
+                        <Link
+                          href={`/students/${b.student_id}`}
+                          className="font-medium text-navy-900 hover:text-navy-600"
+                        >
+                          {s?.full_name ?? '—'}
+                        </Link>
+                      </Td>
+                      <Td className="text-navy-600">{b.payer_name ?? '—'}</Td>
+                      <Td align="right">
+                        {remaining < 0 ? (
+                          <Badge tone="danger">học vượt {Math.abs(remaining)} buổi</Badge>
+                        ) : (
+                          <Badge tone={remaining === 0 ? 'danger' : 'warning'}>
+                            {formatNumber(remaining)} buổi
+                          </Badge>
+                        )}
+                      </Td>
+                      <Td align="right">{formatCurrency(b.price_per_lesson)}</Td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </Table>
+          )}
+        </Card>
+
         <Card>
           <CardHeader
             title="Học phí cần thu"

@@ -145,3 +145,24 @@ export function dayBoundsUTC(period: Period): { startUTC: string; endUTC: string
     endUTC: `${period.to}T23:59:59.999+07:00`,
   }
 }
+
+/**
+ * Khoảng ngày đầu–cuối của một tháng, nhận vào dạng `YYYY-MM`.
+ *
+ * Dùng cho phiếu học phí tháng: kỳ đối soát luôn là trọn một tháng dương lịch,
+ * không phụ thuộc bộ lọc đang chọn trên màn hình.
+ */
+export function monthRange(month: string): { from: string; to: string; label: string } {
+  const [y, m] = month.split('-').map(Number)
+  return {
+    from: iso(y, m, 1),
+    to: iso(y, m, daysInMonth(y, m)),
+    label: `${String(m).padStart(2, '0')}/${y}`,
+  }
+}
+
+/** Tháng hiện tại theo giờ trung tâm, dạng `YYYY-MM` — giá trị mặc định của ô chọn tháng. */
+export function currentMonth(now: Date = new Date()): string {
+  const p = localParts(now)
+  return `${p.year}-${String(p.month).padStart(2, '0')}`
+}

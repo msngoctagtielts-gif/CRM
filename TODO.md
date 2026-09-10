@@ -54,9 +54,10 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       đóng mốc cũ và mở mốc mới, có kiểm thử chống chồng khoảng / khoảng trống
 - [x] **Ô người đại diện đóng** cho lớp nhóm (D13, D14) — chọn học viên khác, người ngoài
       đã có hồ sơ, hoặc tạo hồ sơ người đóng mới ngay trong form
-- [ ] **Trang phiếu học phí tháng** (D1): lập phiếu → gửi → ghi nhận thu
-- [ ] **Trang "Cần đối soát"** đọc từ `v_data_review` (D8)
-- [ ] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7)
+- [x] **Trang phiếu học phí tháng** (D1): lập phiếu → chốt → ghi nhận thu, có kiểm thử
+      vòng đời đầy đủ tới đúng con số 2.370.000 ₫ của chứng từ thật
+- [x] **Trang "Cần đối soát"** đọc từ `v_data_review` (D8) — có nút đánh dấu đã đối soát
+- [x] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7) — ngưỡng đọc từ `settings`
 - [x] Gọi thêm `fn_alert_missing_lesson_time`, `fn_alert_lesson_balance`,
       `fn_alert_not_sent_to_parent` trong `/api/cron/scan-reports`
 - [ ] **Nối AI viết feedback từ link video** (D6) — chọn model, và giữ bước người

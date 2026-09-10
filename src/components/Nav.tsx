@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   BookOpen,
   CalendarDays,
+  ClipboardCheck,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   Menu,
@@ -39,12 +41,16 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
     section: 'Tài chính',
     items: [
       { href: '/payments', label: 'Thu học phí', icon: Wallet },
+      { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
       { href: '/expenses', label: 'Chi phí', icon: Receipt },
     ],
   },
   {
     section: 'Vận hành',
-    items: [{ href: '/alerts', label: 'Cảnh báo chất lượng', icon: AlertTriangle }],
+    items: [
+      { href: '/alerts', label: 'Cảnh báo chất lượng', icon: AlertTriangle },
+      { href: '/review', label: 'Cần đối soát', icon: ClipboardCheck },
+    ],
   },
 ]
 
@@ -65,19 +71,27 @@ export function Nav({
   roleLabel,
   openAlerts,
   pendingReports,
+  needsReview,
 }: {
   role: string
   userName: string
   roleLabel: string
   openAlerts: number
   pendingReports: number
+  needsReview: number
 }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const groups = role === 'founder' ? FOUNDER_NAV : TEACHER_NAV
 
   const badgeFor = (href: string) =>
-    href === '/alerts' ? openAlerts : href === '/reports' ? pendingReports : 0
+    href === '/alerts'
+      ? openAlerts
+      : href === '/reports'
+        ? pendingReports
+        : href === '/review'
+          ? needsReview
+          : 0
 
   const links = (
     <nav className="space-y-6">

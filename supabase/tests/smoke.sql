@@ -1365,5 +1365,110 @@ end $$;
 
 \echo ''
 \echo '======================================================'
+\echo '  15. Vòng đời phiếu học phí tháng (D1)'
+\echo '======================================================'
+
+-- Đúng chuỗi thao tác của trang "Phiếu học phí tháng": lập ⇒ chốt ⇒ thu một
+-- phần ⇒ tính lại ⇒ thu nốt ⇒ tính lại. Điểm cần chốt: tính lại sau mỗi lần thu
+-- phải cập nhật trạng thái, và phiếu đã thu đủ thì KHÔNG được tính lại nữa —
+-- giao diện dựa vào đúng điều này để không ghi thanh toán mồ côi.
+
+set session "test.user_id" = '11111111-1111-1111-1111-111111111111';  -- Founder
+
+do $$
+declare v_id uuid; st public.tuition_statements; v_err boolean := false;
+begin
+  -- Lập lại phiếu tháng 7/2026 của lớp Y Khoa (mục 11b đã dựng dữ liệu).
+  v_id := public.fn_build_tuition_statement(
+    'eeeeeeee-0000-0000-0000-000000000020', date '2026-07-01', date '2026-07-31');
+
+  -- Chốt phiếu — bước riêng do người bấm, không tự động.
+  update public.tuition_statements
+     set status = 'issued', issued_at = now(), due_date = date '2026-08-15'
+   where id = v_id and status = 'draft';
+
+  select * into st from public.tuition_statements where id = v_id;
+  perform public.t_assert(st.status = 'issued', 'chốt phiếu ⇒ trạng thái đã gửi');
+  perform public.t_assert(st.net_amount = 2370000, 'số tiền phải thu giữ nguyên sau khi chốt');
+
+  -- Thu một phần: 1.000.000 / 2.370.000
+  insert into public.payments (student_id, enrollment_id, statement_id, amount,
+                               payment_date, method, status)
+  values ('cccccccc-0000-0000-0000-000000000021', 'eeeeeeee-0000-0000-0000-000000000020',
+          v_id, 1000000, date '2026-08-10', 'bank_transfer', 'confirmed');
+
+  perform public.fn_build_tuition_statement(
+    'eeeeeeee-0000-0000-0000-000000000020', date '2026-07-01', date '2026-07-31');
+
+  select * into st from public.tuition_statements where id = v_id;
+  perform public.t_assert(st.paid_amount = 1000000, 'ghi nhận đã thu 1.000.000 ₫');
+  perform public.t_assert(st.status = 'partial',    'thu chưa đủ ⇒ trạng thái trả một phần');
+  perform public.t_assert(st.net_amount - st.paid_amount = 1370000,
+    'còn thiếu 1.370.000 ₫');
+
+  -- Thu nốt phần còn lại.
+  insert into public.payments (student_id, enrollment_id, statement_id, amount,
+                               payment_date, method, status)
+  values ('cccccccc-0000-0000-0000-000000000021', 'eeeeeeee-0000-0000-0000-000000000020',
+          v_id, 1370000, date '2026-08-12', 'bank_transfer', 'confirmed');
+
+  perform public.fn_build_tuition_statement(
+    'eeeeeeee-0000-0000-0000-000000000020', date '2026-07-01', date '2026-07-31');
+
+  select * into st from public.tuition_statements where id = v_id;
+  perform public.t_assert(st.paid_amount = 2370000, 'tổng thu = 2.370.000 ₫ đúng chứng từ 12/08/2026');
+  perform public.t_assert(st.status = 'paid',       'thu đủ ⇒ trạng thái đã thu đủ');
+
+  -- Phiếu đã thu đủ thì không tính lại được nữa.
+  begin
+    perform public.fn_build_tuition_statement(
+      'eeeeeeee-0000-0000-0000-000000000020', date '2026-07-01', date '2026-07-31');
+  exception when others then
+    v_err := true;
+  end;
+  perform public.t_assert(v_err, 'phiếu đã thu đủ ⇒ từ chối tính lại');
+end $$;
+
+-- Thu tiền cho phiếu tháng KHÔNG làm sai doanh thu: doanh thu đã ghi nhận từ
+-- lúc buổi học hoàn tất, dòng tiền chỉ trừ vào công nợ.
+do $$
+declare v_recognized numeric; v_paid numeric;
+begin
+  select coalesce(sum(recognized_amount), 0) into v_recognized
+    from public.lesson_consumptions
+   where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000020';
+  select coalesce(sum(amount), 0) into v_paid
+    from public.payments
+   where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000020' and status = 'confirmed';
+
+  perform public.t_assert(v_recognized = 2520000,
+    'doanh thu ghi nhận vẫn là 2.520.000 ₫ (giá gộp, chưa trừ chiết khấu)');
+  perform public.t_assert(v_paid = 2370000, 'tiền mặt đã thu là 2.370.000 ₫');
+  perform public.t_assert(v_recognized <> v_paid,
+    'dòng tiền và doanh thu là hai con số khác nhau — không được gộp (mục XII)');
+end $$;
+
+\echo ''
+\echo '--- 15b. Giáo viên không lập được phiếu học phí ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+  do $$
+  declare v_err boolean := false;
+  begin
+    begin
+      perform public.fn_build_tuition_statement(
+        'eeeeeeee-0000-0000-0000-000000000020', date '2026-08-01', date '2026-08-31');
+    exception when others then
+      v_err := true;
+    end;
+    perform public.t_assert(v_err, 'giáo viên gọi fn_build_tuition_statement ⇒ bị từ chối');
+  end $$;
+rollback;
+
+reset "test.user_id";
+
+\echo ''
+\echo '======================================================'
 \echo '  TOÀN BỘ KIỂM THỬ NGHIỆP VỤ: ĐẠT'
 \echo '======================================================'

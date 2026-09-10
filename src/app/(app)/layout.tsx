@@ -13,17 +13,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await requireUser()
   const supabase = await createClient()
 
-  // RLS tự lọc: giáo viên chỉ đếm được báo cáo của lớp mình.
-  const [alerts, reports] = await Promise.all([
+  const isFounder = user.role_code === 'founder'
+
+  // RLS tự lọc: giáo viên chỉ đếm được báo cáo và cảnh báo thuộc phạm vi mình.
+  // Đếm MỌI loại cảnh báo đang mở, không chỉ báo cáo thiếu — từ khi có thêm
+  // cảnh báo thiếu giờ dạy, học vượt buổi và chưa gửi phụ huynh thì lọc theo
+  // một loại sẽ làm con số trên thanh điều hướng thấp hơn thực tế.
+  const [alerts, reports, review] = await Promise.all([
     supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
-      .eq('type', 'teaching_report_incomplete')
       .in('status', ['new', 'acknowledged']),
     supabase
       .from('teaching_reports')
       .select('id', { count: 'exact', head: true })
       .in('status', ['draft', 'incomplete']),
+    isFounder
+      ? supabase.from('v_data_review').select('entity_id', { count: 'exact', head: true })
+      : Promise.resolve({ count: 0 }),
   ])
 
   return (
@@ -34,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         roleLabel={ROLE_LABEL[user.role_code] ?? user.role_code}
         openAlerts={alerts.count ?? 0}
         pendingReports={reports.count ?? 0}
+        needsReview={review.count ?? 0}
       />
       <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
         <div className="mx-auto max-w-7xl">{children}</div>
