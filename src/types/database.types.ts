@@ -1075,6 +1075,8 @@ export type Database = {
           monthly_discount_amount: number
           payer_student_id: string | null
           paid_in_full_until: string | null
+          payer_parent_id: string | null
+          payer_note: string | null
         }
         Insert: {
           id?: string
@@ -1106,6 +1108,8 @@ export type Database = {
           monthly_discount_amount?: number
           payer_student_id?: string | null
           paid_in_full_until?: string | null
+          payer_parent_id?: string | null
+          payer_note?: string | null
         }
         Update: {
           id?: string
@@ -1137,10 +1141,13 @@ export type Database = {
           monthly_discount_amount?: number
           payer_student_id?: string | null
           paid_in_full_until?: string | null
+          payer_parent_id?: string | null
+          payer_note?: string | null
         }
         Relationships: [
           { foreignKeyName: "student_enrollments_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "student_enrollments_payer_parent_id_fkey"; columns: ["payer_parent_id"]; isOneToOne: false; referencedRelation: "parents"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_payer_student_id_fkey"; columns: ["payer_student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_program_id_fkey"; columns: ["program_id"]; isOneToOne: false; referencedRelation: "programs"; referencedColumns: ["id"] },
           { foreignKeyName: "student_enrollments_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
@@ -2071,6 +2078,8 @@ export type Database = {
           outstanding_amount: number | null
           revenue_recognized: number | null
           deferred_revenue: number | null
+          payer_name: string | null
+          payer_note: string | null
         }
         Relationships: []
       }
@@ -2236,6 +2245,10 @@ export type Database = {
       fn_consume_lesson: {
         Args: { p_attendance_id: string }
         Returns: undefined
+      }
+      fn_enrollment_payer_name: {
+        Args: { p_enrollment_id: string }
+        Returns: string
       }
       fn_generate_payable_lesson: {
         Args: { p_lesson_id: string }

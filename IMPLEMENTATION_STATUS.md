@@ -70,7 +70,7 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 
 | Quyết định | CSDL | Giao diện |
 |---|---|---|
-| D1 — hai hình thức đóng học phí | ✅ đã kiểm thử | ⬜ form hợp đồng chưa có ô chọn hình thức |
+| D1 — hai hình thức đóng học phí | ✅ đã kiểm thử | ✅ form hỏi khác nhau theo từng hình thức |
 | D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ⬜ chưa có trang nào |
 | D2 — hạn 24 giờ | ✅ | ✅ mọi chỗ đọc từ bảng `settings`, không còn chữ viết cứng |
 | D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ✅ form mới đủ 6 tiêu chí, hiện điểm ngay khi gõ |
@@ -78,15 +78,14 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 | D6 — AI viết feedback | ✅ cột `authored_by` | 🟡 hiện được nhãn "AI viết"; chưa nối AI |
 | D7 — cho học vượt | ✅ đã kiểm thử | 🟡 dashboard hiển thị được số âm nhưng chưa có cảnh báo riêng |
 | D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ⬜ chưa có trang "Cần đối soát" |
-| D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ⬜ form chỉ nhập được một đơn giá |
-| D13 — lớp nhóm một người đóng | ✅ đã kiểm thử | ⬜ form chưa có ô người đại diện đóng |
+| D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ✅ form "Đổi đơn giá học phí" + lịch sử các mốc |
+| D13, D14 — lớp nhóm một người đóng | ✅ đã kiểm thử | ✅ chọn hoặc tạo mới người đứng tên đóng |
 | A13 — gửi phụ huynh là bước riêng | ✅ cột `sent_to_parent_at` | ✅ có nút "Đánh dấu đã gửi" |
 
-**Hệ quả thực tế còn lại:** form báo cáo giảng dạy đã đúng mô hình mới, nhưng biểu mẫu
-hợp đồng học phí thì chưa — nhập bằng giao diện hiện tại thì hợp đồng vẫn mặc định là
-gói trả trước, không nhập được người đại diện đóng và chỉ nhập được một mốc đơn giá.
-Phải làm xong phần còn lại của mục P1 trong `TODO.md` trước khi nhập dữ liệu học viên
-thật.
+**Hệ quả thực tế còn lại:** hai biểu mẫu nhập liệu chính — báo cáo giảng dạy và hợp
+đồng học phí — đã đúng mô hình mới, đủ để bắt đầu nhập 21 lớp. Còn thiếu các màn hình
+theo dõi: phiếu học phí tháng, trang "Cần đối soát", cảnh báo học vượt trên dashboard
+và bảng lương. Xem mục P1 trong `TODO.md`.
 
 ---
 

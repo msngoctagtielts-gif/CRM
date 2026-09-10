@@ -48,9 +48,12 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [x] **Bỏ mọi con số hạn nộp viết cứng** (D2) — đọc từ bảng `settings` qua
       `src/lib/settings.ts`, đổi trong CSDL là mọi màn hình đổi theo
 - [x] **Nút "Đánh dấu đã gửi phụ huynh"** và **nút duyệt báo cáo** cho Founder (A13)
-- [ ] **Ô chọn hình thức đóng** trong form hợp đồng (D1): gói trả trước / cuối tháng
-- [ ] **Nhập nhiều mốc đơn giá** theo ngày hiệu lực (D11) — ca Bé Ngân
-- [ ] **Ô người đại diện đóng** cho lớp nhóm (D13) — ca Y Khoa
+- [x] **Ô chọn hình thức đóng** trong form hợp đồng (D1): gói trả trước / cuối tháng — form
+      hỏi khác nhau theo từng hình thức, không ép mọi hợp đồng thành gói trả trước
+- [x] **Nhập nhiều mốc đơn giá** theo ngày hiệu lực (D11) — form "Đổi đơn giá học phí"
+      đóng mốc cũ và mở mốc mới, có kiểm thử chống chồng khoảng / khoảng trống
+- [x] **Ô người đại diện đóng** cho lớp nhóm (D13, D14) — chọn học viên khác, người ngoài
+      đã có hồ sơ, hoặc tạo hồ sơ người đóng mới ngay trong form
 - [ ] **Trang phiếu học phí tháng** (D1): lập phiếu → gửi → ghi nhận thu
 - [ ] **Trang "Cần đối soát"** đọc từ `v_data_review` (D8)
 - [ ] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7)

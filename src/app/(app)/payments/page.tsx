@@ -4,7 +4,7 @@ import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { resolvePeriod } from '@/lib/period'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
-import { ENROLLMENT_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '@/lib/labels'
+import { BILLING_MODE, ENROLLMENT_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '@/lib/labels'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { PeriodFilter } from '@/components/PeriodFilter'
 import { Card, CardHeader } from '@/components/ui/Card'
@@ -26,8 +26,16 @@ export default async function PaymentsPage({
   const period = resolvePeriod(sp.period, sp.from, sp.to)
   const supabase = await createClient()
 
-  const [{ data: payments }, { data: balances }, { data: students }, { data: classes }, { data: programs }, { data: packages }] =
-    await Promise.all([
+  const [
+    { data: payments },
+    { data: balances },
+    { data: students },
+    { data: parents },
+    { data: classes },
+    { data: programs },
+    { data: packages },
+    { data: rates },
+  ] = await Promise.all([
       supabase
         .from('payments')
         .select('*, students(id, full_name, student_code), student_enrollments(enrollment_code)')
@@ -46,6 +54,12 @@ export default async function PaymentsPage({
         .not('status', 'in', '("inactive")')
         .order('full_name')
         .limit(400),
+      supabase
+        .from('parents')
+        .select('id, full_name')
+        .eq('status', 'active')
+        .order('full_name')
+        .limit(400),
       supabase.from('classes').select('id, name').eq('status', 'active').order('name'),
       supabase.from('programs').select('id, name_vi').eq('status', 'active').order('sort_order'),
       supabase
@@ -53,6 +67,11 @@ export default async function PaymentsPage({
         .select('id, name, lesson_count, default_price_per_lesson')
         .eq('status', 'active')
         .order('name'),
+      supabase
+        .from('tuition_rates')
+        .select('enrollment_id, price_per_lesson, effective_from, effective_to')
+        .order('effective_from', { ascending: false })
+        .limit(500),
     ])
 
   const cashInPeriod = (payments ?? [])
@@ -116,6 +135,8 @@ export default async function PaymentsPage({
                 <thead>
                   <tr>
                     <Th>Học viên · Hợp đồng</Th>
+                    <Th>Hình thức</Th>
+                    <Th>Người đóng</Th>
                     <Th align="right">Đơn giá</Th>
                     <Th align="right">Tổng phải trả</Th>
                     <Th align="right">Đã trả</Th>
@@ -137,13 +158,38 @@ export default async function PaymentsPage({
                           </Link>
                           <p className="text-xs text-navy-400">{b.enrollment_code}</p>
                         </Td>
+                        <Td>
+                          {b.billing_mode ? (
+                            <Badge tone={b.billing_mode === 'prepaid_package' ? 'info' : 'gold'}>
+                              {BILLING_MODE[b.billing_mode].short}
+                            </Badge>
+                          ) : null}
+                        </Td>
+                        <Td className="text-navy-600">
+                          {b.payer_name ?? '—'}
+                          {b.payer_note ? (
+                            <span className="block text-xs text-navy-400">{b.payer_note}</span>
+                          ) : null}
+                        </Td>
                         <Td align="right">{formatCurrency(b.price_per_lesson)}</Td>
-                        <Td align="right">{formatCurrency(b.net_amount)}</Td>
+                        <Td align="right">
+                          {b.billing_mode === 'prepaid_package' ? formatCurrency(b.net_amount) : '—'}
+                        </Td>
                         <Td align="right">{formatCurrency(b.total_paid)}</Td>
                         <Td align="right" className="font-semibold text-burgundy-700">
                           {formatCurrency(b.outstanding_amount)}
                         </Td>
-                        <Td align="right">{formatNumber(b.lessons_remaining)}</Td>
+                        {/* Số âm là học vượt — được phép, nhưng phải nhìn thấy ngay (D7) */}
+                        <Td
+                          align="right"
+                          className={
+                            Number(b.lessons_remaining ?? 0) < 0
+                              ? 'font-semibold text-burgundy-700'
+                              : undefined
+                          }
+                        >
+                          {b.lessons_remaining === null ? '—' : formatNumber(b.lessons_remaining)}
+                        </Td>
                       </tr>
                     )
                   })}
@@ -202,14 +248,23 @@ export default async function PaymentsPage({
         <div className="xl:col-span-1">
           <PaymentForms
             students={students ?? []}
+            parents={parents ?? []}
             classes={classes ?? []}
             programs={programs ?? []}
             packages={packages ?? []}
             enrollments={(balances ?? []).map((b) => ({
               id: b.enrollment_id!,
               student_id: b.student_id!,
-              label: `${b.enrollment_code} · còn nợ ${formatCurrency(b.outstanding_amount)}`,
+              label: `${studentName.get(b.student_id!)?.full_name ?? b.enrollment_code} · ${
+                b.billing_mode ? BILLING_MODE[b.billing_mode].short : ''
+              } · ${formatCurrency(b.price_per_lesson)}/buổi`,
               status: b.status ? ENROLLMENT_STATUS[b.status].label : '',
+            }))}
+            rates={(rates ?? []).map((r) => ({
+              enrollment_id: r.enrollment_id,
+              price_per_lesson: Number(r.price_per_lesson),
+              effective_from: r.effective_from,
+              effective_to: r.effective_to,
             }))}
           />
         </div>

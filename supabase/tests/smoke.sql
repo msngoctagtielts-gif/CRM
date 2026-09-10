@@ -1205,5 +1205,165 @@ rollback;
 
 \echo ''
 \echo '======================================================'
+\echo '  14. Đổi đơn giá học phí đúng như giao diện làm (D11)'
+\echo '======================================================'
+
+-- Mục 11a kiểm tra hai mốc giá được nhập sẵn không chồng nhau. Mục này kiểm tra
+-- CHUỖI THAO TÁC mà biểu mẫu thật sinh ra: lập hợp đồng ⇒ một mốc giá mở
+-- (effective_to = NULL), rồi đổi giá ⇒ đóng mốc cũ vào hôm trước ngày hiệu lực
+-- mới và thêm mốc mới. Nếu đóng sai một ngày thì hoặc hai khoảng chồng nhau,
+-- hoặc có một ngày không tra ra giá nào.
+
+insert into public.students (id, full_name, status)
+values ('cccccccc-0000-0000-0000-000000000050', 'Học viên đổi giá', 'active');
+
+insert into public.classes (id, name, teacher_id, class_type, max_students,
+                            default_duration_minutes, status)
+values ('dddddddd-0000-0000-0000-000000000050', 'Lớp đổi giá',
+        'aaaaaaaa-0000-0000-0000-000000000001', 'one_to_one', 1, 60, 'active');
+
+insert into public.class_students (class_id, student_id)
+values ('dddddddd-0000-0000-0000-000000000050', 'cccccccc-0000-0000-0000-000000000050');
+
+-- Bước 1 — createEnrollment: hợp đồng + mốc giá đầu tiên, mở vô thời hạn.
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, lessons_purchased, price_per_lesson,
+   net_amount, start_date, status)
+values ('eeeeeeee-0000-0000-0000-000000000050', 'cccccccc-0000-0000-0000-000000000050',
+        'dddddddd-0000-0000-0000-000000000050', 'prepaid_package',
+        10, 179000, 1790000, date '2026-07-01', 'active');
+
+insert into public.tuition_rates (enrollment_id, price_per_lesson, effective_from, evidence_note)
+values ('eeeeeeee-0000-0000-0000-000000000050', 179000, date '2026-07-01',
+        'Đơn giá lúc lập hợp đồng');
+
+do $$ begin
+  perform public.t_assert(
+    public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000050', date '2026-08-31') = 179000,
+    'mốc giá mở áp dụng cho mọi ngày từ ngày bắt đầu');
+end $$;
+
+-- Bước 2 — addTuitionRate('2026-09-01'): đóng mốc cũ vào 31/08 rồi thêm mốc mới.
+update public.tuition_rates
+   set effective_to = date '2026-08-31'
+ where enrollment_id = 'eeeeeeee-0000-0000-0000-000000000050'
+   and effective_to is null
+   and effective_from <= date '2026-08-31';
+
+insert into public.tuition_rates (enrollment_id, price_per_lesson, effective_from, evidence_note)
+values ('eeeeeeee-0000-0000-0000-000000000050', 190000, date '2026-09-01',
+        'Founder chốt 10/09/2026');
+
+do $$
+declare v_rows int;
+begin
+  perform public.t_assert(
+    public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000050', date '2026-08-31') = 179000,
+    'ngày cuối của mốc cũ (31/08) vẫn ra giá cũ 179.000 ₫');
+  perform public.t_assert(
+    public.fn_resolve_tuition_rate('eeeeeeee-0000-0000-0000-000000000050', date '2026-09-01') = 190000,
+    'ngày đầu của mốc mới (01/09) ra giá mới 190.000 ₫');
+
+  -- Không có ngày nào rơi vào hai mốc cùng lúc.
+  select count(*) into v_rows
+    from public.tuition_rates r
+   where r.enrollment_id = 'eeeeeeee-0000-0000-0000-000000000050'
+     and r.effective_from <= date '2026-08-31'
+     and (r.effective_to is null or r.effective_to >= date '2026-08-31');
+  perform public.t_assert(v_rows = 1, 'ngày 31/08 chỉ thuộc đúng MỘT mốc giá — hai khoảng không chồng nhau');
+
+  -- Và không có ngày nào rơi vào khoảng trống giữa hai mốc.
+  select count(*) into v_rows
+    from public.tuition_rates r
+   where r.enrollment_id = 'eeeeeeee-0000-0000-0000-000000000050'
+     and r.effective_from <= date '2026-09-01'
+     and (r.effective_to is null or r.effective_to >= date '2026-09-01');
+  perform public.t_assert(v_rows = 1, 'ngày 01/09 cũng chỉ thuộc đúng MỘT mốc — không có khoảng trống');
+end $$;
+
+-- Buổi đã dạy trước khi đổi giá giữ nguyên số tiền cũ.
+insert into public.lessons (id, class_id, lesson_date, scheduled_start_at, scheduled_end_at,
+                            actual_start_at, actual_end_at, status)
+values ('ffffffff-0000-0000-0000-000000000050', 'dddddddd-0000-0000-0000-000000000050',
+        date '2026-08-31', timestamptz '2026-08-31 20:00+07', timestamptz '2026-08-31 21:00+07',
+        timestamptz '2026-08-31 20:00+07', timestamptz '2026-08-31 21:00+07', 'completed'),
+       ('ffffffff-0000-0000-0000-000000000051', 'dddddddd-0000-0000-0000-000000000050',
+        date '2026-09-01', timestamptz '2026-09-01 20:00+07', timestamptz '2026-09-01 21:00+07',
+        timestamptz '2026-09-01 20:00+07', timestamptz '2026-09-01 21:00+07', 'completed');
+
+insert into public.attendance (lesson_id, student_id, status) values
+  ('ffffffff-0000-0000-0000-000000000050', 'cccccccc-0000-0000-0000-000000000050', 'present'),
+  ('ffffffff-0000-0000-0000-000000000051', 'cccccccc-0000-0000-0000-000000000050', 'present');
+
+do $$ begin
+  perform public.t_assert(
+    (select recognized_amount from public.lesson_consumptions
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000050') = 179000,
+    'buổi 31/08 ghi nhận doanh thu 179.000 ₫ theo giá tại ngày học');
+  perform public.t_assert(
+    (select recognized_amount from public.lesson_consumptions
+      where lesson_id = 'ffffffff-0000-0000-0000-000000000051') = 190000,
+    'buổi 01/09 ghi nhận doanh thu 190.000 ₫');
+end $$;
+
+\echo ''
+\echo '--- 14b. Hợp đồng đóng cuối tháng không cần số buổi và tổng tiền (D1) ---'
+
+-- Ràng buộc chk_enrollment_prepaid_shape phải cho phép để trống hai cột này với
+-- hình thức trả sau, và vẫn bắt buộc với gói trả trước.
+insert into public.student_enrollments
+  (id, student_id, class_id, billing_mode, lessons_purchased, price_per_lesson,
+   net_amount, headcount, monthly_discount_amount, start_date, status)
+values ('eeeeeeee-0000-0000-0000-000000000051', 'cccccccc-0000-0000-0000-000000000050',
+        null, 'monthly_postpaid', null, 120000, null, 3, 150000, date '2026-09-01', 'active');
+
+do $$
+declare v_ok boolean := false;
+begin
+  perform public.t_assert(
+    (select lessons_purchased is null and net_amount is null
+       from public.student_enrollments
+      where id = 'eeeeeeee-0000-0000-0000-000000000051'),
+    'hợp đồng trả sau lưu được với số buổi và tổng tiền để trống');
+
+  begin
+    insert into public.student_enrollments
+      (student_id, billing_mode, lessons_purchased, price_per_lesson, net_amount, start_date, status)
+    values ('cccccccc-0000-0000-0000-000000000050', 'prepaid_package',
+            null, 250000, null, current_date, 'active');
+  exception when check_violation then
+    v_ok := true;
+  end;
+  perform public.t_assert(v_ok,
+    'nhưng gói TRẢ TRƯỚC mà thiếu số buổi/tổng tiền thì CSDL chặn');
+end $$;
+
+\echo ''
+\echo '--- 14c. Người đứng tên đóng không phải học viên (D14) ---'
+do $$
+declare v_ok boolean := false;
+begin
+  update public.student_enrollments
+     set payer_parent_id = 'bbbbbbbb-0000-0000-0000-000000000020',
+         payer_note      = 'vợ anh Max'
+   where id = 'eeeeeeee-0000-0000-0000-000000000051';
+
+  perform public.t_assert(
+    public.fn_enrollment_payer_name('eeeeeeee-0000-0000-0000-000000000051') = 'Hoàng Uyên',
+    'người ngoài đứng tên đóng được ghi nhận đúng');
+
+  -- Không cho chỉ định hai người đóng cùng lúc.
+  begin
+    update public.student_enrollments
+       set payer_student_id = 'cccccccc-0000-0000-0000-000000000050'
+     where id = 'eeeeeeee-0000-0000-0000-000000000051';
+  exception when check_violation then
+    v_ok := true;
+  end;
+  perform public.t_assert(v_ok, 'chỉ một người được đứng tên đóng trên một hợp đồng');
+end $$;
+
+\echo ''
+\echo '======================================================'
 \echo '  TOÀN BỘ KIỂM THỬ NGHIỆP VỤ: ĐẠT'
 \echo '======================================================'
