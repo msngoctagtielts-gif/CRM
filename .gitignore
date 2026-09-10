@@ -10,6 +10,9 @@ dist/
 npm-debug.log*
 .DS_Store
 .vercel
+# Kết quả của `netlify build` — khoảng 119 MB mã sinh tự động.
+.netlify/
+netlify.toml.bak
 *.tsbuildinfo
 next-env.d.ts
 .supabase/

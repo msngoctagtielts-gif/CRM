@@ -200,6 +200,64 @@ Anthropic **không có gói API miễn phí** cho Claude. Claude Code (công c�
 dựng hệ thống này) cũng không gọi được từ trong ứng dụng. Nên phần AI của hệ
 thống dùng Gemini; Claude chỉ tham gia ở khâu phát triển.
 
+## 10/09/2026 — Chọn Netlify Free làm nơi chạy app
+
+Founder yêu cầu hiệu quả nhưng không phát sinh phí, được kết hợp bất kỳ công cụ
+mở. Đã tra điều kiện thật của từng bên thay vì suy đoán.
+
+| Nơi chạy | Giá | Dùng thương mại | Chạy được Next.js? |
+|---|---|---|---|
+| **Netlify Free** | **0 ₫** | ✅ cho phép | ✅ |
+| Cloudflare Workers Free | 0 ₫ | ✅ | ❌ **10ms CPU/request** — không đủ render |
+| Cloudflare Workers Paid | ~5 USD/th | ✅ | ✅ |
+| Vercel Hobby | 0 ₫ | ❌ **cấm** | ✅ |
+
+**Loại Vercel Hobby** dù miễn phí: điều khoản giới hạn gói này cho *"personal or
+non-commercial use"*, và định nghĩa thương mại bao gồm dự án thuộc pháp nhân kinh
+doanh. Vercel ghi rõ **có quyền tắt project không báo trước**. Không đáng đánh
+cược hệ thống vận hành của trung tâm.
+
+**Loại Cloudflare Workers** ở thời điểm này: gói free giới hạn **10ms CPU mỗi
+request**, mà render một trang Next.js thường tốn 10–20ms trở lên. Cloudflare là
+lựa chọn tốt khi nào chấp nhận trả ~5 USD/tháng — vẫn rẻ hơn Supabase Pro.
+
+**Không dùng Cloudflare D1 thay Supabase.** D1 là SQLite: không có RLS, không có
+plpgsql, không có Auth. Ranh giới bảo mật của hệ thống nằm ở 69 policy RLS — chính
+thứ chặn giáo viên xem lương đồng nghiệp và lợi nhuận trung tâm. Chuyển sang D1 là
+viết lại toàn bộ phần đó bằng mã ứng dụng: nhiều tháng làm việc, bảo mật yếu hơn,
+để tiết kiệm 0 đồng vì Supabase free vốn đã 0 đồng.
+
+**Không dùng Google Sheets làm cơ sở dữ liệu.** Hai lý do từ chính dữ liệu của
+trung tâm: (1) Sheets không có ranh giới quyền thật — ai sửa được file là xem được
+hết qua API hoặc chỉ cần copy file, kể cả bảng lương và lợi nhuận, trái đúng yêu
+cầu cứng ở mục IV; (2) không có ràng buộc dữ liệu — ô đơn giá Bé Ngân trong sheet
+gốc là `1.790.009.190 ₫`, một lỗi gõ Sheets không thể chặn. **Vẫn giữ Sheets** làm
+nguồn nhập liệu ban đầu và nơi xuất báo cáo tháng.
+
+### Cạm bẫy của gói Free Netlify — đã xử lý
+
+Hạn mức **cứng** 300 credit/tháng; hết là site tạm dừng tới tháng sau. Mỗi deploy
+production tốn 15 credit, dùng chung pool với băng thông (20 credit/GB) — tức
+khoảng 20 lần deploy, và deploy nhiều thì hết băng thông.
+
+`netlify/should-skip-build.sh` chỉ cho build khi có thay đổi thật sự ảnh hưởng app;
+sửa tài liệu, migration SQL hay script sao lưu thì bỏ qua. Đã kiểm 7 tình huống,
+đạt cả 7. `netlify.toml` cũng tắt deploy xem trước và deploy nhánh.
+
+### Đã kiểm được đến đâu
+
+Chạy `netlify build` thật: Next.js build xong 19 route trong 33,7 giây, Functions
+bundling đóng gói xong `___netlify-server-handler`. Bước Edge Functions lỗi 403 vì
+**sandbox phát triển chặn `deno.land`** (xác nhận: `CONNECT tunnel failed, response
+403`), không phải lỗi cấu hình.
+
+Lần chạy này cũng lộ ra hai thiếu sót đã vá: `netlify build` sinh thư mục
+`.netlify/` nặng ~119 MB mà `.gitignore` và ESLint chưa biết — thiếu thì commit cả
+mã sinh tự động vào repo và lint báo 6 lỗi giả.
+
+**Chưa kiểm được** vì cần tài khoản Netlify thật: lần deploy đầu tiên, và
+`src/middleware.ts` chạy dưới dạng Edge Function trên Deno.
+
 ---
 
 ## Còn thiếu để hoàn tất việc nhập dữ liệu

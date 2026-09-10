@@ -28,9 +28,15 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       ```sql
       update public.users set role_code = 'founder' where email = '<email>';
       ```
-- [ ] **Cấu hình biến môi trường** trên môi trường chạy thật (Vercel hoặc tương đương):
+- [x] ~~Chọn nơi chạy app~~ → **Netlify Free**, đã cấu hình `netlify.toml`.
+      KHÔNG dùng Vercel Hobby: điều khoản cấm dùng thương mại và họ có quyền tắt
+      project không báo trước. KHÔNG dùng Cloudflare Workers free: giới hạn 10ms
+      CPU mỗi request, không đủ render Next.js. Xem `docs/DEPLOY.md`
+- [ ] ⛔ **Nối repo với Netlify và đặt biến môi trường**:
       `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-      `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`
+      `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. Hướng dẫn: `docs/DEPLOY.md` mục 3
+- [ ] ⛔ **Đặt Site URL trong Supabase** sau khi có địa chỉ Netlify, nếu không link
+      xác nhận email và đặt lại mật khẩu sẽ trỏ về localhost
 - [ ] **Kiểm thử end-to-end trên Supabase thật** — toàn bộ mục 5 "Chưa kiểm thử"
       trong `IMPLEMENTATION_STATUS.md`: đăng nhập, tạo học viên, tạo lớp, sinh buổi,
       nộp báo cáo, ghi nhận thanh toán, xem dashboard

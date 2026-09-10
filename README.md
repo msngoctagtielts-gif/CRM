@@ -67,6 +67,8 @@ npm run dev
 | `./supabase/tests/run-local.sh` | kiểm thử nghiệp vụ trên PostgreSQL tạm (không cần Docker) |
 | `./scripts/backup/dump.sh` | sao lưu CSDL ra tệp đã mã hoá (xem `docs/FREE_TIER.md`) |
 | `./scripts/backup/restore.sh` | phục hồi từ bản sao lưu |
+
+Triển khai: `docs/DEPLOY.md` (Netlify Free) · Gói Free Supabase: `docs/FREE_TIER.md` · AI: `docs/AI_SETUP.md`
 | `npm run db:types` | sinh lại type từ Supabase (cần Docker) |
 | `python3 scripts/gen-types.py <DB_URL>` | sinh lại type khi không có Docker |
 | `./supabase/tests/run-local.sh` | **chạy 86 kiểm thử nghiệp vụ** trên PostgreSQL tạm |

@@ -9,6 +9,9 @@ const config = [
     ignores: [
       '.next/**',
       'node_modules/**',
+      // `netlify build` sinh ra thư mục này (~119 MB mã đã đóng gói). Không lint
+      // và không commit — xem .gitignore.
+      '.netlify/**',
       // Sinh tự động — không sửa tay nên không lint.
       'next-env.d.ts',
       'src/types/database.types.ts',

@@ -296,9 +296,10 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
    kiểm bundle trình duyệt không chứa khoá, endpoint hay header xác thực nào.
    Còn lại: chưa chạy qua giao diện web thật vì chưa có tài khoản Founder
 
-Chưa nhập dữ liệu học viên thật nào — vì chưa có tài khoản Founder. Gói Free không
-còn là rào cản: đã có phương án sao lưu và chống tạm dừng bằng GitHub Actions, kiểm
-thật xong (`docs/FREE_TIER.md`).
+Chưa nhập dữ liệu học viên thật nào — vì chưa có tài khoản Founder. Chi phí không còn
+là rào cản: toàn bộ hệ thống chạy thật ở **0 ₫/tháng** — Netlify Free cho app
+(`docs/DEPLOY.md`), Supabase Free cho CSDL kèm sao lưu tự động (`docs/FREE_TIER.md`),
+Gemini Free cho AI (`docs/AI_SETUP.md`), GitHub Actions cho việc định kỳ.
 
 ---
 

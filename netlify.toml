@@ -1,0 +1,49 @@
+# Triển khai MNEE Management System lên Netlify.
+#
+# Vì sao Netlify chứ không phải Vercel: gói Hobby của Vercel CẤM dùng cho mục
+# đích thương mại ("personal or non-commercial use"), và họ có quyền tắt project
+# không báo trước. Hệ thống này phục vụ một trung tâm có thu học phí nên là dùng
+# thương mại. Gói Free của Netlify cho phép dự án thương mại.
+#
+# Vì sao không phải Cloudflare Workers: gói free giới hạn 10ms CPU mỗi request,
+# không đủ để render trang Next.js (thường 10–20ms trở lên). Cloudflare là lựa
+# chọn tốt khi nào chịu trả ~5 USD/tháng.
+#
+# Xem docs/DEPLOY.md.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+  # Gói Free có hạn mức CỨNG 300 credit/tháng, mỗi lần deploy production tốn 15
+  # credit và dùng chung pool với băng thông. Sửa tài liệu mà cũng build lại thì
+  # đốt credit vô ích. Lệnh dưới đây trả về 0 = BỎ QUA build.
+  ignore = "bash netlify/should-skip-build.sh"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Không cài devDependencies của các gói không cần khi build production.
+  NPM_FLAGS = "--include=dev"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Deploy xem trước cho nhánh khác: KHÔNG bật, để tiết kiệm credit.
+[context.deploy-preview]
+  command = "echo 'Bỏ qua deploy xem trước để tiết kiệm credit gói Free'"
+
+[context.branch-deploy]
+  command = "echo 'Bỏ qua deploy nhánh để tiết kiệm credit gói Free'"
+
+# Đây là hệ thống nội bộ chứa dữ liệu học viên và tài chính — không cho nhúng
+# vào trang khác, không cho trình duyệt tự đoán kiểu tệp, không rò đường dẫn
+# nội bộ ra trang ngoài.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    # Hệ thống nội bộ, không cần công cụ tìm kiếm lập chỉ mục.
+    X-Robots-Tag = "noindex, nofollow"
