@@ -8,7 +8,9 @@ import { SubmitButton } from '@/components/SubmitButton'
 import { FormMessage } from '@/components/FormMessage'
 import type { ActionResult } from '@/lib/actions'
 import { ATTENDANCE_STATUS, ATTITUDE, HOMEWORK_COMPLETION, qcTone } from '@/lib/labels'
+import { classifyVideoSource, type FeedbackDraft } from '@/lib/ai/feedback'
 import { saveTeachingReport } from '../actions'
+import { AIDraftPanel } from './AIDraftPanel'
 
 type Student = {
   id: string
@@ -55,6 +57,7 @@ export function ReportForm({
   lessonId,
   canEdit,
   isFounder,
+  aiEnabled,
   qcMinScore,
   deadlineHours,
   students,
@@ -65,6 +68,7 @@ export function ReportForm({
   lessonId: string
   canEdit: boolean
   isFounder: boolean
+  aiEnabled: boolean
   qcMinScore: number
   deadlineHours: number
   students: Student[]
@@ -82,6 +86,27 @@ export function ReportForm({
   const [videoTimestamp, setVideoTimestamp] = useState(defaults.video_timestamp)
   const [studentQuote, setStudentQuote] = useState(defaults.student_quote)
   const [sentencePatterns, setSentencePatterns] = useState(defaults.homework_sentence_patterns)
+
+  // Bốn ô dưới đây cũng do AI điền được, nên phải là ô có trạng thái — nếu để
+  // defaultValue thì kết quả AI trả về sẽ không hiện ra.
+  const [strengths, setStrengths] = useState(defaults.strengths)
+  const [improvements, setImprovements] = useState(defaults.improvements)
+  const [lessonContent, setLessonContent] = useState(defaults.lesson_content)
+  const [nextRecommendation, setNextRecommendation] = useState(defaults.next_lesson_recommendation)
+
+  /** Điền kết quả AI vào form. Chỉ ghi đè ô đang trống để không mất chữ giáo viên đã gõ. */
+  function applyDraft(draft: FeedbackDraft) {
+    const fill = (value: string, current: string, set: (v: string) => void) => {
+      if (value.trim() !== '' && current.trim() === '') set(value)
+    }
+    fill(draft.strengths, strengths, setStrengths)
+    fill(draft.improvements, improvements, setImprovements)
+    fill(draft.student_quote, studentQuote, setStudentQuote)
+    fill(draft.video_timestamp, videoTimestamp, setVideoTimestamp)
+    fill(draft.homework_sentence_patterns, sentencePatterns, setSentencePatterns)
+    fill(draft.lesson_content, lessonContent, setLessonContent)
+    fill(draft.next_lesson_recommendation, nextRecommendation, setNextRecommendation)
+  }
 
   // Hai tiêu chí "đủ sâu" do Founder hoặc AI chấm, giáo viên không tự bật được.
   const [strengthsDeep, setStrengthsDeep] = useState(defaults.qc_strengths_deep === true)
@@ -213,7 +238,8 @@ export function ReportForm({
           <Field label="Nội dung buổi học" hint="Unit, chủ điểm, kỹ năng đã luyện">
             <Textarea
               name="lesson_content"
-              defaultValue={defaults.lesson_content}
+              value={lessonContent}
+              onChange={(e) => setLessonContent(e.target.value)}
               rows={3}
               disabled={!canEdit}
               placeholder="Ví dụ: Unit 4 — Daily routines. Luyện thì hiện tại đơn, 12 từ vựng mới."
@@ -275,6 +301,15 @@ export function ReportForm({
         </CardBody>
       </Card>
 
+      {canEdit ? (
+        <AIDraftPanel
+          lessonId={lessonId}
+          enabled={aiEnabled}
+          videoSource={classifyVideoSource(recordingUrl)}
+          onDraft={applyDraft}
+        />
+      ) : null}
+
       {/* ---- Nhận xét có cấu trúc ---------------------------------------- */}
       <Card>
         <CardHeader
@@ -288,7 +323,8 @@ export function ReportForm({
           >
             <Textarea
               name="strengths"
-              defaultValue={defaults.strengths}
+              value={strengths}
+              onChange={(e) => setStrengths(e.target.value)}
               rows={3}
               disabled={!canEdit}
               placeholder="Ví dụ: Phát âm /θ/ đã đúng ở 8/10 lần, tự sửa lại khi nghe mẫu."
@@ -301,7 +337,8 @@ export function ReportForm({
           >
             <Textarea
               name="improvements"
-              defaultValue={defaults.improvements}
+              value={improvements}
+              onChange={(e) => setImprovements(e.target.value)}
               rows={3}
               disabled={!canEdit}
               placeholder="Ví dụ: Còn quên -s ở ngôi thứ ba. Buổi sau luyện 10 câu mô tả thói quen."
@@ -444,7 +481,8 @@ export function ReportForm({
           <Field label="Đề xuất cho buổi tiếp theo">
             <Textarea
               name="next_lesson_recommendation"
-              defaultValue={defaults.next_lesson_recommendation}
+              value={nextRecommendation}
+              onChange={(e) => setNextRecommendation(e.target.value)}
               rows={2}
               disabled={!canEdit}
             />

@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Node chạy kiểm thử bằng --experimental-strip-types nên import trong file
+    // .test.ts phải ghi rõ đuôi .ts. Chỉ ảnh hưởng lúc kiểm kiểu (noEmit).
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],

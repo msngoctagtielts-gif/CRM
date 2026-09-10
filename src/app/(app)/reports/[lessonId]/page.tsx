@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatDate, formatDeadline, formatDuration, formatTime, toDateTimeLocal } from '@/lib/format'
 import { CLASS_TYPE, REPORT_AUTHOR, REPORT_STATUS, missingFieldLabels, qcTone } from '@/lib/labels'
 import { getOperatingSettings } from '@/lib/settings'
+import { isAIConfigured } from '@/lib/ai/provider'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { ReportForm } from './ReportForm'
@@ -161,6 +162,7 @@ export default async function ReportFormPage({
         lessonId={lessonId}
         canEdit={canEdit}
         isFounder={isFounder}
+        aiEnabled={isAIConfigured()}
         qcMinScore={settings.qcMinScore}
         deadlineHours={settings.reportDeadlineHours}
         students={students}

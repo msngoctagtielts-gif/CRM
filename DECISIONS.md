@@ -93,6 +93,48 @@ trên giao diện là chưa đủ: giáo viên vẫn gọi thẳng PostgREST đ�
 nội dung khác của báo cáo vẫn lưu bình thường. Bộ kiểm thử có thêm mục 13 chứng
 minh cả hai chiều: giáo viên bật không ăn thua, Founder bật thì có hiệu lực.
 
+## 10/09/2026 — Chọn Google Gemini cho phần AI viết nhận xét (D6)
+
+Founder yêu cầu: dùng Google AI Studio hoặc bất kỳ cách nào, **miễn là miễn phí**.
+
+Đã chọn **Google Gemini** (`gemini-2.0-flash`) vì Google AI Studio cấp khoá API
+miễn phí **không cần thẻ**, và hạn mức miễn phí (khoảng 15 lượt/phút, 1.500
+lượt/ngày) xa hơn nhiều so với vài chục buổi mỗi tuần của trung tâm. Phần chạm
+mạng gói riêng trong `src/lib/ai/provider.ts` nên đổi nhà cung cấp về sau chỉ sửa
+một file.
+
+**Không dùng** các cổng "gọi AI không cần khoá" đang lưu hành: chúng vi phạm điều
+khoản của nhà cung cấp, có thể tắt bất cứ lúc nào, và đẩy dữ liệu học viên qua
+một bên thứ ba không rõ danh tính.
+
+### Giới hạn phải biết trước: AI không xem được recording trên Google Drive
+
+Gemini đọc trực tiếp được video YouTube, nhưng **không mở được link Google Drive**
+vì đó là file riêng tư cần đăng nhập. Trung tâm đang lưu recording trên Drive, nên
+phần lớn buổi học rơi vào trường hợp này.
+
+Khi không có nguồn nghe được, hệ thống **để trống trích nguyên văn lời học viên và
+timestamp** thay vì để AI điền cho đủ điểm. Trích nguyên văn là một trong 6 tiêu
+chí chấm chất lượng nên có áp lực bịa; một câu tiếng Anh bịa ra rồi gửi phụ huynh
+như thể con họ đã nói là hỏng lòng tin. Chặn ở hai lớp: prompt cấm bịa, và máy chủ
+xoá trích dẫn/timestamp nếu model vẫn cố điền (`enforceNoFabrication`). Lớp thứ
+hai mới là lớp bảo đảm — dặn một mô hình ngôn ngữ không phải là bảo đảm.
+
+Cách để có đủ 6 tiêu chí: giáo viên dán bản ghi lời thoại vào form.
+
+### Dữ liệu gửi ra ngoài
+
+Chỉ gửi tên gọi (không gửi họ tên đầy đủ), tuổi, tên lớp, ngày học, nội dung buổi
+học, ghi chú giáo viên và transcript nếu có. Không gửi số điện thoại, thông tin
+phụ huynh, hay bất kỳ số liệu học phí/lương/doanh thu nào. Chi tiết và cách tắt
+hẳn: `docs/AI_SETUP.md`.
+
+### Việc Founder phải tự làm
+
+Tạo khoá ở <https://aistudio.google.com/apikey> — cần đăng nhập tài khoản Google
+của trung tâm nên không ai làm hộ được. Ba bước, khoảng 2 phút. Chưa có khoá thì
+tính năng tự tắt, mọi phần khác chạy bình thường.
+
 ---
 
 ## Còn thiếu để hoàn tất việc nhập dữ liệu

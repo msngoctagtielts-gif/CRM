@@ -7,6 +7,8 @@ import { requireUser } from '@/lib/auth'
 import { friendlyDbError, type ActionResult } from '@/lib/actions'
 import { localInputToISO, minutesBetween } from '@/lib/time'
 import { MISSING_FIELD } from '@/lib/labels'
+import { classifyVideoSource, studentLabelFor, type FeedbackDraft } from '@/lib/ai/feedback'
+import { draftLessonFeedback, isAIConfigured } from '@/lib/ai/provider'
 import type { TablesInsert, TablesUpdate } from '@/types/database.types'
 
 const ATTENDANCE_VALUES = [
@@ -184,6 +186,21 @@ export async function saveTeachingReport(
   }
 
   // 5) Báo cáo. Điểm QC, trạng thái và danh sách trường thiếu do trigger tính.
+  //    Nếu nội dung đang do AI viết mà giáo viên sửa đi, phải ghi lại là "AI
+  //    viết, giáo viên sửa" (D6) — Founder cần phân biệt được ba trường hợp khi
+  //    đọc báo cáo, chứ không chỉ biết là có AI tham gia.
+  const { data: previous } = await supabase
+    .from('teaching_reports')
+    .select('authored_by, strengths, improvements, student_quote')
+    .eq('lesson_id', lesson.id)
+    .maybeSingle()
+
+  const teacherEditedAIText =
+    previous?.authored_by === 'ai' &&
+    ((input.strengths ?? '') !== (previous.strengths ?? '') ||
+      (input.improvements ?? '') !== (previous.improvements ?? '') ||
+      (input.student_quote ?? '') !== (previous.student_quote ?? ''))
+
   const reportPayload: TablesInsert<'teaching_reports'> = {
     lesson_id: lesson.id,
     class_id: lesson.class_id,
@@ -204,6 +221,8 @@ export async function saveTeachingReport(
     submitted_at: new Date().toISOString(),
     created_by: user.id,
   }
+
+  if (teacherEditedAIText) reportPayload.authored_by = 'ai_edited_by_teacher'
 
   // Hai tiêu chí "đủ sâu" là KẾT LUẬN CHẤM, không phải dữ liệu giáo viên nhập.
   // Chỉ ghi khi Founder thực sự gửi phần chấm, nếu không sẽ vô tình xoá điểm đã
@@ -367,4 +386,181 @@ function detectProvider(url: string): string {
 /** Dùng chung từ điển với giao diện để thông báo và cảnh báo không nói lệch nhau. */
 function labelOf(field: string): string {
   return (MISSING_FIELD[field] ?? field).toLowerCase()
+}
+
+const aiDraftSchema = z.object({
+  lesson_id: z.string().uuid(),
+  transcript: z.string().max(40000).optional(),
+})
+
+/**
+ * Kết quả soạn nháp: kèm luôn nội dung để biểu mẫu điền ngay vào các ô, khỏi
+ * phải tải lại trang và mất những gì giáo viên đang gõ dở.
+ */
+export type AIDraftResult =
+  | { ok: true; message: string; draft: FeedbackDraft }
+  | { ok: false; error: string }
+
+/**
+ * Nhờ AI soạn NHÁP nhận xét cho một buổi học (D6).
+ *
+ * Ba điều cố ý làm chặt:
+ *
+ *   · Kết quả là **bản nháp** ghi vào báo cáo, KHÔNG gửi phụ huynh. Gửi phụ
+ *     huynh vẫn là một bước riêng do người bấm (giả định A13).
+ *   · Chỉ gửi ra dịch vụ ngoài những gì cần để viết nhận xét: tên gọi, tuổi,
+ *     tên lớp, nội dung buổi học. Họ tên đầy đủ, số điện thoại, thông tin phụ
+ *     huynh và mọi số liệu tài chính không rời khỏi hệ thống.
+ *   · Không có nguồn nghe được thì trích dẫn và timestamp bị xoá ở phía máy
+ *     chủ, kể cả khi model cố điền (`enforceNoFabrication`).
+ *
+ * Hai tiêu chí "đủ sâu" KHÔNG được AI tự bật — vẫn do Founder chấm, và trigger
+ * `trg_guard_qc_verdict` chặn ở tầng cơ sở dữ liệu.
+ */
+export async function draftFeedbackWithAI(
+  lessonId: string,
+  transcript: string,
+): Promise<AIDraftResult> {
+  const user = await requireUser()
+
+  const parsed = aiDraftSchema.safeParse({
+    lesson_id: lessonId,
+    transcript: transcript.trim() || undefined,
+  })
+  if (!parsed.success) return { ok: false, error: 'Thiếu mã buổi học.' }
+
+  if (!isAIConfigured()) {
+    return {
+      ok: false,
+      error:
+        'Chưa bật tính năng AI. Founder cần tạo khoá miễn phí ở Google AI Studio rồi đặt vào biến môi trường GOOGLE_AI_API_KEY.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  // RLS: giáo viên không dạy buổi này đọc không ra dòng nào ⇒ dừng ngay.
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('id, class_id, teacher_id, lesson_date, duration_minutes, classes(name)')
+    .eq('id', parsed.data.lesson_id)
+    .maybeSingle()
+
+  if (!lesson) return { ok: false, error: 'Không tìm thấy buổi học, hoặc bạn không có quyền.' }
+
+  const [{ data: roster }, { data: report }, { data: recording }] = await Promise.all([
+    supabase
+      .from('class_students')
+      .select('students(full_name, nickname, date_of_birth)')
+      .eq('class_id', lesson.class_id)
+      .eq('status', 'active')
+      .limit(10),
+    supabase
+      .from('teaching_reports')
+      .select('id, lesson_content, teacher_comments')
+      .eq('lesson_id', lesson.id)
+      .maybeSingle(),
+    supabase
+      .from('recordings')
+      .select('url')
+      .eq('lesson_id', lesson.id)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle(),
+  ])
+
+  const students = (roster ?? [])
+    .map((r) => r.students as { full_name: string; nickname: string | null; date_of_birth: string | null } | null)
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+
+  const label =
+    students.length === 1
+      ? studentLabelFor(students[0].full_name, students[0].nickname)
+      : students.map((s) => studentLabelFor(s.full_name, s.nickname)).join(', ') || 'học viên'
+
+  const videoUrl = recording?.url ?? ''
+  const cls = lesson.classes as { name: string } | null
+
+  const result = await draftLessonFeedback({
+    studentLabel: label,
+    studentAge: students.length === 1 ? ageFromBirthDate(students[0].date_of_birth) : null,
+    className: cls?.name ?? '',
+    lessonDate: lesson.lesson_date,
+    durationMinutes: lesson.duration_minutes,
+    lessonContent: report?.lesson_content ?? '',
+    teacherNotes: report?.teacher_comments ?? '',
+    transcript: parsed.data.transcript ?? '',
+    videoUrl,
+    videoSource: classifyVideoSource(videoUrl),
+  })
+
+  if (!result.ok) return { ok: false, error: result.error }
+
+  const draft = result.draft
+
+  // Ghi vào báo cáo. Chỉ điền những ô AI thực sự viết được, không xoá nội dung
+  // giáo viên đã gõ bằng chuỗi rỗng.
+  const payload: TablesUpdate<'teaching_reports'> = { authored_by: 'ai' }
+  if (draft.strengths) payload.strengths = draft.strengths
+  if (draft.improvements) payload.improvements = draft.improvements
+  if (draft.student_quote) payload.student_quote = draft.student_quote
+  if (draft.video_timestamp) payload.video_timestamp = draft.video_timestamp
+  if (draft.lesson_content && !report?.lesson_content) payload.lesson_content = draft.lesson_content
+  if (draft.next_lesson_recommendation) {
+    payload.next_lesson_recommendation = draft.next_lesson_recommendation
+  }
+
+  const { error } = report
+    ? await supabase.from('teaching_reports').update(payload).eq('id', report.id)
+    : await supabase.from('teaching_reports').insert({
+        ...payload,
+        lesson_id: lesson.id,
+        class_id: lesson.class_id,
+        teacher_id: lesson.teacher_id,
+        created_by: user.id,
+      })
+
+  if (error) return { ok: false, error: friendlyDbError(error.message) }
+
+  // Mẫu câu bài tập nằm ở bảng homework, không phải báo cáo.
+  if (draft.homework_sentence_patterns) {
+    const { data: existing } = await supabase
+      .from('homework')
+      .select('id, sentence_patterns')
+      .eq('lesson_id', lesson.id)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle()
+
+    if (existing && !existing.sentence_patterns) {
+      await supabase
+        .from('homework')
+        .update({ sentence_patterns: draft.homework_sentence_patterns })
+        .eq('id', existing.id)
+    }
+  }
+
+  revalidatePath(`/reports/${lesson.id}`)
+
+  const notes: string[] = ['AI đã viết bản nháp — hãy đọc lại và sửa trước khi gửi phụ huynh.']
+  if (result.dropped.length > 0) {
+    notes.push(
+      `Chưa điền được ${result.dropped.join(' và ')} vì không có bản ghi lời thoại và không mở được video. Dán transcript rồi bấm lại, hoặc tự điền.`,
+    )
+  }
+  if (draft.source_note) notes.push(draft.source_note)
+
+  return { ok: true, message: notes.join(' '), draft }
+}
+
+/** Tuổi tính theo năm tròn. Trả null khi chưa có ngày sinh. */
+function ageFromBirthDate(value: string | null): number | null {
+  if (!value) return null
+  const born = new Date(`${value}T00:00:00Z`)
+  if (Number.isNaN(born.getTime())) return null
+  const now = new Date()
+  let age = now.getUTCFullYear() - born.getUTCFullYear()
+  const monthDiff = now.getUTCMonth() - born.getUTCMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && now.getUTCDate() < born.getUTCDate())) age -= 1
+  return age >= 0 && age < 120 ? age : null
 }

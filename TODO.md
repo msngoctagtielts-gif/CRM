@@ -62,9 +62,14 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       `fn_alert_not_sent_to_parent` trong `/api/cron/scan-reports`
 - [x] **Trang bảng lương** (D4, D5) — `/payroll`: tính theo tháng, điều chỉnh, duyệt rồi
       mới trả; giáo viên chỉ thấy lương của chính mình (có kiểm thử RLS)
-- [ ] **Nối AI viết feedback từ link video** (D6) — ⛔ **cần Founder quyết trước**: dùng
-      model nào và khoá API lấy từ đâu. Cơ sở dữ liệu đã sẵn sàng (`authored_by`,
-      `recordings.url`); giữ bước người bấm gửi phụ huynh (giả định A13)
+- [x] **Nối AI viết feedback** (D6) — dùng **Google Gemini gói miễn phí**; nút "AI viết
+      nháp" trong form báo cáo; giữ bước người bấm gửi phụ huynh (giả định A13).
+      Chặn bịa trích dẫn ở hai lớp, có 11 kiểm thử đơn vị (`npm run test:unit`)
+- [ ] ⛔ **Founder tạo khoá Google AI Studio** rồi đặt `GOOGLE_AI_API_KEY` — việc này
+      cần đăng nhập tài khoản Google của trung tâm nên tôi không làm hộ được.
+      Hướng dẫn 3 bước: `docs/AI_SETUP.md`. Chưa có khoá thì tính năng tự tắt
+- [ ] **Chạy thử AI với khoá thật** — đã kiểm thử toàn bộ phần logic, nhưng lần gọi
+      thật tới Gemini thì chưa chạy được vì chưa có khoá
 
 ## P1b — Hoàn thiện Giai đoạn 1
 
