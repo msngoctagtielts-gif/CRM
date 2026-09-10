@@ -170,6 +170,13 @@ Thiếu thì buổi **không vào bảng lương** và sinh báo động đỏ g
 chí đạt × 100 / 6. Hai tiêu chí "đủ sâu" chưa chấm (`NULL`) tính là **chưa đạt**,
 nên một báo cáo mới nhập không bao giờ tự nhiên đạt 100 điểm.
 
+Hai cột `qc_strengths_deep` và `qc_improvements_deep` là **kết luận chấm**, không
+phải dữ liệu giáo viên nhập. Chính sách RLS cho phép giáo viên sửa mọi cột của báo
+cáo chưa duyệt, nên trigger `trg_guard_qc_verdict` (migration 0017) giữ nguyên giá
+trị cũ của hai cột này cùng `qc_notes` khi người ghi không phải Founder — nếu chỉ
+giấu ô trên giao diện thì giáo viên vẫn có thể gọi thẳng PostgREST để tự nâng điểm
+lên 100 và làm tắt cảnh báo chất lượng.
+
 Báo cáo **ĐẠT** khi có đủ giờ dạy **và** `qc_score >= settings.qc_min_score` (mặc
 định 60).
 
@@ -367,7 +374,7 @@ policy của mình.
 | `classes`, `class_students`, `class_schedules` | toàn quyền | chỉ đọc lớp mình |
 | `lessons` | toàn quyền | đọc lớp mình; sửa buổi mình dạy (ghi giờ, đánh dấu đã dạy); **không tạo/xoá** |
 | `attendance` | toàn quyền | ghi cho buổi mình dạy, **chỉ học viên có trong lớp đó** |
-| `teaching_reports`, `teaching_report_students`, `homework`, `recordings` | toàn quyền | đọc/ghi trong phạm vi lớp mình; báo cáo đã `approved` thành chỉ đọc |
+| `teaching_reports`, `teaching_report_students`, `homework`, `recordings` | toàn quyền | đọc/ghi trong phạm vi lớp mình; báo cáo đã `approved` thành chỉ đọc; **không tự chấm được `qc_strengths_deep` / `qc_improvements_deep` / `qc_notes`** |
 | `student_enrollments`, `tuition_rates`, `tuition_statements`, `lesson_consumptions`, `payments`, `expenses` | toàn quyền | **không có policy nào ⇒ hoàn toàn vô hình** |
 | `teacher_payable_lessons`, `teacher_payroll`, `teacher_payroll_adjustments` | toàn quyền + duyệt | **chỉ đọc của chính mình** |
 | `leads`, `lead_activities` | toàn quyền | không truy cập |

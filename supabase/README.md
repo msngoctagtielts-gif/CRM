@@ -27,6 +27,7 @@ File migration đã push thì **không sửa nội dung nữa** — sai thì vi�
 | `0014_payer_can_be_guardian.sql` | người đóng học phí có thể không phải học viên (D14) |
 | `0015_lock_down_function_execute.sql` | **vá bảo mật**: thu hồi quyền gọi hàm của `anon` |
 | `0016_tuition_functions_security_invoker.sql` | **vá bảo mật**: hai hàm học phí chịu RLS |
+| `0017_guard_qc_verdict.sql` | **vá bảo mật**: giáo viên không tự chấm được chất lượng cho báo cáo của mình |
 
 ## Chạy lần đầu
 

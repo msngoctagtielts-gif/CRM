@@ -5,6 +5,7 @@ import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate, formatDeadline, formatDuration, formatTime } from '@/lib/format'
 import { LESSON_STATUS, REPORT_STATUS, missingFieldLabels } from '@/lib/labels'
+import { getOperatingSettings } from '@/lib/settings'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { StatCard } from '@/components/ui/StatCard'
@@ -22,6 +23,7 @@ export default async function ReportsPage({
   const user = await requireUser()
   const { filter } = await searchParams
   const supabase = await createClient()
+  const settings = await getOperatingSettings()
   const isFounder = user.role_code === 'founder'
 
   // RLS giới hạn phạm vi: giáo viên chỉ nhận buổi của lớp mình.
@@ -49,7 +51,7 @@ export default async function ReportsPage({
     <>
       <PageHeader
         title={isFounder ? 'Báo cáo giảng dạy' : 'Báo cáo của tôi'}
-        description="Sau mỗi buổi học, báo cáo phải có đủ bài tập, link recording và nhận xét trong vòng 10 giờ."
+        description={`Sau mỗi buổi học, báo cáo phải đạt đủ sáu tiêu chí chất lượng trong vòng ${settings.reportDeadlineHours} giờ.`}
       />
 
       <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -60,7 +62,7 @@ export default async function ReportsPage({
           accent={needsAction.length > 0 ? 'gold' : 'sage'}
         />
         <StatCard
-          label="Quá hạn 10 giờ"
+          label={`Quá hạn ${settings.reportDeadlineHours} giờ`}
           value={overdue.length}
           accent={overdue.length > 0 ? 'burgundy' : 'sage'}
         />

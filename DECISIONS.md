@@ -36,7 +36,7 @@ Giả định chưa xác nhận vẫn nằm ở `PROJECT_PLAN.md` mục 6.
 **Supabase project:** `zyzxqthlgrunkxohvhku` · vùng **ap-southeast-1 (Singapore)** ·
 PostgreSQL 17.6 · gói Free (0 ₫/tháng)
 
-- 16 migration đã áp, đối chiếu **khớp tuyệt đối** với bản kiểm thử cục bộ trên cả
+- 17 migration đã áp, đối chiếu **khớp tuyệt đối** với bản kiểm thử cục bộ trên cả
   12 chỉ số, gồm 4 mã băm MD5 phủ cột+kiểu, tên hàm, tên policy và giá trị enum
 - 35 bảng · 10 view · 69 policy RLS · 18 enum · 100 trigger
 - Tham số vận hành đã đúng: hạn báo cáo **24 giờ**, ngưỡng QC **60**, KPI **20 buổi/tháng**
@@ -79,6 +79,19 @@ trả về thông tin về chính người gọi, hoặc tự kiểm `is_founder
 
 Bộ kiểm thử có thêm mục 12 chứng minh: `anon` bị chặn cả 7 hàm thử gọi, giáo viên
 bị chặn 3 hàm và nhận `NULL` từ 2 hàm học phí, nhưng RLS và trigger vẫn chạy đúng.
+
+## 10/09/2026 — Chặn giáo viên tự chấm chất lượng (migration 0017)
+
+Phát hiện khi làm form báo cáo mới: policy `reports_teacher_update` cho giáo viên
+sửa **mọi cột** của báo cáo chưa duyệt. Trong đó có `qc_strengths_deep` và
+`qc_improvements_deep` — hai tiêu chí lẽ ra do Founder hoặc AI chấm (D3). Giấu ô
+trên giao diện là chưa đủ: giáo viên vẫn gọi thẳng PostgREST được để tự bật cả hai,
+đưa điểm QC từ 67 lên 100 và làm **tắt cảnh báo chất lượng gửi Founder**.
+
+Đã vá bằng trigger `trg_guard_qc_verdict`: khi người ghi không phải Founder, ba cột
+`qc_strengths_deep`, `qc_improvements_deep`, `qc_notes` giữ nguyên giá trị cũ; mọi
+nội dung khác của báo cáo vẫn lưu bình thường. Bộ kiểm thử có thêm mục 13 chứng
+minh cả hai chiều: giáo viên bật không ăn thua, Founder bật thì có hiệu lực.
 
 ---
 

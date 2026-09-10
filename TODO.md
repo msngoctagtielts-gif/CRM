@@ -42,17 +42,19 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 
 *CSDL đã xong và đã kiểm thử; đây là phần giao diện còn thiếu. Xem `DECISIONS.md`.*
 
-- [ ] **Form báo cáo giảng dạy theo 6 tiêu chí** (D3) — thêm ô: trích nguyên văn lời
+- [x] **Form báo cáo giảng dạy theo 6 tiêu chí** (D3) — đã thêm ô trích nguyên văn lời
       học viên, timestamp đối chiếu, điểm mạnh, phần cần cải thiện, mẫu câu cho
-      homework. Hiện điểm QC và cho biết còn thiếu tiêu chí nào
-- [ ] **Sửa chữ "10 giờ" thành "24 giờ"** trong trang báo cáo và trang cảnh báo (D2)
+      homework; điểm QC hiện ngay khi gõ, kèm danh sách tiêu chí còn thiếu
+- [x] **Bỏ mọi con số hạn nộp viết cứng** (D2) — đọc từ bảng `settings` qua
+      `src/lib/settings.ts`, đổi trong CSDL là mọi màn hình đổi theo
+- [x] **Nút "Đánh dấu đã gửi phụ huynh"** và **nút duyệt báo cáo** cho Founder (A13)
 - [ ] **Ô chọn hình thức đóng** trong form hợp đồng (D1): gói trả trước / cuối tháng
 - [ ] **Nhập nhiều mốc đơn giá** theo ngày hiệu lực (D11) — ca Bé Ngân
 - [ ] **Ô người đại diện đóng** cho lớp nhóm (D13) — ca Y Khoa
 - [ ] **Trang phiếu học phí tháng** (D1): lập phiếu → gửi → ghi nhận thu
 - [ ] **Trang "Cần đối soát"** đọc từ `v_data_review` (D8)
 - [ ] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7)
-- [ ] Gọi thêm `fn_alert_missing_lesson_time`, `fn_alert_lesson_balance`,
+- [x] Gọi thêm `fn_alert_missing_lesson_time`, `fn_alert_lesson_balance`,
       `fn_alert_not_sent_to_parent` trong `/api/cron/scan-reports`
 - [ ] **Nối AI viết feedback từ link video** (D6) — chọn model, và giữ bước người
       bấm gửi phụ huynh (giả định A13)
@@ -60,7 +62,6 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 ## P1b — Hoàn thiện Giai đoạn 1
 
 - [ ] Trang **sửa hồ sơ học viên** (`/students/[id]/edit`) — server action `updateStudent` đã có, thiếu giao diện
-- [ ] **Nút duyệt báo cáo** cho Founder trong trang báo cáo — action `approveReport` đã có, chưa gắn vào UI
 - [ ] **Liên kết tài khoản giáo viên** từ giao diện (gán `teachers.user_id`), thay cho việc chạy SQL tay
 - [ ] Trang **sửa / huỷ lớp học**, đánh dấu học viên rời lớp
 - [ ] **Huỷ và dời buổi học** từ giao diện (CSDL đã hỗ trợ `cancelled`, `rescheduled`, `is_makeup`)

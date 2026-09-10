@@ -1118,5 +1118,92 @@ rollback;
 
 \echo ''
 \echo '======================================================'
+\echo '  13. Giáo viên không tự chấm chất lượng cho mình được'
+\echo '======================================================'
+
+-- Hai tiêu chí "đủ sâu" là kết luận chấm của Founder hoặc AI, không phải dữ
+-- liệu giáo viên nhập (D3). RLS cho phép giáo viên sửa mọi cột của báo cáo chưa
+-- duyệt, nên nếu chỉ giấu ô trên giao diện thì giáo viên vẫn gọi thẳng API để
+-- tự nâng điểm QC lên 100 và làm tắt cảnh báo chất lượng.
+
+\echo ''
+\echo '--- 13a. Giáo viên tự bật "đủ sâu" ⇒ bị bỏ qua, điểm QC không đổi ---'
+begin;
+  -- Đưa về trạng thái chưa chấm để thấy rõ hiệu lực của chốt chặn.
+  update public.teaching_reports
+     set qc_strengths_deep = null, qc_improvements_deep = null, qc_notes = null
+   where id = '99999999-0000-0000-0000-000000000001';
+
+  do $$ begin
+    perform public.t_assert(
+      (select qc_score from public.teaching_reports
+        where id = '99999999-0000-0000-0000-000000000001') = 67,
+      'chưa chấm "đủ sâu" ⇒ 4/6 tiêu chí máy tự kiểm ⇒ điểm QC = 67');
+  end $$;
+
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+
+  update public.teaching_reports
+     set qc_strengths_deep    = true,
+         qc_improvements_deep = true,
+         qc_notes             = 'tự chấm là đạt',
+         student_quote        = 'I wake up at six o''clock and I brush my teeth.'
+   where id = '99999999-0000-0000-0000-000000000001';
+
+  do $$
+  declare r public.teaching_reports;
+  begin
+    select * into r from public.teaching_reports
+     where id = '99999999-0000-0000-0000-000000000001';
+    perform public.t_assert(r.qc_strengths_deep is null,
+      'giáo viên KHÔNG tự bật được "điểm mạnh đủ sâu"');
+    perform public.t_assert(r.qc_improvements_deep is null,
+      'giáo viên KHÔNG tự bật được "cần cải thiện đủ sâu"');
+    perform public.t_assert(r.qc_notes is null,
+      'giáo viên KHÔNG tự ghi được ghi chú chấm chất lượng');
+    perform public.t_assert(r.qc_score = 67,
+      'điểm QC vẫn 67 — không bị tự nâng lên 100');
+    perform public.t_assert(
+      r.missing_fields @> array['strengths_deep','improvements_deep'],
+      'hai tiêu chí "đủ sâu" vẫn nằm trong danh sách còn thiếu');
+    perform public.t_assert(
+      r.student_quote = 'I wake up at six o''clock and I brush my teeth.',
+      'nhưng nội dung bình thường của giáo viên vẫn lưu được — chốt chặn không quá tay');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 13b. Founder chấm thì có hiệu lực ---'
+begin;
+  update public.teaching_reports
+     set qc_strengths_deep = null, qc_improvements_deep = null, qc_notes = null
+   where id = '99999999-0000-0000-0000-000000000001';
+
+  set local role authenticated;
+  set local "test.user_id" = '11111111-1111-1111-1111-111111111111';
+
+  update public.teaching_reports
+     set qc_strengths_deep    = true,
+         qc_improvements_deep = true,
+         qc_notes             = 'Nhận xét có ví dụ cụ thể, đạt.'
+   where id = '99999999-0000-0000-0000-000000000001';
+
+  do $$
+  declare r public.teaching_reports;
+  begin
+    select * into r from public.teaching_reports
+     where id = '99999999-0000-0000-0000-000000000001';
+    perform public.t_assert(r.qc_strengths_deep is true,  'Founder chấm được "điểm mạnh đủ sâu"');
+    perform public.t_assert(r.qc_improvements_deep is true, 'Founder chấm được "cần cải thiện đủ sâu"');
+    perform public.t_assert(r.qc_notes = 'Nhận xét có ví dụ cụ thể, đạt.',
+      'ghi chú chấm chất lượng được lưu');
+    perform public.t_assert(r.qc_score = 100, 'đủ 6/6 tiêu chí ⇒ điểm QC = 100');
+    perform public.t_assert(r.status = 'submitted', 'báo cáo chuyển sang đã nộp đủ');
+  end $$;
+rollback;
+
+\echo ''
+\echo '======================================================'
 \echo '  TOÀN BỘ KIỂM THỬ NGHIỆP VỤ: ĐẠT'
 \echo '======================================================'

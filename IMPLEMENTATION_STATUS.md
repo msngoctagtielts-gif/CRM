@@ -72,18 +72,21 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 |---|---|---|
 | D1 — hai hình thức đóng học phí | ✅ đã kiểm thử | ⬜ form hợp đồng chưa có ô chọn hình thức |
 | D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ⬜ chưa có trang nào |
-| D2 — hạn 24 giờ | ✅ | 🟡 trang báo cáo vẫn ghi chữ "10 giờ" |
-| D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ⬜ form vẫn hỏi 3 trường cũ, chưa có ô trích lời học viên / timestamp / mẫu câu |
-| D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | ⬜ chưa có trang bảng lương |
-| D6 — AI viết feedback | ✅ cột `authored_by` | ⬜ chưa nối AI |
+| D2 — hạn 24 giờ | ✅ | ✅ mọi chỗ đọc từ bảng `settings`, không còn chữ viết cứng |
+| D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ✅ form mới đủ 6 tiêu chí, hiện điểm ngay khi gõ |
+| D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | 🟡 form nói rõ thiếu giờ là không tính lương; chưa có trang bảng lương |
+| D6 — AI viết feedback | ✅ cột `authored_by` | 🟡 hiện được nhãn "AI viết"; chưa nối AI |
 | D7 — cho học vượt | ✅ đã kiểm thử | 🟡 dashboard hiển thị được số âm nhưng chưa có cảnh báo riêng |
 | D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ⬜ chưa có trang "Cần đối soát" |
 | D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ⬜ form chỉ nhập được một đơn giá |
 | D13 — lớp nhóm một người đóng | ✅ đã kiểm thử | ⬜ form chưa có ô người đại diện đóng |
+| A13 — gửi phụ huynh là bước riêng | ✅ cột `sent_to_parent_at` | ✅ có nút "Đánh dấu đã gửi" |
 
-**Hệ quả thực tế:** nếu dùng giao diện hiện tại để nhập dữ liệu, hợp đồng sẽ mặc định
-là gói trả trước và báo cáo sẽ luôn thiếu 3 trong 6 tiêu chí chất lượng. Phải làm xong
-mục P1 trong `TODO.md` trước khi cho giáo viên dùng thật.
+**Hệ quả thực tế còn lại:** form báo cáo giảng dạy đã đúng mô hình mới, nhưng biểu mẫu
+hợp đồng học phí thì chưa — nhập bằng giao diện hiện tại thì hợp đồng vẫn mặc định là
+gói trả trước, không nhập được người đại diện đóng và chỉ nhập được một mốc đơn giá.
+Phải làm xong phần còn lại của mục P1 trong `TODO.md` trước khi nhập dữ liệu học viên
+thật.
 
 ---
 

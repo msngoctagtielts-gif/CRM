@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth'
 import { friendlyDbError, type ActionResult } from '@/lib/actions'
 import { localInputToISO, minutesBetween } from '@/lib/time'
-import type { TablesUpdate } from '@/types/database.types'
+import { MISSING_FIELD } from '@/lib/labels'
+import type { TablesInsert, TablesUpdate } from '@/types/database.types'
 
 const ATTENDANCE_VALUES = [
   'present',
@@ -25,25 +26,37 @@ const reportSchema = z.object({
   lesson_content: z.string().max(4000).optional(),
   homework_title: z.string().max(200).optional(),
   homework_description: z.string().max(4000).optional(),
+  homework_sentence_patterns: z.string().max(2000).optional(),
   homework_due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  recording_url: z.string().url('Link recording phải bắt đầu bằng http:// hoặc https://').optional(),
+  recording_url: z.string().url('Link video phải bắt đầu bằng http:// hoặc https://').optional(),
+  video_timestamp: z.string().max(100).optional(),
+  student_quote: z.string().max(2000).optional(),
+  strengths: z.string().max(4000).optional(),
+  improvements: z.string().max(4000).optional(),
   teacher_comments: z.string().max(4000).optional(),
   next_lesson_recommendation: z.string().max(2000).optional(),
   mark_completed: z.string().optional(),
+  // Chỉ Founder gửi ba trường dưới đây; server vẫn kiểm lại quyền.
+  qc_reviewed: z.string().optional(),
+  qc_strengths_deep: z.string().optional(),
+  qc_improvements_deep: z.string().optional(),
+  qc_notes: z.string().max(2000).optional(),
 })
 
 /**
  * Lưu báo cáo giảng dạy cho một buổi học.
  *
  * Gom tất cả vào một action để giáo viên chỉ phải bấm lưu một lần trên điện
- * thoại. Lưu nháp được phép thiếu trường; trạng thái ĐỦ/THIẾU do database tự
- * tính lại (fn_refresh_report_status) nên không thể lệch với cảnh báo.
+ * thoại. Lưu nháp được phép thiếu trường; điểm chất lượng và trạng thái
+ * ĐẠT/THIẾU do database tự tính lại (fn_score_report_qc, fn_refresh_report_status)
+ * nên giao diện không thể nói lệch với cảnh báo.
  */
 export async function saveTeachingReport(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
   const user = await requireUser()
+  const isFounder = user.role_code === 'founder'
 
   const raw: Record<string, string> = {}
   for (const [key, value] of formData.entries()) {
@@ -75,7 +88,7 @@ export async function saveTeachingReport(
   }
 
   // 1) Buổi học: ghi giờ thực tế; đánh dấu đã dạy khi giáo viên xác nhận.
-  //    Chính việc chuyển sang 'completed' mới bắt đầu đếm hạn 10 giờ.
+  //    Chính việc chuyển sang 'completed' mới bắt đầu đếm hạn nộp báo cáo.
   const lessonUpdate: TablesUpdate<'lessons'> = {}
   if (startISO) lessonUpdate.actual_start_at = startISO
   if (endISO) lessonUpdate.actual_end_at = endISO
@@ -115,11 +128,14 @@ export async function saveTeachingReport(
     if (error) return { ok: false, error: friendlyDbError(error.message) }
   }
 
-  // 3) Bài tập về nhà (bảng homework là nguồn sự thật cho kiểm tra "đã có bài tập")
-  if (input.homework_title) {
+  // 3) Bài tập về nhà. Bảng homework là nguồn sự thật cho hai tiêu chí chất
+  //    lượng: "có bài tập" và "bài tập có mẫu câu".
+  //    Mẫu câu có thể được nhập khi bài tập đã tồn tại, nên phải cho phép sửa
+  //    chỉ mẫu câu mà không bắt nhập lại tên bài.
+  if (input.homework_title || input.homework_sentence_patterns) {
     const { data: existing } = await supabase
       .from('homework')
-      .select('id')
+      .select('id, title')
       .eq('lesson_id', lesson.id)
       .eq('status', 'active')
       .limit(1)
@@ -128,9 +144,10 @@ export async function saveTeachingReport(
     const payload = {
       lesson_id: lesson.id,
       class_id: lesson.class_id,
-      title: input.homework_title,
-      description: input.homework_description,
-      due_date: input.homework_due_date,
+      title: input.homework_title ?? existing?.title ?? 'Bài tập buổi học',
+      description: input.homework_description ?? null,
+      sentence_patterns: input.homework_sentence_patterns ?? null,
+      due_date: input.homework_due_date ?? null,
       assigned_by: user.id,
     }
 
@@ -141,7 +158,7 @@ export async function saveTeachingReport(
     if (error) return { ok: false, error: friendlyDbError(error.message) }
   }
 
-  // 4) Recording
+  // 4) Video buổi học
   if (input.recording_url) {
     const { data: existing } = await supabase
       .from('recordings')
@@ -166,28 +183,40 @@ export async function saveTeachingReport(
     if (error) return { ok: false, error: friendlyDbError(error.message) }
   }
 
-  // 5) Báo cáo. Trạng thái và danh sách trường thiếu do trigger tự tính.
+  // 5) Báo cáo. Điểm QC, trạng thái và danh sách trường thiếu do trigger tính.
+  const reportPayload: TablesInsert<'teaching_reports'> = {
+    lesson_id: lesson.id,
+    class_id: lesson.class_id,
+    teacher_id: lesson.teacher_id,
+    start_time: startISO,
+    end_time: endISO,
+    duration_minutes: minutesBetween(startISO, endISO),
+    lesson_content: input.lesson_content,
+    homework_summary: input.homework_title
+      ? [input.homework_title, input.homework_description].filter(Boolean).join(' — ')
+      : undefined,
+    student_quote: input.student_quote,
+    video_timestamp: input.video_timestamp,
+    strengths: input.strengths,
+    improvements: input.improvements,
+    teacher_comments: input.teacher_comments,
+    next_lesson_recommendation: input.next_lesson_recommendation,
+    submitted_at: new Date().toISOString(),
+    created_by: user.id,
+  }
+
+  // Hai tiêu chí "đủ sâu" là KẾT LUẬN CHẤM, không phải dữ liệu giáo viên nhập.
+  // Chỉ ghi khi Founder thực sự gửi phần chấm, nếu không sẽ vô tình xoá điểm đã
+  // chấm mỗi lần giáo viên lưu lại báo cáo.
+  if (isFounder && input.qc_reviewed === '1') {
+    reportPayload.qc_strengths_deep = input.qc_strengths_deep === 'on'
+    reportPayload.qc_improvements_deep = input.qc_improvements_deep === 'on'
+    reportPayload.qc_notes = input.qc_notes ?? null
+  }
+
   const { data: report, error: reportError } = await supabase
     .from('teaching_reports')
-    .upsert(
-      {
-        lesson_id: lesson.id,
-        class_id: lesson.class_id,
-        teacher_id: lesson.teacher_id,
-        start_time: startISO,
-        end_time: endISO,
-        duration_minutes: minutesBetween(startISO, endISO),
-        lesson_content: input.lesson_content,
-        homework_summary: input.homework_title
-          ? [input.homework_title, input.homework_description].filter(Boolean).join(' — ')
-          : undefined,
-        teacher_comments: input.teacher_comments,
-        next_lesson_recommendation: input.next_lesson_recommendation,
-        submitted_at: new Date().toISOString(),
-        created_by: user.id,
-      },
-      { onConflict: 'lesson_id' },
-    )
+    .upsert(reportPayload, { onConflict: 'lesson_id' })
     .select('id, status, missing_fields')
     .single()
 
@@ -225,21 +254,33 @@ export async function saveTeachingReport(
   revalidatePath(`/reports/${lesson.id}`)
   revalidatePath('/dashboard')
 
-  // Đọc lại trạng thái sau khi trigger chạy để nói đúng còn thiếu gì.
+  // Đọc lại sau khi trigger chạy để nói đúng điểm và còn thiếu gì.
   const { data: fresh } = await supabase
     .from('teaching_reports')
-    .select('status, missing_fields')
+    .select('status, missing_fields, qc_score')
     .eq('id', report.id)
     .single()
 
   const missing = fresh?.missing_fields ?? []
+  const score = fresh?.qc_score
+  const scoreText = score === null || score === undefined ? '' : ` Điểm chất lượng: ${score}/100.`
+
   if (missing.length === 0) {
-    return { ok: true, message: 'Đã nộp báo cáo đầy đủ. Cảm ơn bạn.' }
+    return { ok: true, message: `Đã nộp báo cáo đầy đủ.${scoreText} Cảm ơn bạn.` }
+  }
+
+  // Thiếu giờ dạy là việc nghiêm trọng hơn thiếu tiêu chí chất lượng — nói rõ.
+  const missingTime = missing.filter((f) => f === 'start_time' || f === 'end_time')
+  if (missingTime.length > 0) {
+    return {
+      ok: true,
+      message: `Đã lưu, nhưng còn thiếu ${missingTime.map(labelOf).join(' và ')}. Buổi này CHƯA được tính lương cho tới khi có đủ ngày giờ dạy.`,
+    }
   }
 
   return {
     ok: true,
-    message: `Đã lưu. Báo cáo còn thiếu: ${missing.map(labelOf).join(', ')}.`,
+    message: `Đã lưu.${scoreText} Còn thiếu: ${missing.map(labelOf).join(', ')}.`,
   }
 }
 
@@ -275,6 +316,40 @@ export async function approveReport(
   return { ok: true, message: 'Đã duyệt báo cáo.' }
 }
 
+/**
+ * Đánh dấu đã gửi báo cáo cho phụ huynh.
+ *
+ * Đây là một BƯỚC RIÊNG do người bấm, không tự động — kể cả khi nội dung do AI
+ * viết (giả định A13 trong PROJECT_PLAN.md). Quá hạn mà chưa bấm sẽ sinh cảnh
+ * báo qua fn_alert_not_sent_to_parent.
+ */
+export async function markReportSentToParent(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await requireUser()
+
+  const reportId = String(formData.get('report_id') ?? '')
+  if (!z.string().uuid().safeParse(reportId).success) {
+    return { ok: false, error: 'Thiếu mã báo cáo.' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('teaching_reports')
+    .update({ sent_to_parent_at: new Date().toISOString(), sent_to_parent_by: user.id })
+    .eq('id', reportId)
+    .select('lesson_id')
+    .maybeSingle()
+
+  if (error) return { ok: false, error: friendlyDbError(error.message) }
+  if (!data) return { ok: false, error: 'Không tìm thấy báo cáo, hoặc bạn không có quyền.' }
+
+  revalidatePath('/reports')
+  revalidatePath(`/reports/${data.lesson_id}`)
+  return { ok: true, message: 'Đã ghi nhận gửi phụ huynh.' }
+}
+
 function pick<T extends readonly string[]>(
   value: string | undefined,
   allowed: T,
@@ -289,14 +364,7 @@ function detectProvider(url: string): string {
   return 'other'
 }
 
-const MISSING_LABEL: Record<string, string> = {
-  homework: 'bài tập về nhà',
-  recording: 'link recording',
-  teacher_comments: 'nhận xét giáo viên',
-  start_time: 'giờ bắt đầu',
-  end_time: 'giờ kết thúc',
-}
-
+/** Dùng chung từ điển với giao diện để thông báo và cảnh báo không nói lệch nhau. */
 function labelOf(field: string): string {
-  return MISSING_LABEL[field] ?? field
+  return (MISSING_FIELD[field] ?? field).toLowerCase()
 }

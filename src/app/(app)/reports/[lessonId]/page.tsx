@@ -5,10 +5,12 @@ import { ArrowLeft } from 'lucide-react'
 import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate, formatDeadline, formatDuration, formatTime, toDateTimeLocal } from '@/lib/format'
-import { CLASS_TYPE, REPORT_STATUS, missingFieldLabels } from '@/lib/labels'
+import { CLASS_TYPE, REPORT_AUTHOR, REPORT_STATUS, missingFieldLabels, qcTone } from '@/lib/labels'
+import { getOperatingSettings } from '@/lib/settings'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { ReportForm } from './ReportForm'
+import { ReportActions } from './ReportActions'
 
 export const metadata: Metadata = { title: 'Báo cáo giảng dạy' }
 
@@ -20,6 +22,7 @@ export default async function ReportFormPage({
   const user = await requireUser()
   const { lessonId } = await params
   const supabase = await createClient()
+  const settings = await getOperatingSettings()
 
   const { data: lesson } = await supabase
     .from('v_lesson_reports')
@@ -50,7 +53,7 @@ export default async function ReportFormPage({
       supabase.from('attendance').select('student_id, status').eq('lesson_id', lessonId),
       supabase
         .from('homework')
-        .select('title, description, due_date')
+        .select('title, description, due_date, sentence_patterns')
         .eq('lesson_id', lessonId)
         .eq('status', 'active')
         .limit(1)
@@ -72,7 +75,8 @@ export default async function ReportFormPage({
   const reportMeta = lesson.report_status ? REPORT_STATUS[lesson.report_status] : null
   const missing = missingFieldLabels(lesson.missing_fields)
   const isApproved = lesson.report_status === 'approved'
-  const canEdit = user.role_code === 'founder' || !isApproved
+  const isFounder = user.role_code === 'founder'
+  const canEdit = isFounder || !isApproved
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -112,6 +116,15 @@ export default async function ReportFormPage({
               Hạn nộp: {deadline.label}
             </Badge>
           ) : null}
+          {report ? (
+            <Badge tone={qcTone(report.qc_score)}>Chất lượng {report.qc_score ?? 0}/100</Badge>
+          ) : null}
+          {report && report.authored_by !== 'teacher' ? (
+            <Badge tone="info">{REPORT_AUTHOR[report.authored_by]}</Badge>
+          ) : null}
+          {report?.sent_to_parent_at ? (
+            <Badge tone="success">Đã gửi phụ huynh</Badge>
+          ) : null}
           {lesson.submitted_at ? (
             <span className="text-xs text-navy-400">
               Nộp lần đầu {formatDate(lesson.submitted_at)}
@@ -124,7 +137,7 @@ export default async function ReportFormPage({
         <Alert kind={deadline?.overdue ? 'danger' : 'warning'} title="Báo cáo chưa đầy đủ" className="mb-4">
           Còn thiếu: {missing.join(', ')}.
           {deadline?.overdue
-            ? ' Buổi học đã quá hạn 10 giờ nên đang được tính là INCOMPLETE và có cảnh báo gửi tới Founder.'
+            ? ` Buổi học đã quá hạn ${settings.reportDeadlineHours} giờ nên đang được tính là INCOMPLETE và có cảnh báo gửi tới Founder.`
             : ' Hoàn tất trước hạn để không phát sinh cảnh báo.'}
         </Alert>
       ) : null}
@@ -135,9 +148,21 @@ export default async function ReportFormPage({
         </Alert>
       ) : null}
 
+      {report ? (
+        <ReportActions
+          reportId={report.id}
+          isFounder={isFounder}
+          isApproved={isApproved}
+          sentToParentAt={report.sent_to_parent_at}
+        />
+      ) : null}
+
       <ReportForm
         lessonId={lessonId}
         canEdit={canEdit}
+        isFounder={isFounder}
+        qcMinScore={settings.qcMinScore}
+        deadlineHours={settings.reportDeadlineHours}
         students={students}
         defaults={{
           start_time: toDateTimeLocal(report?.start_time ?? lesson.actual_start_at ?? lesson.scheduled_start_at),
@@ -148,7 +173,14 @@ export default async function ReportFormPage({
           homework_title: homework?.title ?? '',
           homework_description: homework?.description ?? '',
           homework_due_date: homework?.due_date ?? '',
+          homework_sentence_patterns: homework?.sentence_patterns ?? '',
           recording_url: recording?.url ?? '',
+          video_timestamp: report?.video_timestamp ?? '',
+          student_quote: report?.student_quote ?? '',
+          strengths: report?.strengths ?? '',
+          improvements: report?.improvements ?? '',
+          qc_strengths_deep: report?.qc_strengths_deep ?? null,
+          qc_improvements_deep: report?.qc_improvements_deep ?? null,
           lessonCompleted: lesson.lesson_status === 'completed',
         }}
         attendance={Object.fromEntries((attendance ?? []).map((a) => [a.student_id, a.status]))}

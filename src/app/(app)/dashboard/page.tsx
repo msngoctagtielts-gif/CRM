@@ -14,6 +14,7 @@ import {
   formatTime,
 } from '@/lib/format'
 import { missingFieldLabels, PAYMENT_METHOD, CLASS_TYPE } from '@/lib/labels'
+import { getOperatingSettings } from '@/lib/settings'
 import { PeriodFilter } from '@/components/PeriodFilter'
 import { RevenueTrendChart } from '@/components/charts/RevenueTrendChart'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -33,6 +34,7 @@ export default async function DashboardPage({
   const sp = await searchParams
   const period = resolvePeriod(sp.period, sp.from, sp.to)
   const supabase = await createClient()
+  const settings = await getOperatingSettings()
 
   const [metrics, alerts, dues, upcoming, recentPayments] = await Promise.all([
     getFounderMetrics(period),
@@ -176,7 +178,7 @@ export default async function DashboardPage({
         <Card>
           <CardHeader
             title="Cảnh báo chất lượng giảng dạy"
-            description="Báo cáo thiếu trường bắt buộc sau 10 giờ"
+            description={`Báo cáo chưa đạt chất lượng sau ${settings.reportDeadlineHours} giờ`}
             action={
               <Link href="/alerts" className="text-[0.8125rem] font-medium text-navy-600 hover:text-navy-900">
                 Xem tất cả

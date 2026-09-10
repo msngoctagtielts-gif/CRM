@@ -5,6 +5,7 @@ import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatDateTime } from '@/lib/format'
 import { missingFieldLabels } from '@/lib/labels'
+import { getOperatingSettings } from '@/lib/settings'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { StatCard } from '@/components/ui/StatCard'
@@ -24,6 +25,7 @@ export default async function AlertsPage({
   await requireFounder()
   const { show } = await searchParams
   const supabase = await createClient()
+  const settings = await getOperatingSettings()
 
   const statuses =
     show === 'resolved'
@@ -51,7 +53,7 @@ export default async function AlertsPage({
     <>
       <PageHeader
         title="Cảnh báo chất lượng"
-        description="Báo cáo giảng dạy thiếu trường bắt buộc sau hạn 10 giờ kể từ khi buổi học kết thúc."
+        description={`Báo cáo thiếu tiêu chí chất lượng sau hạn ${settings.reportDeadlineHours} giờ, cùng các cảnh báo học phí và chưa gửi phụ huynh.`}
         action={<RescanButton />}
       />
 
@@ -62,7 +64,12 @@ export default async function AlertsPage({
           accent={(openCount ?? 0) > 0 ? 'burgundy' : 'sage'}
         />
         <StatCard label="Đã xử lý" value={resolvedCount ?? 0} accent="sage" />
-        <StatCard label="Hạn nộp" value="10 giờ" caption="Sau khi buổi học kết thúc" accent="navy" />
+        <StatCard
+          label="Hạn nộp"
+          value={`${settings.reportDeadlineHours} giờ`}
+          caption="Sau khi buổi học kết thúc"
+          accent="navy"
+        />
       </section>
 
       <div className="mb-4 flex flex-wrap gap-1.5">
