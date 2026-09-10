@@ -60,8 +60,11 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [x] **Cảnh báo học vượt / sắp hết buổi** trên dashboard (D7) — ngưỡng đọc từ `settings`
 - [x] Gọi thêm `fn_alert_missing_lesson_time`, `fn_alert_lesson_balance`,
       `fn_alert_not_sent_to_parent` trong `/api/cron/scan-reports`
-- [ ] **Nối AI viết feedback từ link video** (D6) — chọn model, và giữ bước người
-      bấm gửi phụ huynh (giả định A13)
+- [x] **Trang bảng lương** (D4, D5) — `/payroll`: tính theo tháng, điều chỉnh, duyệt rồi
+      mới trả; giáo viên chỉ thấy lương của chính mình (có kiểm thử RLS)
+- [ ] **Nối AI viết feedback từ link video** (D6) — ⛔ **cần Founder quyết trước**: dùng
+      model nào và khoá API lấy từ đâu. Cơ sở dữ liệu đã sẵn sàng (`authored_by`,
+      `recordings.url`); giữ bước người bấm gửi phụ huynh (giả định A13)
 
 ## P1b — Hoàn thiện Giai đoạn 1
 

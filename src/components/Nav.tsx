@@ -14,6 +14,7 @@ import {
   Menu,
   Receipt,
   School,
+  Banknote,
   Users,
   Wallet,
   X,
@@ -42,6 +43,7 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
     items: [
       { href: '/payments', label: 'Thu học phí', icon: Wallet },
       { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
+      { href: '/payroll', label: 'Bảng lương', icon: Banknote },
       { href: '/expenses', label: 'Chi phí', icon: Receipt },
     ],
   },
@@ -61,6 +63,7 @@ const TEACHER_NAV: { section: string; items: Item[] }[] = [
       { href: '/reports', label: 'Báo cáo của tôi', icon: BookOpen },
       { href: '/classes', label: 'Lớp của tôi', icon: School },
       { href: '/students', label: 'Học viên của tôi', icon: Users },
+      { href: '/payroll', label: 'Lương của tôi', icon: Banknote },
     ],
   },
 ]

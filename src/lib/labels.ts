@@ -92,6 +92,20 @@ export const PAYROLL_STATUS: Record<Enums<'payroll_status'>, { label: string; to
   paid: { label: 'Đã trả', tone: 'success' },
 }
 
+export const PAYABLE_STATUS: Record<Enums<'payable_status'>, { label: string; tone: Tone }> = {
+  pending: { label: 'Chờ vào kỳ lương', tone: 'warning' },
+  included: { label: 'Đã vào kỳ lương', tone: 'info' },
+  excluded: { label: 'Không tính', tone: 'neutral' },
+  paid: { label: 'Đã trả', tone: 'success' },
+}
+
+export const ADJUSTMENT_KIND: Record<string, string> = {
+  bonus: 'Thưởng',
+  allowance: 'Phụ cấp',
+  deduction: 'Trừ',
+  correction: 'Điều chỉnh',
+}
+
 export const ENROLLMENT_STATUS: Record<Enums<'enrollment_status'>, { label: string; tone: Tone }> = {
   draft: { label: 'Nháp', tone: 'neutral' },
   active: { label: 'Hiệu lực', tone: 'success' },

@@ -74,17 +74,17 @@ quyết định làm thay đổi mô hình nghiệp vụ (xem `DECISIONS.md`). *
 | D1 — phiếu đối soát tháng | ✅ đã kiểm thử | ✅ trang `/statements`: lập → chốt → thu |
 | D2 — hạn 24 giờ | ✅ | ✅ mọi chỗ đọc từ bảng `settings`, không còn chữ viết cứng |
 | D3 — 6 tiêu chí + điểm QC | ✅ đã kiểm thử | ✅ form mới đủ 6 tiêu chí, hiện điểm ngay khi gõ |
-| D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | 🟡 form nói rõ thiếu giờ là không tính lương; chưa có trang bảng lương |
-| D6 — AI viết feedback | ✅ cột `authored_by` | 🟡 hiện được nhãn "AI viết"; chưa nối AI |
+| D4, D5 — lương theo giờ dạy | ✅ đã kiểm thử | ✅ trang `/payroll` + cờ thiếu bằng chứng |
+| D6 — AI viết feedback | ✅ cột `authored_by` | ⬜ chờ Founder chọn model và cấp khoá API |
 | D7 — cho học vượt | ✅ đã kiểm thử | ✅ thẻ "Sắp hết buổi / đã học vượt" trên dashboard |
 | D8 — đánh dấu dòng cần đối soát | ✅ view `v_data_review` | ✅ trang `/review` |
 | D11 — đơn giá theo ngày hiệu lực | ✅ đã kiểm thử | ✅ form "Đổi đơn giá học phí" + lịch sử các mốc |
 | D13, D14 — lớp nhóm một người đóng | ✅ đã kiểm thử | ✅ chọn hoặc tạo mới người đứng tên đóng |
 | A13 — gửi phụ huynh là bước riêng | ✅ cột `sent_to_parent_at` | ✅ có nút "Đánh dấu đã gửi" |
 
-**Hệ quả thực tế còn lại:** giao diện đã bám đúng mô hình nghiệp vụ mới và đủ để nhập
-21 lớp thật. Hai việc còn lại của mục P1 là **trang bảng lương** (D4, D5) và **nối AI viết
-feedback từ link video** (D6). Xem `TODO.md`.
+**Hệ quả thực tế còn lại:** giao diện đã bám đúng cả 14 quyết định và đủ để nhập 21 lớp
+thật. Việc duy nhất còn lại của mục P1 là **nối AI viết feedback từ link video** (D6) —
+đang chờ Founder quyết dùng model nào và cấp khoá API, nên chưa làm được.
 
 ---
 

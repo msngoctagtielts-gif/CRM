@@ -1470,5 +1470,145 @@ reset "test.user_id";
 
 \echo ''
 \echo '======================================================'
+\echo '  16. Trang bảng lương: giáo viên chỉ thấy lương mình'
+\echo '======================================================'
+
+-- Yêu cầu gốc mục IV: "Teachers MUST NOT see ... other teachers' payroll".
+-- Trang /payroll dùng CHUNG cho Founder và giáo viên, chỉ dựa vào RLS để giới
+-- hạn phạm vi — nên phạm vi đó phải được chứng minh, không chỉ tin.
+
+-- Kỳ lương của Mr. Other, để có dữ liệu của "giáo viên khác" mà so.
+set session "test.user_id" = '11111111-1111-1111-1111-111111111111';  -- Founder
+do $$
+declare v_other uuid;
+begin
+  insert into public.teacher_payroll (teacher_id, period_start, period_end, period_label,
+                                      lessons_count, gross_amount, final_amount, status)
+  values ('aaaaaaaa-0000-0000-0000-000000000002', date '2026-08-01', date '2026-08-31',
+          '08/2026', 12, 4200000, 4200000, 'approved')
+  returning id into v_other;
+  perform public.t_assert(v_other is not null, 'dựng được kỳ lương của giáo viên khác');
+end $$;
+reset "test.user_id";
+
+\echo ''
+\echo '--- 16a. Ms. Sheba không đọc được kỳ lương của Mr. Other ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+  do $$ begin
+    perform public.t_assert(
+      (select count(*) from public.teacher_payroll
+        where teacher_id = 'aaaaaaaa-0000-0000-0000-000000000002') = 0,
+      'giáo viên KHÔNG đọc được kỳ lương của đồng nghiệp');
+    perform public.t_assert(
+      (select count(*) from public.v_teacher_payroll_summary
+        where teacher_id = 'aaaaaaaa-0000-0000-0000-000000000002') = 0,
+      'view tổng hợp lương cũng không lọt kỳ lương của đồng nghiệp');
+    perform public.t_assert(
+      (select count(*) from public.teacher_payable_lessons
+        where teacher_id = 'aaaaaaaa-0000-0000-0000-000000000002') = 0,
+      'và không đọc được buổi tính lương của đồng nghiệp');
+
+    -- Nhưng vẫn phải đọc được của chính mình, nếu không trang lương sẽ trống trơn.
+    perform public.t_assert(
+      (select count(*) from public.v_teacher_payroll_summary
+        where teacher_id = public.current_teacher_id()) >= 1,
+      'vẫn đọc được kỳ lương của chính mình');
+    perform public.t_assert(
+      (select bool_and(teacher_id = public.current_teacher_id())
+         from public.v_teacher_payroll_summary),
+      'mọi dòng đọc được đều là của chính mình');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 16b. Giáo viên không tự duyệt và không tự tính lương ---'
+begin;
+  set local role authenticated;
+  set local "test.user_id" = '22222222-2222-2222-2222-222222222222';
+  do $$
+  declare v_id uuid; v_err boolean := false;
+  begin
+    select id into v_id from public.teacher_payroll
+     where teacher_id = public.current_teacher_id() limit 1;
+    perform public.t_assert(v_id is not null, 'giáo viên có ít nhất một kỳ lương của mình');
+
+    -- Chính sách payroll_read_own chỉ cho SELECT, nên UPDATE không chạm được dòng nào.
+    update public.teacher_payroll set status = 'approved' where id = v_id;
+    perform public.t_assert(
+      (select status from public.teacher_payroll where id = v_id) <> 'approved'
+      or (select approved_by from public.teacher_payroll where id = v_id)
+         is distinct from '22222222-2222-2222-2222-222222222222',
+      'giáo viên KHÔNG tự duyệt được kỳ lương của mình');
+
+    begin
+      perform public.fn_build_payroll('aaaaaaaa-0000-0000-0000-000000000001',
+                                      date '2026-08-01', date '2026-08-31');
+    exception when others then
+      v_err := true;
+    end;
+    perform public.t_assert(v_err, 'giáo viên gọi fn_build_payroll ⇒ bị từ chối');
+  end $$;
+rollback;
+
+\echo ''
+\echo '--- 16c. Founder đi đủ nháp → chờ duyệt → đã duyệt → đã trả ---'
+begin;
+  set local "test.user_id" = '11111111-1111-1111-1111-111111111111';
+  do $$
+  declare v_id uuid; pr public.teacher_payroll; v_err boolean := false;
+  begin
+    -- Kỳ riêng để không đụng vào kỳ đã trả ở mục 7.
+    insert into public.teacher_payroll (teacher_id, period_start, period_end, period_label,
+                                        lessons_count, gross_amount, final_amount)
+    values ('aaaaaaaa-0000-0000-0000-000000000001', date '2026-05-01', date '2026-05-31',
+            '05/2026', 8, 2400000, 2400000)
+    returning id into v_id;
+
+    update public.teacher_payroll set status = 'pending_review' where id = v_id;
+    perform public.t_assert(
+      (select status from public.teacher_payroll where id = v_id) = 'pending_review',
+      'nháp ⇒ chờ duyệt');
+
+    -- Khoản trừ mang dấu âm, đúng như biểu mẫu gửi lên.
+    insert into public.teacher_payroll_adjustments (payroll_id, kind, description, amount)
+    values (v_id, 'deduction', 'Trừ buổi dạy muộn', -100000);
+
+    select * into pr from public.teacher_payroll where id = v_id;
+    perform public.t_assert(pr.adjustments_amount = -100000,
+      'khoản trừ dồn ngay vào kỳ lương, giao diện không phải tự cộng');
+    -- Kỳ này chưa gắn buổi nào, và fn_recalc_payroll tính lại lương gộp TỪ CÁC
+    -- BUỔI chứ không giữ con số nhập tay ⇒ gộp về 0. Đúng nguyên tắc mục IX:
+    -- lương không bao giờ đến từ số người dùng gõ vào.
+    perform public.t_assert(pr.gross_amount = 0,
+      'lương gộp luôn tính lại từ các buổi đã gắn, không giữ số nhập tay');
+    perform public.t_assert(pr.final_amount = -100000,
+      'lương cuối = gộp (0) + điều chỉnh (−100.000)');
+
+    update public.teacher_payroll set status = 'approved' where id = v_id;
+    update public.teacher_payroll set status = 'paid', paid_method = 'bank_transfer'
+     where id = v_id;
+
+    select * into pr from public.teacher_payroll where id = v_id;
+    perform public.t_assert(pr.status = 'paid',            'đã duyệt ⇒ đánh dấu đã trả được');
+    perform public.t_assert(pr.paid_at is not null,        'thời điểm trả được ghi lại');
+    perform public.t_assert(pr.paid_method = 'bank_transfer', 'hình thức trả được lưu');
+
+    -- Kỳ đã duyệt/đã trả thì không tính lại được.
+    begin
+      perform public.fn_build_payroll('aaaaaaaa-0000-0000-0000-000000000001',
+                                      date '2026-05-01', date '2026-05-31');
+    exception when others then
+      v_err := true;
+    end;
+    perform public.t_assert(v_err, 'kỳ lương đã duyệt ⇒ từ chối tính lại');
+  end $$;
+rollback;
+
+reset "test.user_id";
+
+\echo ''
+\echo '======================================================'
 \echo '  TOÀN BỘ KIỂM THỬ NGHIỆP VỤ: ĐẠT'
 \echo '======================================================'
