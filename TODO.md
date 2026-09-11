@@ -105,6 +105,22 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       coi như lộ. Vào https://aistudio.google.com/apikey xoá khoá cũ, tạo khoá mới,
       và từ nay chỉ đặt thẳng vào biến môi trường
 
+## P1c — Nhịp vận hành theo tháng (Founder yêu cầu 11/09/2026)
+
+Chốt sổ ngày cuối tháng · trả lương từ mùng 1 đến mùng 3 · nhắc và thu học phí ·
+xem tình hình trung tâm.
+
+- [x] **Trang `/month-end` "Chốt tháng"** — gom bốn việc vào một màn hình, xếp
+      đúng thứ tự phải làm
+- [x] **Tính lương cả tháng cho tất cả giáo viên bằng một nút** — trước đó phải
+      bấm từng người, sáu lần, dễ sót một người và người đó bị trả chậm
+- [x] **Danh sách cần nhắc học phí** gộp cả hai hình thức đóng: gói trả trước sắp
+      hết buổi, và hợp đồng cuối tháng chưa lập phiếu hoặc chưa thu đủ
+- [ ] **Nhắc tự động vào mùng 1** — hiện phải tự nhớ mở trang. Có thể thêm vào
+      `keepalive.yml` một job chạy ngày 1 hằng tháng gửi nhắc
+- [ ] **Soạn sẵn tin nhắn nhắc học phí** để Founder copy gửi Zalo, thay vì tự gõ
+      lại từng người
+
 ## P1b — Hoàn thiện Giai đoạn 1
 
 - [ ] Trang **sửa hồ sơ học viên** (`/students/[id]/edit`) — server action `updateStudent` đã có, thiếu giao diện

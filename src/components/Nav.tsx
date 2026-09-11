@@ -15,6 +15,7 @@ import {
   Receipt,
   School,
   Banknote,
+  CalendarCheck,
   Users,
   Wallet,
   X,
@@ -26,7 +27,10 @@ type Item = { href: string; label: string; icon: React.ElementType }
 const FOUNDER_NAV: { section: string; items: Item[] }[] = [
   {
     section: 'Tổng quan',
-    items: [{ href: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard }],
+    items: [
+      { href: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
+      { href: '/month-end', label: 'Chốt tháng', icon: CalendarCheck },
+    ],
   },
   {
     section: 'Học tập',
