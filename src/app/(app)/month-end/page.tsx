@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { currentMonth, monthRange } from '@/lib/period'
+import { monthRange, previousMonth } from '@/lib/period'
 import { getOperatingSettings } from '@/lib/settings'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
 import { BILLING_MODE, PAYROLL_STATUS } from '@/lib/labels'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
 import { BuildAllPayrollForm, MonthPicker } from './MonthEndForms'
+import { pickReminders, soanTinNhac } from '@/lib/month-end/reminders'
 import { ReminderMessage } from './ReminderMessage'
 
 export const metadata: Metadata = { title: 'Chốt tháng' }
@@ -100,45 +101,25 @@ export default async function MonthEndPage({
   const unpaidPayroll = payrollRows.filter((p) => p.status !== 'paid')
 
   // --- Mục 3: học phí cần nhắc --------------------------------------------
-  const statementByEnrollment = new Map((statements ?? []).map((s) => [s.enrollment_id, s]))
 
-  const needReminder = (balances ?? [])
-    .map((b) => {
-      const remaining = b.lessons_remaining === null ? null : Number(b.lessons_remaining)
-      const outstanding = Number(b.outstanding_amount ?? 0)
-      const st = statementByEnrollment.get(b.enrollment_id!)
-
-      // Gói trả trước: sắp hết buổi hoặc đã học vượt.
-      if (b.billing_mode === 'prepaid_package' && remaining !== null) {
-        if (remaining < 0) return { b, ly_do: `Đã học vượt ${Math.abs(remaining)} buổi`, gap: true }
-        if (remaining <= settings.alertLessonsRemaining) {
-          return { b, ly_do: `Còn ${formatNumber(remaining)} buổi`, gap: remaining === 0 }
-        }
-      }
-      // Cuối tháng: chưa lập phiếu, hoặc lập rồi mà chưa thu đủ.
-      if (b.billing_mode === 'monthly_postpaid') {
-        if (!st) return { b, ly_do: `Chưa lập phiếu tháng ${label}`, gap: true }
-        const con_thieu = Number(st.net_amount) - Number(st.paid_amount)
-        if (st.status !== 'paid' && con_thieu > 0) {
-          return { b, ly_do: `Phiếu tháng còn thiếu ${formatCurrency(con_thieu)}`, gap: false }
-        }
-      }
-      if (outstanding > 0) return { b, ly_do: `Công nợ ${formatCurrency(outstanding)}`, gap: false }
-      return null
-    })
-    .filter((r): r is NonNullable<typeof r> => r !== null)
-    .map((r) => ({
-      ...r,
-      tin_nhan: soanTinNhac({
-        hocVien: nameOf.get(r.b.student_id!) ?? '',
-        nguoiDong: r.b.payer_name,
-        lyDo: r.ly_do,
-        soBuoiConLai: r.b.lessons_remaining === null ? null : Number(r.b.lessons_remaining),
-        donGia: Number(r.b.price_per_lesson ?? 0),
-        congNo: Number(r.b.outstanding_amount ?? 0),
-        traTruoc: r.b.billing_mode === 'prepaid_package',
-      }),
-    }))
+  const needReminder = pickReminders({
+    balances: balances ?? [],
+    statements: statements ?? [],
+    monthLabel: label,
+    alertLessonsRemaining: settings.alertLessonsRemaining,
+  }).map((r) => ({
+    ...r,
+    b: r.balance,
+    tin_nhan: soanTinNhac({
+      hocVien: nameOf.get(r.balance.student_id!) ?? '',
+      nguoiDong: r.balance.payer_name,
+      lyDo: r.ly_do,
+      soBuoiConLai: r.balance.lessons_remaining === null ? null : Number(r.balance.lessons_remaining),
+      donGia: Number(r.balance.price_per_lesson ?? 0),
+      congNo: Number(r.balance.outstanding_amount ?? 0),
+      traTruoc: r.balance.billing_mode === 'prepaid_package',
+    }),
+  }))
 
   // --- Mục 4: tình hình tháng ---------------------------------------------
   const revenueRecognized = (consumptions ?? []).reduce(
@@ -449,55 +430,3 @@ export default async function MonthEndPage({
  * Viết sẵn để Founder chỉ việc chép và gửi, nhưng **không tự gửi** — Founder đọc
  * lại và sửa trước khi gửi, vì mỗi phụ huynh một hoàn cảnh.
  */
-function soanTinNhac(p: {
-  hocVien: string
-  nguoiDong: string | null
-  lyDo: string
-  soBuoiConLai: number | null
-  donGia: number
-  congNo: number
-  traTruoc: boolean
-}): string {
-  const xungHo = p.nguoiDong ? `Dạ chào anh/chị ${p.nguoiDong},` : 'Dạ chào anh/chị,'
-  const dong: string[] = [xungHo, '']
-
-  if (p.traTruoc && p.soBuoiConLai !== null) {
-    if (p.soBuoiConLai < 0) {
-      dong.push(
-        `Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} đã học vượt ${Math.abs(p.soBuoiConLai)} buổi so với gói đã đóng.`,
-        'Trung tâm vẫn giữ lịch học bình thường cho bé, anh/chị sắp xếp đóng bù khi thuận tiện ạ.',
-      )
-    } else if (p.soBuoiConLai === 0) {
-      dong.push(`Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} đã học hết số buổi của gói.`)
-    } else {
-      dong.push(
-        `Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} còn ${p.soBuoiConLai} buổi trong gói hiện tại.`,
-      )
-    }
-    if (p.donGia > 0) {
-      dong.push('', `Học phí hiện tại: ${formatCurrency(p.donGia)}/buổi.`)
-    }
-  } else {
-    dong.push(`Ms.Ngọc Elite English xin gửi anh/chị thông tin học phí của bé ${p.hocVien}.`)
-    if (p.congNo > 0) {
-      dong.push('', `Số tiền cần thanh toán: ${formatCurrency(p.congNo)}.`)
-    } else {
-      dong.push('', `Ghi chú: ${p.lyDo}.`)
-    }
-  }
-
-  dong.push(
-    '',
-    'Anh/chị cần xem lại chi tiết từng buổi học, trung tâm gửi ngay ạ.',
-    'Cảm ơn anh/chị đã đồng hành cùng trung tâm.',
-  )
-  return dong.join('\n')
-}
-
-/** Chốt tháng làm vào đầu tháng sau, nên mặc định mở tháng vừa kết thúc. */
-function previousMonth(): string {
-  const [y, m] = currentMonth().split('-').map(Number)
-  return m === 1
-    ? `${y - 1}-12`
-    : `${y}-${String(m - 1).padStart(2, '0')}`
-}

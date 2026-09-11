@@ -166,3 +166,15 @@ export function currentMonth(now: Date = new Date()): string {
   const p = localParts(now)
   return `${p.year}-${String(p.month).padStart(2, '0')}`
 }
+
+/**
+ * Tháng vừa kết thúc, dạng `YYYY-MM`.
+ *
+ * Việc chốt tháng làm vào đầu tháng sau (chốt lương ngày 31, trả lương mùng
+ * 1–3), nên khi mở màn hình chốt tháng hoặc khi job nhắc việc chạy vào mùng 1,
+ * tháng cần xem luôn là tháng trước — không phải tháng đang chạy.
+ */
+export function previousMonth(now: Date = new Date()): string {
+  const [y, m] = currentMonth(now).split('-').map(Number)
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`
+}

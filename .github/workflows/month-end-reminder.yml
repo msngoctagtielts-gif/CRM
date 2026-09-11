@@ -1,0 +1,245 @@
+name: Nhắc chốt tháng
+
+# Nhịp vận hành của trung tâm: chốt lương ngày cuối tháng, trả lương từ mùng 1
+# đến mùng 3, nhắc và thu học phí. Job này mở một issue trên GitHub đúng hai
+# thời điểm đó — GitHub tự gửi email cho chủ repo, nên không cần SMTP, không cần
+# dịch vụ nhắc việc nào, không phát sinh phí.
+#
+# Vì sao không nhắc bằng email tự viết: gửi email cần một dịch vụ SMTP, tức là
+# thêm một tài khoản phải nuôi và một mật khẩu phải giữ. Issue trên GitHub dùng
+# ngay GITHUB_TOKEN sẵn có, và tiện hơn chỗ này: đánh dấu được từng việc đã làm.
+#
+# Nội dung issue chỉ có SỐ ĐẾM và SỐ TIỀN TỔNG. Không có tên học viên, tên phụ
+# huynh hay số điện thoại — issue và email GitHub nằm ngoài vòng kiểm soát của
+# hệ thống, còn chi tiết thì đã có /month-end với RLS canh.
+#
+# ⚠ GitHub TỰ TẮT workflow theo lịch nếu repo không có commit nào trong 60 ngày.
+#    Nhận email báo thì vào tab Actions bấm bật lại.
+
+on:
+  schedule:
+    # 00:30 UTC = 07:30 giờ Việt Nam. Hai mốc:
+    #   - ngày 28–31: chỉ chạy thật nếu HÔM NAY là ngày cuối tháng. Viết
+    #     '0 1 31 * *' sẽ bỏ qua tháng 30 ngày và cả tháng Hai.
+    #   - mùng 1: ngày trả lương đầu tiên.
+    - cron: '30 0 28-31 * *'
+    - cron: '30 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      moc:
+        description: 'Mốc muốn nhắc thử'
+        required: true
+        default: 'tra-luong'
+        type: choice
+        options: [chot-luong, tra-luong]
+
+permissions:
+  issues: write
+
+jobs:
+  nhac:
+    name: Mở issue nhắc việc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Xác định hôm nay là mốc nào
+        id: moc
+        env:
+          # Qua env, không nội suy ${{ }} thẳng vào bash: nội suy trực tiếp là
+          # đường để nội dung biến thành câu lệnh.
+          MOC_CHON: ${{ inputs.moc }}
+        run: |
+          set -euo pipefail
+          if [ -n "${MOC_CHON:-}" ]; then
+            echo "moc=$MOC_CHON" >> "$GITHUB_OUTPUT"
+          else
+            # Tính theo giờ trung tâm, không theo UTC: 00:30 UTC là 07:30 cùng
+            # ngày ở Việt Nam, nhưng để TZ rõ ràng thì sau này đổi giờ chạy
+            # cũng không sai ngày.
+            hom_nay=$(TZ=Asia/Ho_Chi_Minh date +%d)
+            mai=$(TZ=Asia/Ho_Chi_Minh date -d tomorrow +%d)
+            if [ "$hom_nay" = "01" ]; then
+              echo "moc=tra-luong" >> "$GITHUB_OUTPUT"
+            elif [ "$mai" = "01" ]; then
+              echo "moc=chot-luong" >> "$GITHUB_OUTPUT"
+            else
+              # Lịch 28–31 chạy cả những ngày chưa phải cuối tháng. Dừng im lặng.
+              echo "Hôm nay ngày $hom_nay, chưa tới mốc nào. Bỏ qua."
+              echo "moc=" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+          # Tháng cần chốt là tháng vừa kết thúc khi nhắc vào mùng 1, và là
+          # tháng đang chạy khi nhắc vào ngày cuối tháng.
+          echo "thang_truoc=$(TZ=Asia/Ho_Chi_Minh date -d "$(TZ=Asia/Ho_Chi_Minh date +%Y-%m-01) -1 day" +%m/%Y)" >> "$GITHUB_OUTPUT"
+          echo "thang_nay=$(TZ=Asia/Ho_Chi_Minh date +%m/%Y)" >> "$GITHUB_OUTPUT"
+
+      - name: Lấy số liệu từ ứng dụng
+        id: digest
+        if: steps.moc.outputs.moc != ''
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -uo pipefail
+          # Chưa triển khai app hoặc chưa đặt secret thì vẫn nhắc, chỉ là không
+          # có số. Thiếu số liệu không phải lý do để bỏ nhắc việc trả lương.
+          if [ -z "${APP_URL:-}" ] || [ -z "${CRON_SECRET:-}" ]; then
+            echo "Chưa có APP_URL hoặc CRON_SECRET — nhắc không kèm số liệu." >&2
+            echo 'so_lieu=' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          code=$(curl -s -o /tmp/digest.json -w '%{http_code}' -X POST \
+            "$APP_URL/api/cron/month-end-digest" \
+            -H "Authorization: Bearer $CRON_SECRET" --max-time 60 || echo 000)
+
+          if [ "$code" != "200" ] || ! jq -e '.ok == true' /tmp/digest.json >/dev/null 2>&1; then
+            echo "Gọi digest thất bại (HTTP $code)." >&2
+            {
+              echo 'so_lieu<<DIGEST'
+              echo "> ⚠ Không lấy được số liệu tự động (HTTP \`$code\`). Mở /month-end để xem trực tiếp."
+              echo 'DIGEST'
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          {
+            echo 'so_lieu<<DIGEST'
+            jq -r '
+              # jq không có hàm tách nhóm nghìn. Số tiền dán thẳng kiểu 8150000
+              # rất dễ đọc nhầm một chữ số, mà đây là con số cô dùng để chuyển
+              # tiền thật.
+              def nhom3:
+                tostring as $s
+                | (if ($s | startswith("-")) then "-" else "" end) as $dau
+                | ($s | ltrimstr("-")) as $d
+                | ($d | length) as $n
+                | $dau + ([range(0; $n) | . as $i | $d[$i:$i+1]
+                    + (if (($n - $i - 1) % 3 == 0 and $i < $n - 1) then "." else "" end)] | join(""));
+              def tien: if . == null then "—" else (tonumber | round | nhom3) + " ₫" end;
+              # generated_at có phần nghìn giây nên phải cắt trước khi fromdate.
+              # +25200 giây = UTC+7, giờ Việt Nam không có giờ mùa hè.
+              def gio_vn: (.[0:19] + "Z") | fromdate + 25200 | strftime("%d/%m/%Y %H:%M");
+              "**Số liệu tháng \(.label)** (hệ thống tự tính lúc \(.generated_at | gio_vn))",
+              "",
+              "| Mục | Số |",
+              "|---|---|",
+              "| Buổi đã dạy | \(.lessons.taught) |",
+              "| Buổi thiếu giờ dạy thực tế | \(.lessons.missing_actual_time) |",
+              "| Buổi chưa có báo cáo đạt | \(.lessons.missing_report) |",
+              "| Lương phải trả | \(.payroll.total | tien) |",
+              "| Kỳ lương chưa trả | \(.payroll.unpaid_periods) |",
+              "| Học viên cần nhắc học phí | \(.tuition.need_reminder) |",
+              "| Trong đó đã hết tiền/hết buổi | \(.tuition.urgent) |",
+              "| Doanh thu ghi nhận | \(.finance.revenue_recognized | tien) |",
+              "| Tiền thực thu | \(.finance.cash_received | tien) |",
+              "| Chi phí | \(.finance.expenses | tien) |",
+              "| Còn lại sau lương và chi phí | \(.finance.profit | tien) |",
+              "",
+              (if .lessons.payroll_blocked then
+                 "🔴 **Có \(.lessons.missing_actual_time) buổi chưa có giờ dạy thực tế.** Tính lương bây giờ thì những buổi này rơi ra ngoài kỳ lương và giáo viên bị trả thiếu. Nhắc giáo viên bổ sung giờ trước."
+               else
+                 "🟢 Mọi buổi đã dạy đều có giờ dạy thực tế — tính lương được."
+               end),
+              (if (.payroll.unpaid_teachers | length) > 0 then
+                 "\nChưa trả lương: " + (.payroll.unpaid_teachers | join(", "))
+               else "" end)
+            ' /tmp/digest.json
+            echo 'DIGEST'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Mở issue nhắc chốt lương
+        if: steps.moc.outputs.moc == 'chot-luong'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THANG: ${{ steps.moc.outputs.thang_nay }}
+          SO_LIEU: ${{ steps.digest.outputs.so_lieu }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          set -euo pipefail
+          tieu_de="Chốt lương tháng $THANG"
+          # Chạy lại bằng tay thì không mở issue trùng.
+          export TIEU_DE="$tieu_de"
+          # So khớp tiêu đề đầy đủ bằng jq: tiêu đề có dấu '/' (09/2026) nên
+          # --search không khớp như một cụm và sẽ bỏ sót issue đã mở.
+          if [ "$(gh issue list --state open --limit 100 --json title \
+                    --jq '[.[] | select(.title == env.TIEU_DE)] | length')" != "0" ]; then
+            echo "Đã có issue \"$tieu_de\" đang mở. Không mở thêm."
+            exit 0
+          fi
+
+          cat > /tmp/body.md <<EOF
+          Hôm nay là ngày cuối tháng $THANG — mốc chốt lương.
+
+          $SO_LIEU
+
+          ## Việc cần làm hôm nay
+
+          - [ ] Mở trang **Chốt tháng** → bước 1: soát buổi thiếu giờ dạy thực tế
+          - [ ] Nhắc giáo viên bổ sung giờ dạy cho những buổi còn thiếu
+          - [ ] Soát buổi chưa có báo cáo đạt chuẩn
+          - [ ] Bước 2: bấm **Tính lương tất cả giáo viên** cho tháng $THANG
+          - [ ] Đối chiếu từng bảng lương trước khi duyệt
+
+          Thứ tự này không đổi được: tính lương trước khi giáo viên bổ sung giờ dạy thì buổi đó rơi ra ngoài kỳ lương, và giáo viên bị trả thiếu.
+
+          Ngày mai đến mùng 3 là kỳ thanh toán lương.
+
+          ${APP_URL:+[Mở trang Chốt tháng]($APP_URL/month-end)}
+
+          ---
+          _Issue này do workflow \`.github/workflows/month-end-reminder.yml\` tự mở theo lịch._
+          EOF
+          gh issue create --title "$tieu_de" --body-file /tmp/body.md
+
+      - name: Mở issue nhắc trả lương và thu học phí
+        if: steps.moc.outputs.moc == 'tra-luong'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THANG: ${{ steps.moc.outputs.thang_truoc }}
+          SO_LIEU: ${{ steps.digest.outputs.so_lieu }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          set -euo pipefail
+          tieu_de="Trả lương và thu học phí — kỳ $THANG"
+          export TIEU_DE="$tieu_de"
+          # So khớp tiêu đề đầy đủ bằng jq: tiêu đề có dấu '/' (09/2026) nên
+          # --search không khớp như một cụm và sẽ bỏ sót issue đã mở.
+          if [ "$(gh issue list --state open --limit 100 --json title \
+                    --jq '[.[] | select(.title == env.TIEU_DE)] | length')" != "0" ]; then
+            echo "Đã có issue \"$tieu_de\" đang mở. Không mở thêm."
+            exit 0
+          fi
+
+          cat > /tmp/body.md <<EOF
+          Hôm nay mùng 1 — bắt đầu kỳ thanh toán lương tháng $THANG (mùng 1 đến mùng 3).
+
+          $SO_LIEU
+
+          ## Trả lương (xong trước mùng 3)
+
+          - [ ] Mở trang **Chốt tháng** → bước 2, đối chiếu từng bảng lương
+          - [ ] Chuyển tiền cho từng giáo viên
+          - [ ] Đánh dấu **Đã trả** trong hệ thống ngay sau khi chuyển, kèm ngày chuyển
+
+          Đánh dấu ngay lúc chuyển, đừng để cuối kỳ mới ghi — ghi sau là lúc dễ trả hai lần hoặc bỏ sót một người.
+
+          ## Thu học phí
+
+          - [ ] Bước 3: xem danh sách cần nhắc, copy tin nhắn soạn sẵn gửi Zalo
+          - [ ] Lập phiếu học phí cho các hợp đồng đóng cuối tháng còn thiếu phiếu
+          - [ ] Phụ huynh đóng tiền thì **ghi vào trang Thanh toán ngay hôm đó** — hệ thống tự trừ vào phiếu còn nợ và tự cập nhật trạng thái
+
+          Ghi thanh toán đúng ngày là điều kiện để bảng nhắc phí đáng tin: ghi muộn thì tháng sau hệ thống vẫn báo nợ và phụ huynh bị nhắc oan.
+
+          ## Xem tình hình trung tâm
+
+          - [ ] Bước 4: đối chiếu doanh thu ghi nhận với tiền thực thu
+          - [ ] Chênh lệch lớn giữa hai số này nghĩa là có tiền đã thu mà chưa gắn hợp đồng, hoặc có buổi đã dạy mà chưa ghi nhận
+
+          ${APP_URL:+[Mở trang Chốt tháng]($APP_URL/month-end)}
+
+          ---
+          _Issue này do workflow \`.github/workflows/month-end-reminder.yml\` tự mở theo lịch._
+          EOF
+          gh issue create --title "$tieu_de" --body-file /tmp/body.md

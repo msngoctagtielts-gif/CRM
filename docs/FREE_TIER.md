@@ -162,6 +162,34 @@ Cho tới lúc đó, hai workflow trên là đủ để chạy thật một các
 
 ---
 
+## 5b. Nhắc chốt tháng — `month-end-reminder.yml`
+
+Nhịp vận hành của trung tâm có hai mốc cố định: **chốt lương ngày cuối tháng**,
+**trả lương từ mùng 1 đến mùng 3**. Job này mở một issue trên GitHub đúng hai mốc
+đó, kèm số liệu tháng vừa qua. GitHub tự gửi email cho chủ repo, nên không cần
+dịch vụ gửi email nào và không phát sinh phí.
+
+| Mốc | Lịch chạy | Issue mở ra |
+|---|---|---|
+| Ngày cuối tháng | 07:30 giờ VN | *Chốt lương tháng MM/YYYY* — soát buổi thiếu giờ dạy, rồi tính lương |
+| Mùng 1 | 07:30 giờ VN | *Trả lương và thu học phí — kỳ MM/YYYY* — chuyển lương, nhắc phí, xem tình hình |
+
+Mỗi issue là một danh sách việc có ô tích. Tích xong từng việc là có luôn bằng
+chứng tháng đó đã làm gì — không cần ghi sổ riêng.
+
+Lịch chạy là `30 0 28-31 * *`, không phải `31 * *`: viết ngày 31 sẽ bỏ qua mọi
+tháng 30 ngày và cả tháng Hai. Job tự kiểm hôm nay có phải ngày cuối tháng
+không, chưa tới thì dừng im lặng.
+
+Nội dung issue chỉ có **số đếm và số tiền tổng** — không có tên học viên, tên
+phụ huynh hay số điện thoại. Issue và email GitHub nằm ngoài vòng kiểm soát của
+hệ thống; chi tiết thì đã có trang `/month-end` với RLS canh.
+
+Chạy thử không cần chờ tới lịch: tab **Actions** → *Nhắc chốt tháng* → **Run
+workflow** → chọn mốc muốn thử.
+
+---
+
 ## 6. Danh sách secret cần đặt
 
 Settings → Secrets and variables → Actions → **New repository secret**:
@@ -172,8 +200,12 @@ Settings → Secrets and variables → Actions → **New repository secret**:
 | `SUPABASE_ANON_KEY` | ✅ | keepalive |
 | `SUPABASE_DB_URL` | ✅ | sao lưu (chuỗi **Session pooler**) |
 | `BACKUP_PASSPHRASE` | ✅ | sao lưu (tự đặt, lưu kỹ) |
-| `APP_URL` | ⬜ | quét cảnh báo, khi app đã triển khai |
-| `CRON_SECRET` | ⬜ | quét cảnh báo |
+| `APP_URL` | ⬜ | quét cảnh báo + số liệu trong issue nhắc chốt tháng |
+| `CRON_SECRET` | ⬜ | quét cảnh báo + số liệu trong issue nhắc chốt tháng |
+
+Hai secret cuối không bắt buộc: thiếu chúng thì job nhắc chốt tháng vẫn mở issue
+đúng hẹn, chỉ là không kèm số liệu. Thiếu số liệu không phải lý do để bỏ nhắc
+việc trả lương.
 
 Đặt xong, vào tab **Actions**, chọn từng workflow và bấm **Run workflow** để chạy
 thử ngay thay vì chờ tới lịch.
