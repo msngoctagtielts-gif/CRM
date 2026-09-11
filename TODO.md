@@ -39,9 +39,16 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       KHÔNG dùng Vercel Hobby: điều khoản cấm dùng thương mại và họ có quyền tắt
       project không báo trước. KHÔNG dùng Cloudflare Workers free: giới hạn 10ms
       CPU mỗi request, không đủ render Next.js. Xem `docs/DEPLOY.md`
-- [ ] ⛔ **Nối repo với Netlify và đặt biến môi trường**:
-      `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-      `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. Hướng dẫn: `docs/DEPLOY.md` mục 3
+- [x] ~~Tạo project Netlify và đặt biến môi trường~~ → project `mnee-management` đã tạo
+      qua Netlify MCP, đã đặt `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+      `NEXT_PUBLIC_TIMEZONE`, `CRON_SECRET`; đã tắt bắt buộc đăng nhập SSO Netlify
+- [ ] ⛔ **Nối repo GitHub trong Netlify** (3 cú bấm) — Netlify MCP không có operation
+      nối repo, và sandbox phát triển chặn host Netlify nên tôi không tải mã lên được.
+      Hướng dẫn: `docs/DEPLOY.md` mục 3
+- [ ] ⛔ **Đặt `SUPABASE_SERVICE_ROLE_KEY`** trên Netlify — tôi không lấy được khoá này,
+      Supabase MCP chỉ cấp khoá công khai. Thiếu thì chỉ nút "Quét lại ngay" và route
+      cron không chạy
+- [ ] ⛔ **Đặt `GOOGLE_AI_API_KEY` mới** trên Netlify — cố ý không đặt khoá cũ vì đã lộ
 - [ ] ⛔ **Đặt Site URL trong Supabase** sau khi có địa chỉ Netlify, nếu không link
       xác nhận email và đặt lại mật khẩu sẽ trỏ về localhost
 - [ ] **Kiểm thử end-to-end trên Supabase thật** — toàn bộ mục 5 "Chưa kiểm thử"

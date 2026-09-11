@@ -64,16 +64,77 @@ lên mà cũng deploy thì hết credit rất nhanh.
 
 ---
 
-## 3. Các bước triển khai
+## 3. TRẠNG THÁI HIỆN TẠI — đã làm xong tới đâu (11/09/2026)
 
-### 3.1 Nối repo với Netlify
+Project trên Netlify đã được tạo và cấu hình sẵn qua Netlify MCP:
+
+| Hạng mục | Trạng thái |
+|---|---|
+| Project | ✅ `mnee-management` · team `ms-ngocenliteenglish` (gói Free) |
+| Địa chỉ site | `https://mnee-management.netlify.app` |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ đã đặt |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ đã đặt |
+| `NEXT_PUBLIC_TIMEZONE` | ✅ `Asia/Ho_Chi_Minh` |
+| `CRON_SECRET` | ✅ đã đặt (sinh ngẫu nhiên 256 bit) |
+| Bắt buộc đăng nhập SSO Netlify | ✅ **đã tắt** cho project này |
+| `netlify.toml` | ✅ có trong repo, Netlify tự đọc |
+| **Nối repo GitHub** | ⬜ **còn việc này** |
+
+> Hai project cũ của cô (`singular-kataifi-b40bf9`, `mnee-teacher-library-9f4t`)
+> **không bị ảnh hưởng** — đã kiểm lại sau khi đổi access control.
+
+### Vì sao phần nối repo phải do cô bấm
+
+Netlify MCP có đủ quyền tạo project và đặt biến môi trường, nhưng **không có
+operation nối repo GitHub** — việc đó cần uỷ quyền GitHub App qua trình duyệt.
+Tôi cũng đã thử đường tải mã nguồn trực tiếp lên Netlify, nhưng môi trường phát
+triển này **chặn toàn bộ host của Netlify** ở tầng proxy:
+
+```
+netlify-mcp.netlify.app:443 → gateway answered 403 to CONNECT (policy denial)
+api.netlify.com:443         → gateway answered 403 to CONNECT (policy denial)
+```
+
+### Ba bước còn lại của cô
+
+1. Mở <https://app.netlify.com/projects/mnee-management/configuration/deploys>
+2. Bấm **Link repository** → chọn **GitHub** → repo `msngoctagtielts-gif/CRM`
+   (nếu Netlify xin quyền truy cập repo, bấm đồng ý)
+3. Bấm **Deploy**
+
+Không cần chọn nhánh: nhánh mặc định của repo đã đúng là
+`claude/mnee-system-architecture-oxsrc4`. Không cần điền build command hay publish
+directory: `netlify.toml` đã khai sẵn.
+
+### Hai biến còn thiếu — app vẫn chạy, chỉ thiếu 2 tính năng
+
+| Biến | Thiếu thì sao | Lấy ở đâu |
+|---|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Nút "Quét lại ngay" ở trang Cảnh báo và route cron báo lỗi. Mọi phần khác chạy bình thường | Supabase → Project Settings → API → `service_role`. Tôi **không lấy được** khoá này: Supabase MCP chỉ cấp khoá công khai |
+| `GOOGLE_AI_API_KEY` | Nút "AI viết nháp" hiện hướng dẫn thay vì chạy | Google AI Studio. Tôi **cố ý không đặt** khoá cũ vì nó đã lộ trong khung chat — tạo khoá mới rồi đặt |
+
+### Sau khi deploy xong
+
+1. Vào Supabase → **Authentication → URL Configuration**, đặt **Site URL** =
+   `https://mnee-management.netlify.app`. Chưa đặt thì link đặt lại mật khẩu và
+   xác nhận email sẽ trỏ về localhost. Không chặn việc đăng nhập thường.
+2. Thêm secret vào GitHub cho job quét cảnh báo hằng ngày:
+   `APP_URL` = `https://mnee-management.netlify.app`,
+   `CRON_SECRET` = đúng giá trị đã đặt ở Netlify (xem trong Netlify →
+   Project configuration → Environment variables)
+
+---
+
+## 4. Các bước triển khai (tham khảo — trường hợp dựng lại từ đầu)
+
+### 4.1 Nối repo với Netlify
 
 1. Đăng ký <https://app.netlify.com> bằng tài khoản GitHub
 2. **Add new site → Import an existing project → GitHub** → chọn repo `CRM`
 3. Netlify tự đọc `netlify.toml`, không cần điền gì thêm
 4. Nhánh production: chọn nhánh đang dùng
 
-### 3.2 Đặt biến môi trường
+### 4.2 Đặt biến môi trường
 
 **Site configuration → Environment variables**:
 
@@ -90,7 +151,7 @@ lên mà cũng deploy thì hết credit rất nhanh.
 > `NEXT_PUBLIC_` cho nó — biến có tiền tố đó bị nhúng thẳng vào JavaScript gửi
 > xuống trình duyệt, tức là công khai chìa khoá vạn năng của cả cơ sở dữ liệu.
 
-### 3.3 Sau khi deploy xong
+### 4.3 Sau khi deploy xong
 
 1. Lấy địa chỉ site (dạng `https://<tên>.netlify.app`)
 2. Vào Supabase → **Authentication → URL Configuration**, đặt **Site URL** là địa
@@ -100,7 +161,7 @@ lên mà cũng deploy thì hết credit rất nhanh.
 
 ---
 
-## 4. Đã kiểm được đến đâu
+## 5. Đã kiểm được đến đâu
 
 Chạy `netlify build` thật ngay trong môi trường phát triển:
 
@@ -119,7 +180,7 @@ Netlify tải Deno bình thường.
 
 ---
 
-## 5. Khi nào cần trả tiền
+## 6. Khi nào cần trả tiền
 
 Không phải bây giờ. Cân nhắc khi có **một** trong các dấu hiệu:
 
