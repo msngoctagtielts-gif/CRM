@@ -32,6 +32,7 @@ export default async function PaymentsPage({
     { data: students },
     { data: parents },
     { data: classes },
+    { data: allClasses },
     { data: programs },
     { data: packages },
     { data: rates },
@@ -61,6 +62,8 @@ export default async function PaymentsPage({
         .order('full_name')
         .limit(400),
       supabase.from('classes').select('id, name').eq('status', 'active').order('name'),
+      // Mọi lớp, kể cả tạm ngưng — chỉ dùng để đặt tên hợp đồng trong ô chọn.
+      supabase.from('classes').select('id, name'),
       supabase.from('programs').select('id, name_vi').eq('status', 'active').order('sort_order'),
       supabase
         .from('tuition_packages')
@@ -81,6 +84,7 @@ export default async function PaymentsPage({
   const deferred = (balances ?? []).reduce((sum, b) => sum + Number(b.deferred_revenue ?? 0), 0)
 
   const studentName = new Map((students ?? []).map((s) => [s.id, s]))
+  const classLabel = new Map((allClasses ?? []).map((c) => [c.id, c.name]))
   const withDebt = (balances ?? []).filter((b) => Number(b.outstanding_amount ?? 0) > 0)
 
   return (
@@ -255,9 +259,18 @@ export default async function PaymentsPage({
             enrollments={(balances ?? []).map((b) => ({
               id: b.enrollment_id!,
               student_id: b.student_id!,
-              label: `${studentName.get(b.student_id!)?.full_name ?? b.enrollment_code} · ${
-                b.billing_mode ? BILLING_MODE[b.billing_mode].short : ''
-              } · ${formatCurrency(b.price_per_lesson)}/buổi`,
+              // Tên lớp phải có trong nhãn. Vũ Hoàng Ngọc Diệp và Vũ Hoàng Phúc mỗi
+              // bạn học HAI lớp khác giáo viên, cùng đơn giá 190.000 ₫ — thiếu tên
+              // lớp thì hai dòng trong ô chọn hiện y hệt nhau và cô Ngọc phải đoán
+              // xem tiền trừ vào lớp nào.
+              label: [
+                studentName.get(b.student_id!)?.full_name ?? b.enrollment_code,
+                classLabel.get(b.class_id ?? '') ?? b.enrollment_code,
+                b.billing_mode ? BILLING_MODE[b.billing_mode].short : null,
+                `${formatCurrency(b.price_per_lesson)}/buổi`,
+              ]
+                .filter(Boolean)
+                .join(' · '),
               status: b.status ? ENROLLMENT_STATUS[b.status].label : '',
             }))}
             rates={(rates ?? []).map((r) => ({
