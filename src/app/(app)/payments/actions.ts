@@ -32,21 +32,69 @@ export async function recordPayment(
 
   const supabase = await createClient()
 
-  // Hợp đồng phải thuộc đúng học viên — tránh ghi nhận sai sổ.
-  if (parsed.data.enrollment_id) {
+  // --- Gắn tiền vào đúng hợp đồng ------------------------------------------
+  // Tiền không gắn hợp đồng thì KHÔNG trừ công nợ của ai: nó nằm trong sổ quỹ
+  // nhưng học viên vẫn hiện đang nợ. Trước đây ô chọn hợp đồng để trống là
+  // chuyện bình thường, nên sai sót này im lặng và chỉ lộ ra khi đối chiếu cuối
+  // kỳ. Giờ hệ thống tự tìm hợp đồng, và chỉ hỏi lại khi thật sự không đoán được.
+  let enrollmentId = parsed.data.enrollment_id ?? null
+
+  if (enrollmentId) {
     const { data: enrollment } = await supabase
       .from('student_enrollments')
       .select('student_id')
-      .eq('id', parsed.data.enrollment_id)
+      .eq('id', enrollmentId)
       .maybeSingle()
 
     if (!enrollment || enrollment.student_id !== parsed.data.student_id) {
       return { ok: false, error: 'Hợp đồng học phí không thuộc học viên đã chọn.' }
     }
+  } else {
+    const { data: candidates } = await supabase
+      .from('student_enrollments')
+      .select('id, enrollment_code')
+      .eq('student_id', parsed.data.student_id)
+      .in('status', ['active', 'paused'])
+      .order('start_date', { ascending: false })
+
+    const list = candidates ?? []
+    if (list.length === 1) {
+      enrollmentId = list[0].id
+    } else if (list.length > 1) {
+      return {
+        ok: false,
+        error: `Học viên này có ${list.length} hợp đồng đang hiệu lực — chọn đúng hợp đồng để tiền trừ vào đúng chỗ.`,
+      }
+    }
+    // list.length === 0: cho phép ghi nhận nhưng sẽ nói rõ ở thông báo cuối.
+  }
+
+  // --- Gắn tiếp vào phiếu học phí tháng, nếu có ----------------------------
+  // Hợp đồng đóng cuối tháng thu theo phiếu. Không gắn vào phiếu thì phiếu mãi
+  // ở trạng thái chưa thu, dù tiền đã về.
+  let statementId: string | null = null
+  let statementLabel = ''
+
+  if (enrollmentId) {
+    const { data: statement } = await supabase
+      .from('tuition_statements')
+      .select('id, period_label, net_amount, paid_amount, period_start, period_end')
+      .eq('enrollment_id', enrollmentId)
+      .in('status', ['issued', 'partial'])
+      .order('period_start', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+
+    if (statement) {
+      statementId = statement.id
+      statementLabel = statement.period_label ?? ''
+    }
   }
 
   const { error } = await supabase.from('payments').insert({
     ...parsed.data,
+    enrollment_id: enrollmentId,
+    statement_id: statementId,
     status: 'confirmed',
     recorded_by: user.id,
     created_by: user.id,
@@ -54,10 +102,42 @@ export async function recordPayment(
 
   if (error) return { ok: false, error: friendlyDbError(error.message) }
 
+  // Tính lại phiếu để trạng thái bám theo số tiền vừa thu.
+  if (statementId) {
+    const { data: st } = await supabase
+      .from('tuition_statements')
+      .select('enrollment_id, period_start, period_end')
+      .eq('id', statementId)
+      .maybeSingle()
+    if (st) {
+      await supabase.rpc('fn_build_tuition_statement', {
+        p_enrollment_id: st.enrollment_id,
+        p_period_start: st.period_start,
+        p_period_end: st.period_end,
+      })
+    }
+  }
+
   revalidatePath('/payments')
+  revalidatePath('/statements')
+  revalidatePath('/month-end')
   revalidatePath('/dashboard')
   revalidatePath(`/students/${parsed.data.student_id}`)
-  return { ok: true, message: 'Đã ghi nhận thanh toán.' }
+
+  if (!enrollmentId) {
+    return {
+      ok: true,
+      message:
+        'Đã ghi nhận thanh toán, NHƯNG học viên chưa có hợp đồng nào đang hiệu lực nên tiền này chưa trừ vào công nợ. Tạo hợp đồng rồi ghi lại cho đúng sổ.',
+    }
+  }
+
+  return {
+    ok: true,
+    message: statementId
+      ? `Đã ghi nhận thanh toán và trừ vào phiếu học phí tháng ${statementLabel}.`.replace('  ', ' ')
+      : 'Đã ghi nhận thanh toán và trừ vào công nợ của hợp đồng.',
+  }
 }
 
 /**

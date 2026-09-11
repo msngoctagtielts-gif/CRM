@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
 import { BuildAllPayrollForm, MonthPicker } from './MonthEndForms'
+import { ReminderMessage } from './ReminderMessage'
 
 export const metadata: Metadata = { title: 'Chốt tháng' }
 
@@ -59,7 +60,7 @@ export default async function MonthEndPage({
       .eq('period_end', to),
     supabase
       .from('v_enrollment_balances')
-      .select('enrollment_id, student_id, enrollment_code, billing_mode, lessons_remaining, outstanding_amount, price_per_lesson, payer_name')
+      .select('enrollment_id, student_id, enrollment_code, billing_mode, lessons_remaining, outstanding_amount, price_per_lesson, payer_name, total_paid, lessons_used, revenue_recognized')
       .eq('status', 'active'),
     supabase
       .from('tuition_statements')
@@ -126,6 +127,18 @@ export default async function MonthEndPage({
       return null
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)
+    .map((r) => ({
+      ...r,
+      tin_nhan: soanTinNhac({
+        hocVien: nameOf.get(r.b.student_id!) ?? '',
+        nguoiDong: r.b.payer_name,
+        lyDo: r.ly_do,
+        soBuoiConLai: r.b.lessons_remaining === null ? null : Number(r.b.lessons_remaining),
+        donGia: Number(r.b.price_per_lesson ?? 0),
+        congNo: Number(r.b.outstanding_amount ?? 0),
+        traTruoc: r.b.billing_mode === 'prepaid_package',
+      }),
+    }))
 
   // --- Mục 4: tình hình tháng ---------------------------------------------
   const revenueRecognized = (consumptions ?? []).reduce(
@@ -307,43 +320,72 @@ export default async function MonthEndPage({
             description="Mọi hợp đồng đều còn đủ buổi và không có công nợ."
           />
         ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Học viên</Th>
-                <Th>Người đóng</Th>
-                <Th>Hình thức</Th>
-                <Th>Lý do cần nhắc</Th>
-                <Th align="right">Đơn giá</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {needReminder.map(({ b, ly_do, gap }) => (
-                <tr key={b.enrollment_id}>
-                  <Td>
+          <CardBody className="space-y-5">
+            {needReminder.map(({ b, ly_do, gap, tin_nhan }) => (
+              <div
+                key={b.enrollment_id}
+                className="space-y-3 border-t border-navy-100 pt-5 first:border-0 first:pt-0"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
                     <Link
                       href={`/students/${b.student_id}`}
-                      className="font-medium text-navy-900 hover:text-navy-600"
+                      className="text-[0.9375rem] font-semibold text-navy-900 hover:text-navy-600"
                     >
                       {nameOf.get(b.student_id!) ?? b.enrollment_code}
                     </Link>
-                  </Td>
-                  <Td className="text-navy-600">{b.payer_name ?? '—'}</Td>
-                  <Td>
+                    <p className="mt-0.5 text-xs text-navy-500">
+                      Nhắn cho: <strong className="text-navy-700">{b.payer_name ?? '—'}</strong>
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
                     {b.billing_mode ? (
                       <Badge tone={b.billing_mode === 'prepaid_package' ? 'info' : 'gold'}>
                         {BILLING_MODE[b.billing_mode].short}
                       </Badge>
                     ) : null}
-                  </Td>
-                  <Td>
                     <Badge tone={gap ? 'danger' : 'warning'}>{ly_do}</Badge>
-                  </Td>
-                  <Td align="right">{formatCurrency(b.price_per_lesson)}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+                  </div>
+                </div>
+
+                {/* Đối chiếu: đã đóng bao nhiêu, đã dùng bao nhiêu */}
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
+                  <div>
+                    <dt className="mnee-label">Đã đóng</dt>
+                    <dd className="tabular font-medium text-sage-700">
+                      {formatCurrency(b.total_paid)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="mnee-label">Đã học</dt>
+                    <dd className="tabular font-medium text-navy-900">
+                      {formatNumber(b.lessons_used)} buổi
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="mnee-label">Đã dùng hết</dt>
+                    <dd className="tabular font-medium text-navy-900">
+                      {formatCurrency(b.revenue_recognized)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="mnee-label">Còn nợ</dt>
+                    <dd
+                      className={
+                        Number(b.outstanding_amount ?? 0) > 0
+                          ? 'tabular font-semibold text-burgundy-700'
+                          : 'tabular font-medium text-navy-500'
+                      }
+                    >
+                      {formatCurrency(b.outstanding_amount)}
+                    </dd>
+                  </div>
+                </dl>
+
+                <ReminderMessage text={tin_nhan} />
+              </div>
+            ))}
+          </CardBody>
         )}
       </Card>
 
@@ -399,6 +441,57 @@ export default async function MonthEndPage({
       </Card>
     </>
   )
+}
+
+/**
+ * Soạn tin nhắn nhắc học phí.
+ *
+ * Viết sẵn để Founder chỉ việc chép và gửi, nhưng **không tự gửi** — Founder đọc
+ * lại và sửa trước khi gửi, vì mỗi phụ huynh một hoàn cảnh.
+ */
+function soanTinNhac(p: {
+  hocVien: string
+  nguoiDong: string | null
+  lyDo: string
+  soBuoiConLai: number | null
+  donGia: number
+  congNo: number
+  traTruoc: boolean
+}): string {
+  const xungHo = p.nguoiDong ? `Dạ chào anh/chị ${p.nguoiDong},` : 'Dạ chào anh/chị,'
+  const dong: string[] = [xungHo, '']
+
+  if (p.traTruoc && p.soBuoiConLai !== null) {
+    if (p.soBuoiConLai < 0) {
+      dong.push(
+        `Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} đã học vượt ${Math.abs(p.soBuoiConLai)} buổi so với gói đã đóng.`,
+        'Trung tâm vẫn giữ lịch học bình thường cho bé, anh/chị sắp xếp đóng bù khi thuận tiện ạ.',
+      )
+    } else if (p.soBuoiConLai === 0) {
+      dong.push(`Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} đã học hết số buổi của gói.`)
+    } else {
+      dong.push(
+        `Ms.Ngọc Elite English xin thông báo: bé ${p.hocVien} còn ${p.soBuoiConLai} buổi trong gói hiện tại.`,
+      )
+    }
+    if (p.donGia > 0) {
+      dong.push('', `Học phí hiện tại: ${formatCurrency(p.donGia)}/buổi.`)
+    }
+  } else {
+    dong.push(`Ms.Ngọc Elite English xin gửi anh/chị thông tin học phí của bé ${p.hocVien}.`)
+    if (p.congNo > 0) {
+      dong.push('', `Số tiền cần thanh toán: ${formatCurrency(p.congNo)}.`)
+    } else {
+      dong.push('', `Ghi chú: ${p.lyDo}.`)
+    }
+  }
+
+  dong.push(
+    '',
+    'Anh/chị cần xem lại chi tiết từng buổi học, trung tâm gửi ngay ạ.',
+    'Cảm ơn anh/chị đã đồng hành cùng trung tâm.',
+  )
+  return dong.join('\n')
 }
 
 /** Chốt tháng làm vào đầu tháng sau, nên mặc định mở tháng vừa kết thúc. */

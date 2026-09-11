@@ -105,12 +105,16 @@ export function PaymentForms({
               label="Hợp đồng học phí"
               hint={
                 payStudent && studentEnrollments.length === 0
-                  ? 'Học viên này chưa có hợp đồng — tạo hợp đồng bên dưới để theo dõi công nợ.'
-                  : 'Gắn vào hợp đồng để trừ công nợ đúng chỗ'
+                  ? 'Học viên này chưa có hợp đồng — tạo hợp đồng bên dưới, nếu không tiền sẽ không trừ vào công nợ của ai.'
+                  : studentEnrollments.length === 1
+                    ? 'Chỉ có một hợp đồng — hệ thống tự gắn, không cần chọn.'
+                    : 'Học viên có nhiều hợp đồng — chọn đúng để tiền trừ vào đúng chỗ.'
               }
             >
+              {/* Để trống là để hệ thống TỰ tìm hợp đồng, không phải "không gắn".
+                  Nhiều hợp đồng thì server action từ chối và bắt chọn rõ. */}
               <Select name="enrollment_id" defaultValue="" disabled={!payStudent}>
-                <option value="">— Không gắn hợp đồng —</option>
+                <option value="">— Tự chọn hợp đồng đang hiệu lực —</option>
                 {studentEnrollments.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.label}
