@@ -54,6 +54,10 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
 - [ ] **Kiểm thử end-to-end trên Supabase thật** — toàn bộ mục 5 "Chưa kiểm thử"
       trong `IMPLEMENTATION_STATUS.md`: đăng nhập, tạo học viên, tạo lớp, sinh buổi,
       nộp báo cáo, ghi nhận thanh toán, xem dashboard
+- [ ] **Bật Leaked Password Protection** trong Supabase → Authentication. Advisor báo
+      WARN mới sau khi có tài khoản thật: Supabase đối chiếu mật khẩu với
+      HaveIBeenPwned để chặn mật khẩu đã bị lộ. Đáng bật vì sắp tới giáo viên tự đặt
+      mật khẩu. Không đổi được qua MCP nên cô bấm trong Studio
 - [ ] Xem xét chuyển extension `citext` ra khỏi schema `public` (Advisor báo WARN).
       Tôi chưa làm vì việc này có thể làm hỏng các cột dùng kiểu citext trên một
       CSDL đang chạy — cần kiểm thử riêng trước.

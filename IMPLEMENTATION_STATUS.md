@@ -284,13 +284,26 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
 
 **Chưa có luồng người dùng nào chạy end-to-end trên Supabase thật.** Cụ thể:
 
-1. Đăng nhập và đăng xuất qua Supabase Auth — **chưa có tài khoản Founder nào**
+1. Đăng nhập bằng mật khẩu thật — đã có tài khoản Founder, và **đã chạy app thật
+   với dữ liệu thật ngày 11/09/2026**: `/login` render đúng (200, đủ thương hiệu),
+   chặn truy cập hoạt động (`/dashboard` và `/reports` đều 307 về
+   `/login?next=...`), log không có lỗi nào. Nhưng **chưa thực sự nhập mật khẩu
+   đăng nhập** vì cần trình duyệt
 2. Các server action ghi dữ liệu qua PostgREST (đã kiểm logic ở tầng SQL, chưa
    kiểm qua tầng HTTP)
-3. Hành vi RLS qua PostgREST (đã kiểm rất kỹ trực tiếp trong PostgreSQL)
+3. ~~Hành vi RLS qua PostgREST~~ — **đã kiểm trên DỮ LIỆU THẬT ngày 11/09/2026**,
+   đúng đường vai trò mà PostgREST dùng:
+   · Founder (`role=authenticated` + JWT thật): thấy 20 học viên, 20 lớp,
+     20 hợp đồng, 8 đơn giá lương, 14 dòng đối soát
+   · `anon`: **bị chặn ngay ở tầng GRANT** — `permission denied for table students`
+   · Người đã đăng nhập nhưng không có hồ sơ trong `public.users`: **0 ở tất cả**
+     (học viên, lớp, đơn giá lương, hợp đồng, thanh toán, kỳ lương, chi phí)
 4. Hiển thị thực tế trên điện thoại và iPad (đã thiết kế mobile-first, chưa chụp
    màn hình kiểm chứng)
 5. Biểu đồ Recharts với dữ liệu thật
+5b. ~~Route `/api/cron/scan-reports`~~ — **đã kiểm ngày 11/09/2026**: sai secret →
+   401, không có header → 401, đúng secret mà thiếu `SUPABASE_SERVICE_ROLE_KEY` →
+   500 kèm thông báo chính xác, GET kiểm tra sống → 200
 6. ~~Lần gọi thật tới Gemini~~ — **đã kiểm ngày 10/09/2026** bằng khoá thật, cả hai
    trường hợp (recording Google Drive và có bản ghi lời thoại) đều chạy đúng. Đã
    kiểm bundle trình duyệt không chứa khoá, endpoint hay header xác thực nào.
