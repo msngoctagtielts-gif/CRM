@@ -258,6 +258,47 @@ mã sinh tự động vào repo và lint báo 6 lỗi giả.
 **Chưa kiểm được** vì cần tài khoản Netlify thật: lần deploy đầu tiên, và
 `src/middleware.ts` chạy dưới dạng Edge Function trên Deno.
 
+## 11/09/2026 — Đã tạo tài khoản Founder và nhập 21 lớp
+
+**Tài khoản Founder:** `ms.ngocenliteenglish@gmail.com`, email đã xác nhận,
+`role_code = 'founder'`. Mật khẩu do Postgres sinh ngẫu nhiên (120 bit), **là mật
+khẩu tạm** — phải đổi ở lần đăng nhập đầu tiên.
+
+**Đã nhập từ sheet "CRM ( 10/9)"** bằng `scripts/migration/import_danh_sach_lop.sql`:
+
+| | Số lượng |
+|---|---|
+| Giáo viên | 6 |
+| Học viên | 20 (lớp nhóm Y Khoa tách thành 3 người) |
+| Lớp học | 20 (THIENAI-KO xuất hiện 2 dòng trong sheet ⇒ 1 lớp) |
+| Dòng lịch học | 36 |
+| Hợp đồng học phí | 20 (11 gói trả trước, 8 cuối tháng, 1 chưa xác định) |
+| Mốc đơn giá học phí | 21 (Bé Ngân có 2 mốc theo D11) |
+| Đơn giá lương | 8 (6 theo giáo viên + 2 riêng theo lớp của Ms. Phương) |
+| **Dòng cần đối soát** | **14** |
+
+Quy trình: viết script → **kiểm trên cụm PostgreSQL tạm** → đối chiếu → mới áp lên
+dữ liệu thật. Mọi con số trên dữ liệu thật **khớp tuyệt đối** với bản kiểm, gồm cả
+Bé Ngân 179.000 ₫ (20/08) và 190.000 ₫ (05/09), Hoàng Uyên đứng tên đóng lớp Y Khoa,
+Thảo 250.000 ₫ theo D10, và ba mức lương khác nhau của Ms. Phương (120.000 / 140.000
+/ 160.000). Script có chốt chặn nên chạy lần hai bị từ chối.
+
+### Cố ý CHƯA sinh buổi học nào
+
+Bốn lớp có giờ kết thúc do tôi **tạm ghi 60 phút** (PHUC-PH, NGOC-HO, HANG-PH) và
+một lớp **không rõ sáng hay chiều** (TAN-SH, Chủ nhật "4:30-5:30"). Sinh buổi học
+trên giờ sai sẽ tạo bản ghi lương sai và doanh thu sai — sửa sau tốn hơn nhiều lần.
+Đúng thứ tự là: Founder đối soát 14 dòng ở `/review` → sửa → rồi mới sinh buổi.
+
+### Không bịa dữ liệu thiếu
+
+Năm lớp có ô lịch trống trong sheet (LINH-PH, KIEN-SH, VY-SH, NHI-PH, THIENAI-KO)
+⇒ để trống, gắn cờ đối soát. Level trong sheet mịn hơn bậc CEFR của hệ thống
+(Pre A2, A1+, A2+, B1+) ⇒ làm tròn về bậc gần nhất nhưng **giữ nguyên văn** chuỗi
+gốc trong `students.learning_notes`. Chương trình học (KIDS/TEENS/ADULT) **để
+trống** trừ hai lớp IELTS ghi rõ trong dữ liệu — đoán chương trình từ tên người là
+bịa quy tắc nghiệp vụ.
+
 ---
 
 ## Còn thiếu để hoàn tất việc nhập dữ liệu

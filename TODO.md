@@ -24,10 +24,17 @@ Phải xong trước khi bất kỳ ai nhập dữ liệu thật vào hệ thố
       `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_DB_URL` (chuỗi **Session
       pooler**, không phải kết nối trực tiếp), `BACKUP_PASSPHRASE`.
       Hướng dẫn: `docs/FREE_TIER.md` mục 6
-- [ ] **Tạo tài khoản Founder** trong Supabase Studio, rồi nâng quyền:
-      ```sql
-      update public.users set role_code = 'founder' where email = '<email>';
-      ```
+- [x] ~~**Tạo tài khoản Founder**~~ → đã tạo `ms.ngocenliteenglish@gmail.com`, email đã
+      xác nhận, `role_code = 'founder'`. **Mật khẩu hiện tại là tạm — đổi ngay lần đăng
+      nhập đầu tiên.**
+- [x] ~~**Nhập 21 lớp**~~ → đã nhập: 6 giáo viên, 20 học viên, 20 lớp, 36 dòng lịch học,
+      20 hợp đồng, 21 mốc đơn giá. Script: `scripts/migration/import_danh_sach_lop.sql`,
+      kiểm trên cụm tạm trước khi áp, số liệu khớp tuyệt đối
+- [ ] ⛔ **Đối soát 14 dòng ở trang `/review`** TRƯỚC khi sinh buổi học. Tôi cố ý CHƯA
+      sinh buổi nào: 4 lớp có giờ kết thúc do tôi tạm ghi 60 phút và 1 lớp không rõ
+      sáng/chiều — sinh buổi trên giờ sai sẽ tạo bản ghi lương sai
+- [ ] ⛔ **Điền lịch cho 5 lớp**: LINH-PH, KIEN-SH, VY-SH, NHI-PH, THIENAI-KO (ô lịch
+      trong sheet trống, tôi không bịa)
 - [x] ~~Chọn nơi chạy app~~ → **Netlify Free**, đã cấu hình `netlify.toml`.
       KHÔNG dùng Vercel Hobby: điều khoản cấm dùng thương mại và họ có quyền tắt
       project không báo trước. KHÔNG dùng Cloudflare Workers free: giới hạn 10ms

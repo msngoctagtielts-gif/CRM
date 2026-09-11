@@ -296,7 +296,10 @@ bộ kiểm thử còn tái hiện **đúng số liệu thật từ Google Sheet
    kiểm bundle trình duyệt không chứa khoá, endpoint hay header xác thực nào.
    Còn lại: chưa chạy qua giao diện web thật vì chưa có tài khoản Founder
 
-Chưa nhập dữ liệu học viên thật nào — vì chưa có tài khoản Founder. Chi phí không còn
+**Đã nhập dữ liệu thật ngày 11/09/2026**: 6 giáo viên, 20 học viên, 20 lớp, 36 dòng
+lịch học, 20 hợp đồng, 14 dòng chờ đối soát. Tài khoản Founder đã tạo (mật khẩu tạm,
+phải đổi). Chưa sinh buổi học nào — cố ý, vì còn 5 lớp thiếu lịch và 4 lớp có giờ
+tạm ghi. Chi phí không còn
 là rào cản: toàn bộ hệ thống chạy thật ở **0 ₫/tháng** — Netlify Free cho app
 (`docs/DEPLOY.md`), Supabase Free cho CSDL kèm sao lưu tự động (`docs/FREE_TIER.md`),
 Gemini Free cho AI (`docs/AI_SETUP.md`), GitHub Actions cho việc định kỳ.
