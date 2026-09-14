@@ -324,3 +324,50 @@ Những mục này chỉ cần tra cứu, không cần quyết định lớn:
 - **Ms. Tuyết (Golf)**: trạng thái "đang đợi", chưa có mã lớp ⇒ tôi nhập thành *lead*, không phải học viên
 - **Nâng Supabase lên gói Pro** trước khi nhập dữ liệu thật (gói Free tự tạm dừng, không sao lưu)
 - **Số dư mở đầu**: bảng giá chỉ có mốc "đã đóng đủ đến ngày" cho 2 người (Bé Ngân 31/08/2026, Y Khoa 31/07/2026). 16 học viên còn lại cần lấy từ tab "LỊCH SỬ THANH TOÁN" — tôi sẽ tự đọc, không cần cô làm gì
+
+---
+
+## 14/09/2026 — Vòng 3: học phí quy đổi theo thời lượng buổi học
+
+| Mã | Quyết định | Hệ quả kỹ thuật |
+|---|---|---|
+| D15 | **Đơn giá chuẩn là buổi 60 PHÚT.** Buổi 30 hoặc 90 phút quy đổi theo tỉ lệ từ chính đơn giá gốc đó: 30 phút = 0,5 lần · 90 phút = 1,5 lần | Migration 0018 sửa `fn_consume_lesson`: nhân cả `lessons_deducted` lẫn `recognized_amount` với `duration_minutes / 60` |
+
+### Vì sao phải sửa mã, không chỉ sửa dữ liệu
+
+`fn_consume_lesson` bản cũ ghi nhận doanh thu bằng đúng đơn giá, **bất kể buổi
+dài bao nhiêu**:
+
+```sql
+lessons_deducted = 1;  recognized_amount = v_price;
+```
+
+Buổi 90 phút bị tính bằng giá buổi 60 phút — thu thiếu nửa tiếng. Buổi 30 phút
+bị tính đủ giá — thu thừa của phụ huynh.
+
+Cách vá tạm là tạo một dòng đơn giá riêng cho buổi 90 phút. Đã thử và **bỏ**:
+lần sau có buổi 45 phút hay buổi bù 30 phút thì lại phải tạo thêm dòng, và nếu
+quên thì hệ thống âm thầm tính sai. Quy tắc nằm trong hàm thì áp cho mọi buổi.
+
+### Quy tắc này trung tâm đã áp dụng sẵn ngoài hệ thống
+
+- Bé **Vũ Hoàng Phúc**, buổi 30 phút ngày 07/06/2026 (lớp Ms. Phương): tính
+  **95.000 đ** = 190.000 × 0,5 — ghi trong báo cáo học phí T6–T7/2026.
+- **Bảo Ngọc**, 5 buổi 90 phút tháng 8/2026: thu **1.868.000 đ**, trong khi
+  249.000 × 1,5 × 5 = **1.867.500 đ**. Trung tâm **thu dư 500 đ** do làm tròn.
+
+### Đã kiểm thử trên cơ sở dữ liệu thật
+
+Tạo ba buổi thử cho lớp Bảo Ngọc (đơn giá gốc 249.000 đ) trong một transaction
+rồi rollback:
+
+| Thời lượng | Số buổi trừ | Tiền ghi nhận |
+|---|---:|---:|
+| 30 phút | 0,50 | 124.500 đ |
+| 60 phút | 1,00 | 249.000 đ |
+| 90 phút | 1,50 | 373.500 đ |
+
+Sau rollback: `lessons`, `attendance`, `lesson_consumptions` đều về 0 dòng.
+
+`price_per_lesson` vẫn lưu **đơn giá gốc 60 phút**, không nhân sẵn — nhìn vào
+một dòng dữ liệu vẫn biết giá chuẩn là bao nhiêu và tỉ lệ quy đổi từ đâu ra.
