@@ -1136,3 +1136,48 @@ người giữ hợp đồng (D18). Không tính tiền hai lần.
 Đơn giá bé Ngân **tăng từ 179.000 lên 190.000 đ từ 01/09/2026**. Mức 190.000
 có sẵn trong hệ thống từ lần nhập đầu, chưa rõ nguồn. Nó chỉ ảnh hưởng buổi
 04/09/2026 (lệch 11.000 đ) nhưng sẽ ảnh hưởng mọi buổi từ nay về sau.
+
+---
+
+## D29 — Đối chiếu PDF với Google Sheet hiện tại: không thiếu buổi nào (14/09/2026)
+
+Founder yêu cầu lấy các buổi tháng sau còn thiếu trong PDF từ Google Sheet để
+bổ sung. Đã đọc lại cả ba sheet ở thời điểm hiện tại. **Kết quả: không có buổi
+nào cần bổ sung.**
+
+| Lớp | Sheet dừng ở | PDF đến | Hệ thống | |
+|---|---|---|---:|---|
+| Luân | buổi 48 = 09/08/2026 | 30/08/2026 | **53 buổi** | hệ thống đầy đủ hơn sheet |
+| Tân | buổi 57 = 02/08/2026 | 30/08/2026 | **64 buổi** | hệ thống đầy đủ hơn sheet |
+| Ms. Tuyết | buổi 57 = 30/07/2026 | 30/07/2026 | **57 buổi** | khớp cả hai |
+
+### Cách đánh số trong sheet khớp hoàn toàn với PDF
+
+Đây là kiểm chứng chéo mạnh. Số buổi (cột "Số buổi" trong sheet) trùng khít với
+số buổi trong PDF:
+
+- **Luân**: sheet có buổi 45 = 01/08, buổi 46 = 02/08, buổi 48 = 09/08 — đúng y
+  cách PDF đánh số (buổi 39 = 07/07, rồi 40 = 14/07, … 45 = 01/08, 46 = 02/08,
+  47 = 04/08, 48 = 09/08).
+- **Tân**: sheet có buổi 49 = 04/07, 51 = 17/07, 52 = 19/07, 53 = 21/07,
+  55 = 28/07, 56 = 01/08, 57 = 02/08 — cũng khớp y PDF.
+- **Ms. Tuyết**: sheet có buổi 1, 2, 3, 4, 11, 19, rồi 43–57 — tất cả trùng đúng
+  số buổi PDF ghi.
+
+### Sheet xác nhận độc lập buổi 04/08 của Luân không diễn ra
+
+PDF liệt kê **buổi 47 = 04/08/2026** cho Luân, nhưng **sheet không có buổi 47** —
+nhảy thẳng từ 46 (02/08) sang 48 (09/08). Điều này khớp đúng với việc Founder
+chốt *"ngày 4/8 Luân không học"*.
+
+Hai nguồn độc lập cùng chỉ ra một kết luận. Con số 53 buổi của Luân là đúng.
+
+### Vì sao sheet ít buổi hơn PDF
+
+Sheet chỉ giữ những buổi giáo viên **có điền feedback**; PDF tổng hợp **mọi buổi
+đã dạy**. Đó là lý do sheet thiếu buổi 39–44 và 47 của Luân, buổi 50 và 54 của
+Tân, và 36 buổi của Ms. Tuyết.
+
+**Kết luận về nguồn dữ liệu:** báo cáo PDF là nguồn đầy đủ về SỐ BUỔI; sheet
+feedback là nguồn về NỘI DUNG BUỔI HỌC và GIỜ DẠY THẬT. Hệ thống đang giữ cả
+hai: số buổi lấy từ PDF, giờ dạy lấy từ sheet ở những buổi sheet có ghi.
