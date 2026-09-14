@@ -1214,10 +1214,8 @@ học viên. Lệch một ngày, không ảnh hưởng tiền.
 
 ### Hai việc còn thiếu
 
-**1. Chưa đọc được quá buổi 25.** Sheet sửa lần cuối 30/08/2026 nhưng nội dung
-trả về bị cắt giữa buổi 25 do giới hạn dung lượng. Theo lịch T4 & T7 thì từ
-21/08 đến 30/08 còn có thể có 2–3 buổi nữa. **Cần Founder xác nhận buổi 21/08
-có phải buổi cuối không.**
+**1. Số buổi đã chốt: 25.** Founder xác nhận 14/09/2026 — *"đúng, căn cứ vào
+gg sheet về số buổi"*. Buổi 21/08/2026 là buổi cuối.
 
 **2. Chưa có thông tin thanh toán của Huyền Ngô.** Founder nhắc *"các thông tin
 tôi trao đổi bạn trước đó về ngày mà Huyền Ngô (tức là người nhà Hậu đóng phí
@@ -1225,3 +1223,48 @@ tôi trao đổi bạn trước đó về ngày mà Huyền Ngô (tức là ngư
 có bất kỳ thông tin nào về Huyền Ngô** — không ngày, không số tiền, không ảnh
 chuyển khoản. Có thể tin nhắn đó chưa gửi đến, hoặc nằm ở một cuộc trò chuyện
 khác. **Không ghi nhận khoản nào khi chưa có dữ liệu.**
+
+---
+
+## D31 — Lớp Hậu chốt 25 buổi; còn thiếu ngày hai đợt đóng (14/09/2026)
+
+Founder xác nhận: **số buổi căn cứ vào Google Sheet** → chốt **25 buổi**, buổi
+cuối 21/08/2026.
+
+Đã chuyển hợp đồng từ `undetermined` sang **`prepaid_package`, 20 buổi** —
+căn cứ: sheet CLASS LIST ghi *"Gói 10 buổi"*, và Founder cho biết người nhà
+(Huyền Ngô) đã đóng **2 đợt**.
+
+### Tình trạng
+
+| | |
+|---|---:|
+| Tổng buổi | 25 |
+| Không tính phí (4 buổi trước 29/05) | 4 |
+| Tính phí | 21 |
+| Học phí 21 × 249.000 | **5.229.000 đ** |
+| Đã mua (2 gói × 10 buổi) | 20 buổi |
+| **Còn lại** | **−1 buổi** |
+
+### Con số dự kiến khi có chứng từ
+
+Nếu mỗi đợt đúng một gói 10 buổi:
+
+| | |
+|---|---:|
+| 2 đợt × 10 buổi × 249.000 | 4.980.000 đ |
+| Học phí 21 buổi | 5.229.000 đ |
+| **Còn phải thu** | **249.000 đ — đúng 1 buổi** |
+
+Cùng dạng với lớp Ms. Tuyết: đóng theo gói, học vượt đúng 1 buổi sang gói kế.
+
+### Chưa ghi được khoản thanh toán nào
+
+Founder nhắc đã trao đổi về ngày Huyền Ngô đóng, nhưng **thông tin đó không có
+trong lịch sử hội thoại** — đã tìm lại toàn bộ transcript và các file đã lưu.
+Không có ngày, không có số tiền, không có ảnh chuyển khoản.
+
+**Không ghi khoản nào khi chưa có dữ liệu**, đúng nguyên tắc đã rút ra ở D25:
+tự suy đoán một khoản tiền làm số dư sai lệch và khó truy ngược.
+
+Cần Founder cung cấp: **ngày và số tiền của hai đợt** (hoặc ảnh chuyển khoản).
