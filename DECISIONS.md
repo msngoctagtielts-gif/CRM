@@ -1067,9 +1067,18 @@ Founder gửi thêm 4 ảnh chuyển khoản, mỗi ảnh 1.992.000 đ.
 Ba ảnh mới **bổ sung đúng ba gói mà báo cáo ghi "chưa có ảnh gốc"**. Hồ sơ lớp
 Ms. Tuyết giờ **đủ chứng từ cho cả 8/8 gói**.
 
-### Điểm cần Founder xác nhận
+### Trung tâm có hai tài khoản nhận học phí
 
-Ba gói đầu chuyển vào tài khoản **NGUYEN THANH QUANG — HDBank 0902582499**,
-không phải tài khoản trung tâm **NGUYEN THANH MY NGOC — OCB**. Báo cáo có ghi
-nhận việc đổi ngân hàng (*"HDBank (gói 1–3) / OCB (gói 4–7)"*) nên khớp về ngân
-hàng, nhưng **tên người nhận khác**. Đã đánh `needs_review` cho ba dòng này.
+Ba gói đầu chuyển vào **NGUYEN THANH QUANG — HDBank 0902582499**, không phải
+**NGUYEN THANH MY NGOC — OCB 0004100042325006**. Founder xác nhận 14/09/2026:
+**đây là tài khoản thứ hai của trung tâm**, khoản thu hợp lệ. Đã gỡ cờ
+`needs_review` cho ba dòng.
+
+**Ghi nhớ cho các lần đối soát sau:** trung tâm nhận học phí qua **hai** tài
+khoản. Khi đối chiếu ảnh chuyển khoản, tên người nhận là *NGUYEN THANH QUANG*
+cũng hợp lệ, không được coi là chuyển nhầm.
+
+| Tài khoản | Ngân hàng | Số | Tên |
+|---|---|---|---|
+| 1 | OCB | 0004100042325006 | NGUYEN THANH MY NGOC |
+| 2 | HDBank | 0902582499 | NGUYEN THANH QUANG |
