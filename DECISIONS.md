@@ -1316,3 +1316,37 @@ thực tế là 2.500.000 đ.**
 | Còn phải thu | **229.000 đ** |
 
 Nếu Founder chốt 250.000 đ thì còn phải thu **250.000 đ — đúng 1 buổi**.
+
+---
+
+## D33 — Đơn giá Hậu chốt 250.000 đ (14/09/2026)
+
+Founder chốt: *"hậu là học phí 250000 nhưng nhầm lẫn chuyển phí trên, tôi bỏ qua
+lần này"*.
+
+Đơn giá Hậu là **250.000 đ/buổi**. CLASS LIST ghi 249.000 là sai — **đúng cùng
+một lỗi với lớp Toàn** (D19), và cả hai đều là học viên Ms. Nhi. Việc nhầm mức
+phí trước đó Founder bỏ qua, không truy lại.
+
+### Kết quả sau khi sửa
+
+| | |
+|---|---:|
+| 25 buổi, 4 miễn phí → 21 buổi tính phí × 250.000 | **5.250.000 đ** |
+| Đã đóng 2 đợt × 2.500.000 (= 20 buổi) | **5.000.000 đ** |
+| **Còn phải thu** | **250.000 đ — đúng 1 buổi** |
+
+Số ra tròn ở cả ba chỗ: mỗi đợt đúng 10 buổi, tổng đã đóng đúng 20 buổi, còn
+thiếu đúng 1 buổi. **Đây không phải nợ xấu** — buổi 21 đơn giản là buổi đầu của
+gói thứ ba, giống hệt cách lớp Ms. Tuyết vận hành (D26).
+
+### CLASS LIST ghi sai đơn giá ít nhất hai lớp
+
+| Lớp | Giáo viên | CLASS LIST | Đúng |
+|---|---|---:|---:|
+| Toàn | Ms. Nhi | 249.000 đ | **250.000 đ** |
+| Hậu | Ms. Nhi | 249.000 đ | **250.000 đ** |
+
+Cả hai lớp của Ms. Nhi đều bị ghi nhầm cùng một kiểu. **Nên rà lại cột
+"Học phí/60p" của CLASS LIST cho các lớp còn lại** — đây là cột nuôi toàn bộ
+phép tính học phí.
