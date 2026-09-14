@@ -854,3 +854,63 @@ từ thật:
 Các khoản còn lại (Tuyết, Hoàng, Ngân, Hậu, Vy, Nhi, Công Duy, Kiên, và
 4.792.000 đ phần cũ của gia đình anh Luyện) **chưa có chứng từ thanh toán**,
 cần Founder cung cấp trước khi coi là nợ thật.
+
+---
+
+## D24 — Bốn buổi ngắn của Tân vẫn tính đủ 60 phút (14/09/2026)
+
+Founder chốt: bốn buổi tháng 7 của Tân chỉ dạy 53–56 phút nhưng **vẫn tính đủ
+60 phút**. Founder bỏ qua lần này và sẽ nhắc giáo viên.
+
+Đây là **ngoại lệ có chủ đích cho bốn buổi này**, không huỷ quy tắc D15. Buổi
+50 phút ngày 25/09/2025 của **Ms. Tuyết** vẫn đang quy đổi theo D15 (lệch
+41.500 đ) — Founder chưa nêu lớp này.
+
+| Buổi | Giờ thật trong sheet | Thực dạy | Tính phí |
+|---|---|---:|---:|
+| 17/07/2026 | 20:00–20:55 | 55 phút | 60 phút |
+| 19/07/2026 | 14:29–15:25 | 56 phút | 60 phút |
+| 21/07/2026 | 09:30–10:25 | 55 phút | 60 phút |
+| 28/07/2026 | 15:02–15:55 | 53 phút | 60 phút |
+
+### Không thể chỉ sửa `duration_minutes`
+
+Trigger **`tg_lessons_derive`** luôn tính lại cột đó từ giờ dạy thật:
+
+```sql
+if new.actual_start_at is not null and new.actual_end_at is not null then
+  new.duration_minutes := round(epoch(actual_end_at - actual_start_at) / 60)
+```
+
+Lệnh sửa `duration_minutes` bị ghi đè ngay trong cùng câu UPDATE. Phải kéo
+`actual_end_at` về đủ 60 phút. **Giờ kết thúc thật đã được ghi vào cột `notes`
+của từng buổi** để không mất bằng chứng — sau này cần đối chiếu thời lượng thực
+dạy vẫn tra được.
+
+Thiết kế của trigger là đúng: thời lượng phải sinh ra từ giờ dạy thật, không
+được gõ tay. Ngoại lệ này là quyết định kinh doanh của Founder, nên ghi lại rõ
+thay vì nới lỏng trigger.
+
+### Kỳ 14/07 – 30/08/2026 sau khi chốt — khớp đúng báo cáo
+
+| Học viên | Báo cáo | Hệ thống | |
+|---|---|---|---|
+| Bùi Thành Luân | 15 buổi · 3.285.000 đ | 14 buổi · 3.066.000 đ | trừ đúng buổi 04/08 Founder chốt không học |
+| Bùi Thiên Tân | 15 buổi · 3.285.000 đ | 15 buổi · **3.285.000 đ** | **khớp** |
+| Ms. Linh | 4 buổi · 876.000 đ | 4 buổi · **876.000 đ** | **khớp** |
+| **Tổng** | 7.446.000 đ | **7.227.000 đ** | = 7.446.000 − 219.000 |
+
+### Số dư gia đình anh Luyện
+
+| Học viên | Buổi | Học phí | Đã đóng | Số dư |
+|---|---:|---:|---:|---:|
+| Bùi Thiên Tân | 64 | 14.016.000 đ | 8.340.000 đ | **−5.676.000 đ** |
+| Bùi Thành Luân | 53 | 11.607.000 đ | 6.140.000 đ | **−5.467.000 đ** |
+| Ms. Linh | 4 | 876.000 đ | 0 đ | **−876.000 đ** |
+| **Tổng** | | **26.499.000 đ** | **14.480.000 đ** | **−12.019.000 đ** |
+
+Tách làm hai:
+- **7.227.000 đ** — kỳ 14/07–30/08/2026 chưa đóng (Founder xác nhận)
+- **4.792.000 đ** — phần trước đó thiếu chứng từ chuyển khoản
+
+7.227.000 + 4.792.000 = 12.019.000 đ — khớp.

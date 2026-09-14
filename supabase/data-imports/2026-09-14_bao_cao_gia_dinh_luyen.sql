@@ -147,3 +147,44 @@ from classes c where c.id=tp.class_id and c.class_code in ('LUAN-SH','TAN-SH') a
 -- BƯỚC 6 (bổ sung 14/09/2026). Founder chốt: giao dịch 2.200.000 đ ngày
 -- 29/12/2025 là anh Luyện chuyển tiền RIÊNG cho chị Linh, KHÔNG PHẢI học phí.
 delete from payments where payment_code = 'TT26090033';
+
+-- ===========================================================================
+-- BƯỚC 7 (bổ sung 14/09/2026). Founder chốt: bốn buổi tháng 7 của Tân chỉ dạy
+-- 53–56 phút nhưng VẪN TÍNH ĐỦ 60 PHÚT. Founder bỏ qua lần này và nhắc giáo viên.
+-- Đây là NGOẠI LỆ có chủ đích cho bốn buổi này, KHÔNG huỷ quy tắc D15.
+--
+-- CHÚ Ý KỸ THUẬT: không thể chỉ sửa duration_minutes. Trigger tg_lessons_derive
+-- luôn tính lại cột đó từ actual_start_at và actual_end_at:
+--     if new.actual_start_at is not null and new.actual_end_at is not null then
+--       new.duration_minutes := round(epoch(actual_end_at - actual_start_at)/60)
+-- nên lệnh sửa duration bị ghi đè ngay. Phải kéo actual_end_at về đủ 60 phút.
+-- Giờ kết thúc THẬT theo sheet feedback đã được ghi vào cột notes của từng buổi
+-- để không mất bằng chứng.
+-- ===========================================================================
+update lessons l
+set notes = coalesce(l.notes || ' | ', '') ||
+      'GIO KET THUC THAT theo sheet feedback: ' ||
+      to_char(l.actual_end_at at time zone 'Asia/Ho_Chi_Minh', 'HH24:MI') ||
+      ' (' || l.duration_minutes || ' phut). Founder chot 14/09/2026: VAN TINH DU 60 PHUT.',
+    actual_end_at    = l.actual_start_at + interval '60 minutes',
+    scheduled_end_at = l.scheduled_start_at + interval '60 minutes'
+from classes c
+where c.id = l.class_id
+  and c.class_code in ('LUAN-SH','TAN-SH')
+  and l.duration_minutes <> 60;
+
+update lessons l set status = 'scheduled'::lesson_status
+from classes c where c.id=l.class_id and c.class_code in ('LUAN-SH','TAN-SH');
+
+update lessons l set status = 'completed'::lesson_status
+from classes c where c.id=l.class_id and c.class_code in ('LUAN-SH','TAN-SH');
+
+update teacher_payable_lessons tp set status='paid',
+  notes = coalesce(tp.notes||' | ','') || 'Da tra ngoai he thong (Founder xac nhan 14/09/2026).'
+from classes c where c.id=tp.class_id and c.class_code in ('LUAN-SH','TAN-SH') and tp.status='pending';
+
+-- KẾT QUẢ CUỐI - kỳ 14/07-30/08/2026 khớp đúng báo cáo:
+--   Luân     14 buổi  3.066.000 đ   (báo cáo 15 buổi 3.285.000, trừ 04/08)
+--   Tân      15 buổi  3.285.000 đ   KHỚP
+--   Ms. Linh  4 buổi    876.000 đ   KHỚP
+--   Tổng              7.227.000 đ = 7.446.000 của báo cáo trừ đúng buổi 04/08
