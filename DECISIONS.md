@@ -1268,3 +1268,51 @@ Không có ngày, không có số tiền, không có ảnh chuyển khoản.
 tự suy đoán một khoản tiền làm số dư sai lệch và khó truy ngược.
 
 Cần Founder cung cấp: **ngày và số tiền của hai đợt** (hoặc ảnh chuyển khoản).
+
+---
+
+## D32 — Hai đợt đóng của Hậu: 2.500.000 đ, không phải 2.490.000 (14/09/2026)
+
+Founder gửi hai ảnh biến động số dư. Người chuyển: **Ngô Thị Diệu Huyền**, người
+nhà của Hậu.
+
+| Đợt | Ngày giờ | Số tiền | Nội dung | Số dư sau GD |
+|---|---|---:|---|---:|
+| 1 | 05/06/2026 16:51 | 2.500.000 đ | IBFT Huyen Ngo chuyen khoan nhanh qua Zalo | 7.308.404 đ |
+| 2 | 11/07/2026 10:50 | 2.500.000 đ | IBFT NGO THI DIEU HUYEN chuyen tien | 10.158.194 đ |
+| | | **5.000.000 đ** | | |
+
+Cả hai vào tài khoản OCB 0004100042325006.
+
+### Số tiền là 2.500.000 đ — điều này đặt lại câu hỏi về đơn giá
+
+Trước đó tôi dự đoán mỗi đợt là 2.490.000 đ (10 buổi × 249.000). **Sai —
+thực tế là 2.500.000 đ.**
+
+| Giả thiết đơn giá | 2.500.000 tương ứng | 21 buổi tính phí | Số dư |
+|---|---|---:|---:|
+| 249.000 đ (CLASS LIST) | 10,04 buổi — **lẻ** | 5.229.000 đ | −229.000 đ |
+| **250.000 đ** | **đúng 10 buổi** | 5.250.000 đ | **−250.000 đ = đúng 1 buổi** |
+
+### Ba căn cứ cho mức 250.000 đ
+
+1. **2.500.000 chia hết cho 250.000**, ra đúng 10 buổi — khớp *"Gói 10 buổi"*
+   trong CLASS LIST.
+2. **Hậu và Toàn cùng giáo viên Ms. Nhi.** CLASS LIST ghi cả hai là 249.000 đ,
+   nhưng Founder đã chốt đơn giá của Toàn là **250.000 đ** (D19). Cùng một sai
+   sót trong CLASS LIST.
+3. **Toàn cũng đóng theo mức 2.500.000 đ/đợt** (Đặng Thái Chung, hai lần).
+   Cùng giáo viên, cùng mức tiền, cùng cách đóng.
+
+**Chưa tự đổi đơn giá** — đây là quyết định giá của Founder. Hai dòng thanh toán
+đã đánh `needs_review` nêu rõ vấn đề này.
+
+### Tình trạng hiện tại (ở mức 249.000 đ)
+
+| | |
+|---|---:|
+| 25 buổi, 4 miễn phí → 21 buổi tính phí | 5.229.000 đ |
+| Đã đóng (2 đợt) | 5.000.000 đ |
+| Còn phải thu | **229.000 đ** |
+
+Nếu Founder chốt 250.000 đ thì còn phải thu **250.000 đ — đúng 1 buổi**.
