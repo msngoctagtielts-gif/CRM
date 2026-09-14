@@ -797,3 +797,60 @@ Ba ảnh chuyển khoản đã có:
 | Bùi Thiên Tân | 13.939.350 đ | 8.340.000 đ | **−5.599.350 đ** |
 | Bùi Thành Luân | 11.607.000 đ | 6.140.000 đ | **−5.467.000 đ** |
 | Ms. Linh | 876.000 đ | 2.200.000 đ | +1.324.000 đ |
+
+---
+
+## D23 — Chốt lại: khoản 29/12/2025 không phải học phí (14/09/2026)
+
+Founder chốt: giao dịch **2.200.000 đ ngày 29/12/2025** là anh Luyện chuyển tiền
+**riêng cho chị Linh**, không phải học phí. Đã xoá khỏi sổ thu.
+
+### Đối chiếu gia đình anh Bùi Văn Luyện sau khi chốt
+
+| | |
+|---|---:|
+| Luân 39 buổi × 219.000 (mốc báo cáo ghi đã thanh toán) | 8.541.000 đ |
+| Tân 49 buổi × 219.000 (mốc báo cáo ghi đã thanh toán) | 10.731.000 đ |
+| **Phải đã thu trước kỳ 14/07** | **19.272.000 đ** |
+| Đã thu có ảnh chuyển khoản (07/10/2025 + 18/07/2026) | 14.480.000 đ |
+| **Thiếu chứng từ** | **4.792.000 đ** |
+
+### Số dư ba học viên
+
+| Học viên | Buổi | Học phí | Đã đóng | Số dư |
+|---|---:|---:|---:|---:|
+| Bùi Thiên Tân | 64 | 13.939.350 đ | 8.340.000 đ | **−5.599.350 đ** |
+| Bùi Thành Luân | 53 | 11.607.000 đ | 6.140.000 đ | **−5.467.000 đ** |
+| Ms. Linh | 4 | 876.000 đ | 0 đ | **−876.000 đ** |
+| **Tổng** | | **26.422.350 đ** | **14.480.000 đ** | **−11.942.350 đ** |
+
+Khoản 11.942.350 đ này gồm hai phần:
+- **7.150.350 đ** — kỳ 14/07–30/08/2026 anh Luyện chưa đóng (Founder xác nhận)
+- **4.792.000 đ** — phần trước đó thiếu chứng từ chuyển khoản
+
+---
+
+## Tình trạng hệ thống, chốt ngày 14/09/2026
+
+| | |
+|---|---:|
+| Buổi học trong hệ thống | **411** |
+| Doanh thu ghi nhận | **92.412.342 đ** |
+| Đã thu (có chứng từ) | **62.976.000 đ** |
+| Công nợ | **31.246.842 đ** (13 học viên) |
+| Số dư trả trước | 1.810.500 đ (3 học viên) |
+| Lương giáo viên | 15.960.000 đ — **toàn bộ đã đánh dấu đã trả** |
+
+**Phần lớn con số 31 triệu công nợ là do chưa nhập thanh toán, không phải phụ
+huynh chưa đóng.** Chỉ những khoản sau là công nợ đã được đối chiếu bằng chứng
+từ thật:
+
+| Học viên | Công nợ thật | Căn cứ |
+|---|---:|---|
+| Toàn | 1.000.000 đ | 24 buổi × 250.000 − 2 đợt 2.500.000 |
+| Thiên Ái | 280.000 đ | báo cáo PDF kết luận đúng số này |
+| Gia đình anh Luyện (Tân + Luân + Ms. Linh) | 7.150.350 đ | kỳ 14/07–30/08 chưa đóng |
+
+Các khoản còn lại (Tuyết, Hoàng, Ngân, Hậu, Vy, Nhi, Công Duy, Kiên, và
+4.792.000 đ phần cũ của gia đình anh Luyện) **chưa có chứng từ thanh toán**,
+cần Founder cung cấp trước khi coi là nợ thật.

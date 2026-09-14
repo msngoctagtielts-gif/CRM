@@ -135,12 +135,15 @@ from classes c where c.id=tp.class_id and c.class_code in ('LUAN-SH','TAN-SH') a
 --      Luân 39 buổi x 219.000 =  8.541.000
 --      Tân  49 buổi x 219.000 = 10.731.000
 --      Phải đã thu            = 19.272.000
---    Tiền có ảnh chuyển khoản = 16.680.000
---      (7.000.000 ngày 07/10/2025 + 2.200.000 ngày 29/12/2025
---       + 7.480.000 ngày 18/07/2026)
---    THIẾU CHỨNG TỪ           =  2.592.000
+--    Tiền có ảnh chuyển khoản = 14.480.000
+--      (7.000.000 ngày 07/10/2025 + 7.480.000 ngày 18/07/2026)
+--    THIẾU CHỨNG TỪ           =  4.792.000
 --
---    Nếu khoản 2.200.000 ngày 29/12/2025 thật sự là của Ms. Linh (nội dung
---    chuyển khoản ghi "a LUYEN chuyen tien hoc chi Linh") thì phần thiếu
---    chứng từ của Luân và Tân là 4.792.000 đ.
+--    Founder chốt 14/09/2026: giao dịch 2.200.000 đ ngày 29/12/2025 là anh
+--    Luyện chuyển tiền RIÊNG cho chị Linh, KHÔNG PHẢI học phí. Đã xoá khỏi
+--    sổ thu (payment_code TT26090033).
 -- ===========================================================================
+
+-- BƯỚC 6 (bổ sung 14/09/2026). Founder chốt: giao dịch 2.200.000 đ ngày
+-- 29/12/2025 là anh Luyện chuyển tiền RIÊNG cho chị Linh, KHÔNG PHẢI học phí.
+delete from payments where payment_code = 'TT26090033';
