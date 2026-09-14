@@ -663,3 +663,40 @@ không dòng nào thiếu đơn giá.
   động từ nguyên mẫu là sai).
 - **Lớp Ms. Linh**: buổi 20/08 có khoảng 15 phút cuối chuyển sang việc riêng của
   giáo viên, trong đó học viên thành người tư vấn ngược cho giáo viên.
+
+---
+
+## D20 — Miễn phí buổi 1 cho Kiên, Vy và Công Duy (14/09/2026)
+
+Founder chốt thêm ba lớp nữa miễn phí buổi đầu.
+
+| Lớp | Buổi 1 | Học phí trước | Học phí sau |
+|---|---|---:|---:|
+| Vy | 04/08/2026 | 2.240.000 đ | **1.960.000 đ** |
+| Công Duy | 24/08/2026 | 630.000 đ | **420.000 đ** |
+| Kiên | 03/08/2026 | 600.000 đ | **300.000 đ** |
+
+### Miễn phí cho học viên không làm giảm lương giáo viên
+
+Dòng lương của ba buổi này giữ nguyên và vẫn ở trạng thái `paid`. Giáo viên đã
+dạy đủ buổi; việc trung tâm không thu tiền học viên là quyết định kinh doanh,
+không phải lý do trừ lương. Hệ thống tách hai bên đúng như vậy: `is_billable`
+trên bảng điểm danh chỉ chi phối doanh thu, còn dòng lương sinh từ giờ dạy thật
+trên bảng buổi học.
+
+### Quy tắc "miễn phí buổi 1" hiện áp cho những lớp nào
+
+| Lớp | Buổi không thu phí | Căn cứ |
+|---|---|---|
+| Toàn | Test demo 10/06 + buổi 1 ngày 15/06 | Founder chốt |
+| Kiên | Buổi 1 ngày 03/08 | Founder chốt |
+| Vy | Buổi 1 ngày 04/08 | Founder chốt |
+| Công Duy | Buổi 1 ngày 24/08 | Founder chốt |
+| Nhi | Buổi 10/08 | **Suy ra** — sheet ghi "Buổi làm quen"; chờ Founder xác nhận |
+| Hậu | 4 buổi trước 29/05 | Báo cáo PDF ghi rõ "Không tính kinh phí" |
+| Thiên Ái | Placement, demo, 2 buổi cô Jai | Báo cáo PDF mục 3 |
+| Thảo | Buổi đầu vào 16/05 + 3 buổi đầu với cô Phương | Báo cáo PDF |
+
+**Ms. Linh vẫn tính phí cả 4 buổi** — Founder không nêu lớp này trong danh sách
+miễn phí. Nếu buổi 28/07 cũng được miễn thì học phí giảm từ 876.000 đ xuống
+657.000 đ.

@@ -161,3 +161,28 @@ where c.id = tp.class_id
 --     link Zoom Clip. Chưa đủ căn cứ.
 --   - Lớp Ms. Hằng: Founder chốt bỏ qua.
 --   - Ba học viên C Khang, Khôi, Uyên: Founder chốt không nhập.
+
+-- ===========================================================================
+-- BƯỚC 7 (bổ sung 14/09/2026). Founder chốt: lớp Kiên, Vy và Công Duy
+-- MIỄN PHÍ BUỔI 1.
+--
+-- Lưu ý: miễn phí cho học viên KHÔNG làm giảm lương giáo viên. Giáo viên vẫn
+-- đã dạy đủ buổi đó nên dòng lương giữ nguyên và vẫn ở trạng thái 'paid'.
+-- ===========================================================================
+update attendance a set is_billable = false
+from lessons l join classes c on c.id = l.class_id
+where a.lesson_id = l.id
+  and (   (c.class_code = 'KIEN-SH' and l.lesson_date = DATE '2026-08-03')
+       or (c.class_code = 'VY-SH'   and l.lesson_date = DATE '2026-08-04')
+       or (c.class_code = 'DUY-SH'  and l.lesson_date = DATE '2026-08-24'));
+
+update lessons l set status = 'scheduled'::lesson_status
+from classes c where c.id = l.class_id and c.class_code in ('KIEN-SH','VY-SH','DUY-SH');
+
+update lessons l set status = 'completed'::lesson_status
+from classes c where c.id = l.class_id and c.class_code in ('KIEN-SH','VY-SH','DUY-SH');
+
+-- Kết quả sau bước 7:
+--   VY-SH    8 buổi, 7 tính phí → 1.960.000 đ (lương giữ 960.000 đ)
+--   DUY-SH   3 buổi, 2 tính phí →   420.000 đ (lương giữ 360.000 đ)
+--   KIEN-SH  2 buổi, 1 tính phí →   300.000 đ (lương giữ 240.000 đ)
