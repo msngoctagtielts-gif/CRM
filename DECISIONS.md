@@ -987,3 +987,62 @@ Luân là 22/10/2025 và của Tân là "tháng 10/2025", mỗi đợt chỉ 2.2
 
 Đã **gỡ khoản này khỏi sổ thu** (trước đó tôi tự chia đôi 3.500.000 đ mỗi bé —
 một suy đoán không có căn cứ). Cần Founder cho biết 7.000.000 đ đó là tiền gì.
+
+---
+
+## D26 — Lớp Ms. Tuyết: 57 buổi, không nợ, còn dư 7 buổi (14/09/2026)
+
+**Báo cáo "BÁO CÁO HỌC PHÍ MS. TUYẾT" lập 13/08/2026 cho thấy sheet feedback
+thiếu 36 buổi.** Sheet chỉ có 21 buổi; thực tế 57 buổi từ 24/09/2025 đến
+30/07/2026. Đã xoá 21 buổi cũ và nhập lại đủ 57 buổi.
+
+Đây là lần thứ hai sheet feedback thiếu buổi so với báo cáo chính thức (lần đầu
+là lớp Luân và Tân, D21). **Sheet feedback không phải nguồn đầy đủ.**
+
+### Năm giáo viên nối tiếp nhau
+
+| Giáo viên | Buổi |
+|---|---|
+| Teacher Allen | 1–2 |
+| Ms. Wen | 3–19 |
+| Ms. Grace | 20–23 |
+| Ms. Rith | 24–42 |
+| Teacher Sheba | 43–57 |
+
+Tháng 05/2026 lớp tạm nghỉ. Báo cáo ghi rõ **không có buổi miễn phí nào**.
+
+### Tám gói thanh toán, mỗi gói đúng 8 buổi
+
+| Gói | Ngày | Số tiền | Buổi | Chứng từ |
+|---:|---|---:|---|---|
+| 1 | 17/09/2025 | 1.992.000 đ | 1–8 | theo báo cáo |
+| 2 | 02/11/2025 | 1.992.000 đ | 9–16 | theo báo cáo |
+| 3 | 08/12/2025 | 1.992.000 đ | 17–24 | theo báo cáo |
+| 4 | 03/02/2026 | 1.992.000 đ | 25–32 | **có ảnh** |
+| 5 | 08/04/2026 | 1.992.000 đ | 33–40 | **có ảnh** |
+| 6 | 02/07/2026 | 1.992.000 đ | 41–48 | **có ảnh** |
+| 7 | 22/07/2026 | 1.992.000 đ | 49–56 | **có ảnh** |
+| 8 | 15/08/2026 | 1.992.000 đ | 57→ | **có ảnh** |
+
+1.992.000 ₫ = đúng 8 × 249.000 ₫.
+
+Báo cáo có ghi chú *"Gói 5 (08/04/2026) chưa có ảnh giao dịch gốc — nên bổ sung
+để hồ sơ đủ 7/7"*. **Founder đã gửi đúng ảnh đó ngày 14/09/2026** — hồ sơ giờ
+đủ chứng từ cho gói 4 đến 8.
+
+### Kết quả — khớp tuyệt đối
+
+| | |
+|---|---:|
+| 57 buổi × 249.000 | **14.193.000 đ** (báo cáo: 14.193.000 đ) |
+| 8 gói × 1.992.000 | **15.936.000 đ** |
+| Đã mua | 64 buổi |
+| Đã học | 57 buổi |
+| **Còn lại** | **7 buổi — dư 1.743.000 đ** |
+
+**Cô Tuyết KHÔNG NỢ.** Báo cáo ghi *"còn phải thu 249.000 đ"* là tính đến ngày
+lập 13/08/2026, trước khi cô đóng gói 8 ngày 15/08/2026. Sau khoản đó, cô đang
+dư 7 buổi.
+
+Trước đây hệ thống hiển thị cô Tuyết nợ 5.187.492 đ — con số đó sai hoàn toàn
+vì thiếu 36 buổi và thiếu cả 8 khoản thanh toán.
