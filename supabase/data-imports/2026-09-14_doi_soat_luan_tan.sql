@@ -67,8 +67,10 @@ from classes c where c.id=tp.class_id and c.class_code in ('LUAN-SH','TAN-SH') a
 -- KHÔNG còn khoản "thiếu chứng từ" nào. Toàn bộ phần trước 14/07/2026 đã
 -- thanh toán đủ đến từng đồng.
 --
--- CÒN MỘT CÂU HỎI: ảnh chuyển khoản 7.000.000 đ ngày 07/10/2025 ("BUI VAN
--- LUYEN chuyen tien") KHÔNG khớp với bất kỳ đợt nào trong báo cáo. Đợt 1 của
--- Luân là 22/10/2025 và của Tân là "tháng 10/2025", mỗi đợt 2.200.000 đ.
--- Khoản 7.000.000 đ này chưa được ghi vào sổ thu vì chưa rõ nó là gì.
+-- Khoản 7.000.000 đ ngày 07/10/2025: Founder chốt 14/09/2026 đây là TIỀN NỢ
+-- RIÊNG, không phải học phí. Đã gỡ khỏi sổ thu — đúng như phép đối soát đã chỉ
+-- ra (không khớp đợt nào trong báo cáo).
+--
+-- Tương tự khoản 2.200.000 đ ngày 29/12/2025 cũng là tiền riêng. Hai trong ba
+-- ảnh chuyển khoản của anh Luyện KHÔNG phải học phí.
 -- ===========================================================================
