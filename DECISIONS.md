@@ -700,3 +700,100 @@ trên bảng buổi học.
 **Ms. Linh vẫn tính phí cả 4 buổi** — Founder không nêu lớp này trong danh sách
 miễn phí. Nếu buổi 28/07 cũng được miễn thì học phí giảm từ 876.000 đ xuống
 657.000 đ.
+
+---
+
+## D21 — Báo cáo gửi gia đình anh Luyện sửa lại ba điều tôi đã làm sai (14/09/2026)
+
+Báo cáo **"MNEE_GiaDinh_Luan-Tan-MsLinh_BaoCaoHocTap_HocPhi"** kỳ 14/07–30/08/2026
+là chứng từ **đã gửi phụ huynh**, nên có giá trị cao hơn sheet feedback và cao
+hơn tab SYS_THANHTOAN nội bộ. Nó sửa lại ba điều:
+
+### 1. Đơn giá là 219.000 đ, không phải 220.000
+
+Trước đó tôi suy ra 220.000 từ cách tab SYS_THANHTOAN phân bổ giao dịch
+7.480.000 đ (2.640.000 ÷ 12 = 4.840.000 ÷ 22 = 220.000). Phép tính đó đúng
+nhưng **nguồn sai**: báo cáo gửi gia đình ghi rõ **219.000 đ** cho cả ba học
+viên. Đã trả lại 219.000.
+
+### 2. Tôi đọc sai ngày ba buổi của lớp Luân
+
+Cùng loại lỗi dd/mm mà Founder đã chỉ ra ở lớp Tân. Sheet ghi 08/01 và 08/02
+thật ra là **01/08 và 02/08**; 09/08 bị tôi đọc thành 09/09. Báo cáo xác nhận
+Luân có học đúng 01/08, 02/08 và 09/08.
+
+### 3. Sheet feedback thiếu buổi
+
+Báo cáo liệt kê 15 buổi cho mỗi bé trong kỳ 14/07–30/08 mà sheet không có.
+
+**Xác nhận rất mạnh:** sau khi xoá phần nhập sai, hệ thống còn **Luân 38 buổi**
+và **Tân 49 buổi** — đúng bằng mốc báo cáo ghi (*"Tân buổi 49 ngày 04/07/2026"*;
+buổi 39 của Luân là buổi kế tiếp, ngày 07/07/2026).
+
+### Founder chốt: buổi 04/08/2026 Luân không học
+
+Đã bỏ. Luân còn **14 buổi = 3.066.000 đ**, không phải 15 buổi = 3.285.000 đ.
+
+### Ms. Linh là người trong gia đình anh Luyện
+
+Điều này giải thích nội dung chuyển khoản *"a LUYEN chuyen tien hoc chi Linh"*.
+Ba người cùng một báo cáo, cùng một người đóng tiền.
+
+---
+
+## D22 — Đối chiếu tiền anh Bùi Văn Luyện: KHÔNG khớp, thiếu 2.592.000 đ
+
+### A. Kỳ 14/07 – 30/08/2026 (anh Luyện chưa đóng — Founder xác nhận)
+
+| Học viên | Báo cáo | Hệ thống | Lệch |
+|---|---|---|---:|
+| Bùi Thành Luân | 15 buổi · 3.285.000 đ | 14 buổi · 3.066.000 đ | −219.000 đ |
+| Bùi Thiên Tân | 15 buổi · 3.285.000 đ | 15 buổi · 3.208.350 đ | −76.650 đ |
+| Ms. Linh | 4 buổi · 876.000 đ | 4 buổi · 876.000 đ | **0 — khớp** |
+| **Tổng** | **7.446.000 đ** | **7.150.350 đ** | |
+
+Lệch của Luân là do Founder chốt bỏ buổi 04/08.
+
+**Lệch 76.650 đ của Tân là một xung đột quy tắc thật, cần Founder chọn.** Bốn
+buổi tháng 7 của Tân chỉ dạy 53–56 phút (17/07 55′, 19/07 56′, 21/07 55′,
+28/07 53′). Báo cáo tính đủ 219.000 đ mỗi buổi; hệ thống quy đổi theo thời
+lượng đúng quy tắc **D15** Founder đã chốt. Hai cách không thể cùng đúng.
+
+### B. Phần trước kỳ báo cáo — không khớp
+
+Báo cáo ghi mốc đã thanh toán: Luân hết buổi 39, Tân hết buổi 49.
+
+| | |
+|---|---:|
+| Luân 39 buổi × 219.000 | 8.541.000 đ |
+| Tân 49 buổi × 219.000 | 10.731.000 đ |
+| **Phải đã thu** | **19.272.000 đ** |
+| Tiền có ảnh chuyển khoản | 16.680.000 đ |
+| **Thiếu chứng từ** | **2.592.000 đ** |
+
+Ba ảnh chuyển khoản đã có:
+
+| Ngày | Số tiền | Nội dung |
+|---|---:|---|
+| 07/10/2025 | 7.000.000 đ | BUI VAN LUYEN chuyen tien |
+| 29/12/2025 | 2.200.000 đ | a LUYEN chuyen tien **hoc chi Linh** |
+| 18/07/2026 | 7.480.000 đ | Bui Luyen chuyen khoan nhanh qua Zalo |
+
+### Hai chỗ không khớp với tab SYS_THANHTOAN
+
+1. **7.000.000 đ ngày 07/10/2025.** Tab ghi đợt 1 là hai khoản 2.200.000 đ vào
+   ngày **21/10/2025** (tổng 4.400.000). Lệch 2.600.000 đ và lệch 14 ngày.
+   Đã chia đôi 3.500.000 đ mỗi bé — **đây là giả định**, ảnh chuyển khoản không
+   ghi tên học viên.
+2. **2.200.000 đ ngày 29/12/2025.** Nội dung ghi *"hoc chi Linh"* nên đã ghi cho
+   Ms. Linh. Nhưng lớp Ms. Linh chỉ bắt đầu 28/07/2026 — **7 tháng sau** ngày
+   chuyển. Nếu khoản này thật sự là của Tân và Luân thì phần thiếu chứng từ của
+   hai bé là **4.792.000 đ**.
+
+### Số dư hiện tại
+
+| Học viên | Học phí | Đã đóng | Số dư |
+|---|---:|---:|---:|
+| Bùi Thiên Tân | 13.939.350 đ | 8.340.000 đ | **−5.599.350 đ** |
+| Bùi Thành Luân | 11.607.000 đ | 6.140.000 đ | **−5.467.000 đ** |
+| Ms. Linh | 876.000 đ | 2.200.000 đ | +1.324.000 đ |
