@@ -1,0 +1,44 @@
+# Cấu hình để chạy hệ thống MNEE trên Render — dùng làm NƠI KIỂM THỬ trong lúc
+# chờ Netlify đặt lại credit, không phải nơi chạy chính thức.
+#
+# Vì sao không phải nơi chạy chính thức: gói Free của Render cho 0.1 CPU và tự
+# ngủ sau 15 phút không ai truy cập. Lần mở đầu tiên sau khi ngủ phải chờ khoảng
+# 50 giây. Giáo viên mở buổi tối sẽ gặp đúng cảnh đó, nên chỉ dùng để cô và em
+# kiểm tra hệ thống chạy đúng chưa.
+#
+# Cách dùng: vào render.com → New → Blueprint → chọn repo này. Render tự đọc
+# file này, không phải điền gì ngoài các khoá bí mật ở dưới.
+
+services:
+  - type: web
+    name: mnee-management-test
+    runtime: node
+    plan: free
+    region: singapore
+    branch: claude/mnee-system-architecture-oxsrc4
+    buildCommand: npm ci && npm run build
+    # next start tự đọc cổng từ biến PORT của Render, không cần truyền tay.
+    startCommand: npm run start
+    healthCheckPath: /login
+    envVars:
+      # Hai khoá công khai — nhúng vào trang web nên ai xem mã nguồn trang cũng
+      # thấy được. An toàn, vì hàng rào thật nằm ở RLS phía cơ sở dữ liệu.
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+
+      # BA KHOÁ BÍ MẬT — chỉ nằm ở máy chủ, không bao giờ gửi xuống trình duyệt.
+      # sync: false nghĩa là Render hỏi cô điền tay, không lưu vào file này.
+      # Tuyệt đối không ghi giá trị thật vào đây rồi đẩy lên GitHub.
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: GOOGLE_AI_API_KEY
+        sync: false
+
+      - key: NEXT_PUBLIC_TIMEZONE
+        value: Asia/Ho_Chi_Minh
+      - key: NODE_VERSION
+        value: "22.11.0"
