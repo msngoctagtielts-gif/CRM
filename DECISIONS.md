@@ -579,3 +579,87 @@ nhau. Bảng một đánh số buổi 1-5 (19/6, 25/6, 30/6, 6/7, 15/7); bảng 
 1-22 từ 18/3/2025. Ngày 6/7 vừa là buổi 4 ở bảng một vừa là buổi 22 ở bảng hai;
 ngày 15/7 vừa là buổi 5 vừa là buổi 19. Chín dòng (buổi 13-21) bị lặp nguyên
 văn. Không thể biết học viên đã học bao nhiêu buổi nếu không có cô xác nhận.
+
+---
+
+## D19 — Năm lớp cuối, và lời giải cho "sheet Ms. Hằng tự mâu thuẫn" (14/09/2026)
+
+### Bảng 22 buổi gây nhầm lẫn là của Ms. Hằng, bị sao chép lẫn sang sheet khác
+
+Ở D17 tôi báo sheet Ms. Hằng tự mâu thuẫn và không nhập được. Nguyên nhân đã rõ.
+Sheet của **Ms. Linh** có ghi chú của chính trung tâm:
+
+> *"Đã sửa tiêu đề Sheet từ 'Hằng' thành 'MS. LINH' để tránh nhầm học viên."*
+
+Bảng 22 buổi từ 18/3/2025 (tiêu đề `STUDENT: Ms HẰNG`) nằm lẫn trong **năm**
+sheet khác nhau: Linh, Kiên, Vy, Nhi và Duy. Nó không mâu thuẫn với gì cả — nó
+chỉ đứng nhầm chỗ. Ms. Linh thật ra chỉ có **4 buổi**, không phải 22.
+
+Founder chốt: **bỏ qua lớp Ms. Hằng**.
+
+### Đã nhập
+
+| Lớp | Buổi | Tính phí | Học phí | Lương |
+|---|---:|---:|---:|---:|
+| Vy (Ms. Sheba) | 8 | 8 | 2.240.000 đ | 960.000 đ |
+| Nhi (Ms. Phương) | 6 | 5 | 1.250.000 đ | 720.000 đ |
+| Ms. Linh (Ms. Phương) | 4 | 4 | 876.000 đ | 480.000 đ |
+| Công Duy (Ms. Sheba) | 3 | 3 | 630.000 đ | 360.000 đ |
+| Kiên (Ms. Sheba) | 2 | 2 | 600.000 đ | 240.000 đ |
+
+**Công Duy chưa hề có trong hệ thống** — đã tạo học viên, lớp, hợp đồng và đơn
+giá từ dòng 21 sheet CLASS LIST. Sheet ghi *"Lớp 1 kèm 2"* nhưng chỉ có một tên
+học viên, nên đánh `needs_review`.
+
+### Quyết định của Founder ngày 14/09/2026 (đợt hai)
+
+| Câu hỏi | Trả lời |
+|---|---|
+| Lớp Tân buổi 56, 57 | Tháng 8 → 01/08 và 02/08/2026 |
+| Học phí bé Ngân | 179.000 đ |
+| C Khang, Khôi, Uyên | Không nhập |
+| Lớp Hoàng & Huệ | Lớp nhóm |
+| Sáu giáo viên lạ | Đã nghỉ việc |
+| Lớp Toàn | **Test demo và buổi 1 đều không thu phí** |
+| Lớp Ms. Hằng | Bỏ qua |
+
+### Lớp Toàn tính lại, số ra tròn
+
+Trước: 25 buổi tính phí. Sau khi bỏ thêm buổi 1 (15/06, *Lesson 1 – Where are
+you from?*): **24 buổi × 250.000 = 6.000.000 đ**. Đã đóng 5.000.000 đ = đúng
+20 buổi. Còn thiếu 1.000.000 đ = đúng 4 buổi.
+
+### Giả định còn phải xác nhận
+
+Buổi **10/08/2026 của Nhi** đã đánh **không thu phí**. Căn cứ: sheet ghi rõ
+*"Buổi làm quen"*, dùng tài liệu thiếu nhi không đúng trình độ (học viên 13
+tuổi), giáo viên không giao bài tập, và từ 12/08 mới chuyển sang giáo trình
+trung tâm. Áp quy tắc Founder vừa chốt cho lớp Toàn. **Nếu sai, chỉ cần đổi lại
+một cờ.**
+
+Ngược lại, buổi đầu của **Ms. Linh (28/07)**, **Kiên (03/08)**, **Vy (04/08)**
+và **Công Duy (24/08)** đều **có thu phí** — sheet ghi nội dung bài học thật,
+không có nhãn demo hay làm quen nào.
+
+### Chưa nhập
+
+- Dòng **08/09/2026 của lớp Vy**: không có giáo viên, không có giờ, chỉ có một
+  link Zoom Clip. Chưa đủ căn cứ để coi là một buổi học.
+
+### Tình trạng sau đợt nhập này
+
+**390 buổi** trong hệ thống. **133 dòng lương, 15.960.000 đ, tất cả `paid`**,
+không dòng nào thiếu đơn giá.
+
+### Vấn đề vận hành các sheet tự ghi lại
+
+- **Lớp Vy**: 6 trong 8 buổi tháng 8 chỉ lưu trên **Zoom Clips** (không phải tài
+  khoản trung tâm), không lấy được phụ đề nên không chấm theo bằng chứng được.
+  Sáu trong tám buổi cùng ghi một bài *Speak Now 2 – Lesson 1*. Học viên báo sẽ
+  thi IELTS ngày 01/12/2026.
+- **Lớp Nhi**: sheet ghi nhận hai việc cần Founder xử lý — giáo viên kể chuyện
+  ngoài lề không phù hợp với học viên 13 tuổi (buổi 14/08), và một lỗi chữa bài
+  cần đính chính (*"look forward to + V-ing"* mới đúng, giáo viên sửa thành
+  động từ nguyên mẫu là sai).
+- **Lớp Ms. Linh**: buổi 20/08 có khoảng 15 phút cuối chuyển sang việc riêng của
+  giáo viên, trong đó học viên thành người tư vấn ngược cho giáo viên.
