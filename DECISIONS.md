@@ -1082,3 +1082,57 @@ cũng hợp lệ, không được coi là chuyển nhầm.
 |---|---|---|---|
 | 1 | OCB | 0004100042325006 | NGUYEN THANH MY NGOC |
 | 2 | HDBank | 0902582499 | NGUYEN THANH QUANG |
+
+---
+
+## D28 — Lớp Hoàng & Huệ và lớp bé Ngân: thu tiền mặt (14/09/2026)
+
+Founder xác nhận cả hai lớp đóng học phí **bằng tiền mặt**; riêng bé Ngân
+**chưa đóng tháng 8**.
+
+Cả hai đều là lớp đóng theo tháng, nên ghi một dòng thu cho mỗi tháng, số tiền
+đúng bằng học phí phát sinh tháng đó.
+
+### Ms. Hoàng & Ms. Huệ — đã đóng đủ
+
+| Tháng | Buổi | Ngày | Tiền |
+|---|---:|---|---:|
+| 05/2026 | 6 | 05, 07, 17, 21, 24, 31 | 1.560.000 đ |
+| 06/2026 | 3 | 07, 21, 25 | 780.000 đ |
+| 07/2026 | 5 | 02, 16, 17, 23, 24 | 1.300.000 đ |
+| 08/2026 | 1 | 20 | 260.000 đ |
+| **Tổng** | **15** | | **3.900.000 đ** |
+
+Đã đóng 3.900.000 đ → **số dư 0**.
+
+Ms. Huệ có 12 lượt điểm danh nhưng 0 đ — 260.000 đ là giá **cả nhóm**, chỉ một
+người giữ hợp đồng (D18). Không tính tiền hai lần.
+
+### Bé Ngân — còn nợ tháng 8
+
+| Tháng | Buổi | Ngày | Đơn giá | Tiền | Tình trạng |
+|---|---:|---|---:|---:|---|
+| 06/2026 | 4 | 03, 07, 21, 25 | 179.000 | 716.000 đ | đã đóng |
+| 07/2026 | 8 | 01, 04, 08, 11, 18, 22, 25, 29 | 179.000 | 1.432.000 đ | đã đóng |
+| 08/2026 | 1 | 01 | 179.000 | 179.000 đ | **chưa đóng** |
+| 09/2026 | 1 | 04 | 190.000 | 190.000 đ | chưa đến kỳ |
+| **Tổng** | **14** | | | **2.517.000 đ** | |
+
+Đã đóng **2.148.000 đ**, còn **369.000 đ**.
+
+**Nợ quá hạn thật sự chỉ là 179.000 đ của tháng 8.** Khoản 190.000 đ của buổi
+04/09 chưa đến kỳ thu (lớp đóng cuối tháng).
+
+### Hai điểm đã đánh dấu cần bổ sung
+
+1. **Ngày thu chưa chính xác.** Founder chưa cho ngày thu tiền mặt cụ thể nên
+   tạm lấy ngày cuối tháng dạy. Sáu dòng thu đều `needs_review`.
+2. **Thu tiền mặt không có chứng từ ngân hàng.** Nên có phiếu thu để hồ sơ
+   khép kín — đây là khoản duy nhất trong hệ thống không truy được về một giao
+   dịch ngân hàng.
+
+### Một con số cần Founder xác nhận
+
+Đơn giá bé Ngân **tăng từ 179.000 lên 190.000 đ từ 01/09/2026**. Mức 190.000
+có sẵn trong hệ thống từ lần nhập đầu, chưa rõ nguồn. Nó chỉ ảnh hưởng buổi
+04/09/2026 (lệch 11.000 đ) nhưng sẽ ảnh hưởng mọi buổi từ nay về sau.
