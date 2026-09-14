@@ -1046,3 +1046,30 @@ dư 7 buổi.
 
 Trước đây hệ thống hiển thị cô Tuyết nợ 5.187.492 đ — con số đó sai hoàn toàn
 vì thiếu 36 buổi và thiếu cả 8 khoản thanh toán.
+
+---
+
+## D27 — Kiểm tra trùng bill lớp Ms. Tuyết: 3 ảnh mới, 1 ảnh trùng (14/09/2026)
+
+Founder gửi thêm 4 ảnh chuyển khoản, mỗi ảnh 1.992.000 đ.
+
+| Ngày | Mã GD | Người nhận | Kết quả |
+|---|---|---|---|
+| 17/09/2025 14:25 | 3766 | NGUYEN THANH QUANG · HDBank | **mới** — gói 1 |
+| 02/11/2025 09:58 | 3830 | NGUYEN THANH QUANG · HDBank | **mới** — gói 2 |
+| 08/12/2025 08:48 | 3878 | NGUYEN THANH QUANG · HDBank | **mới** — gói 3 |
+| 03/02/2026 19:09 | 3947 | NGUYEN THANH MY NGOC · OCB | **TRÙNG** — đã gửi lượt trước |
+
+**Không có khoản nào bị ghi trùng trong sổ.** Vẫn đúng 8 gói, 15.936.000 đ.
+Ảnh 03/02/2026 đã được ghi từ lượt trước dưới mã TT26090041, mã tham chiếu
+`6034ASCBJ28SBV7E` — trùng khít với ảnh vừa gửi, nên nhận ra ngay.
+
+Ba ảnh mới **bổ sung đúng ba gói mà báo cáo ghi "chưa có ảnh gốc"**. Hồ sơ lớp
+Ms. Tuyết giờ **đủ chứng từ cho cả 8/8 gói**.
+
+### Điểm cần Founder xác nhận
+
+Ba gói đầu chuyển vào tài khoản **NGUYEN THANH QUANG — HDBank 0902582499**,
+không phải tài khoản trung tâm **NGUYEN THANH MY NGOC — OCB**. Báo cáo có ghi
+nhận việc đổi ngân hàng (*"HDBank (gói 1–3) / OCB (gói 4–7)"*) nên khớp về ngân
+hàng, nhưng **tên người nhận khác**. Đã đánh `needs_review` cho ba dòng này.
