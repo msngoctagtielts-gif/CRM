@@ -371,3 +371,77 @@ Sau rollback: `lessons`, `attendance`, `lesson_consumptions` đều về 0 dòng
 
 `price_per_lesson` vẫn lưu **đơn giá gốc 60 phút**, không nhân sẵn — nhìn vào
 một dòng dữ liệu vẫn biết giá chuẩn là bao nhiêu và tỉ lệ quy đổi từ đâu ra.
+
+---
+
+## D16 — Nhập lịch sử buổi học từ báo cáo PDF: 5 lớp, 152 buổi (14/09/2026)
+
+**Bối cảnh.** Cô Ngọc phản ánh: *"không thấy lịch sử các lớp?"*. Đúng — bảng
+`lessons` trống hoàn toàn, nên mọi con số học phí trên hệ thống đều bằng 0.
+Nguồn duy nhất về buổi đã dạy là các báo cáo PDF trung tâm gửi phụ huynh.
+
+**Đã nhập.**
+
+| Lớp | Buổi | Học phí phát sinh | Đối chiếu báo cáo |
+|---|---:|---:|---|
+| Vũ Hoàng Ngọc Diệp (Ms. Phương + Ms. Rose) | 44 | 8.360.000 đ | T6+T7 5.700.000 ✓ · T8 2.660.000 ✓ |
+| Vũ Hoàng Phúc (Ms. Phương + Ms. Sheba) | 28 | 5.225.000 đ | T6+T7 3.895.000 ✓ · T8 1.330.000 ✓ |
+| Thiên Ái (Mr. Kobe) | 26 | 6.160.000 đ | còn thiếu 280.000 ✓ |
+| Toàn (Ms. Nhi) | 26 | 6.225.000 đ | báo cáo không chốt tiền |
+| Hậu (Ms. Nhi) | 14 | 2.490.000 đ | báo cáo không chốt tiền |
+
+**Không ghi giờ dạy thực tế.** Các báo cáo chỉ ghi NGÀY. `actual_start_at` và
+`actual_end_at` để trống vì đó là sự thật. Hệ quả có lợi: `fn_generate_payable_lesson`
+đòi có giờ thực tế mới sinh dòng trả lương, nên **0 dòng lương** được sinh ra cho
+cả 152 buổi — lương tháng 5 đến tháng 8 trung tâm đã trả ngoài hệ thống rồi.
+Đã kiểm chứng bằng truy vấn `teacher_payable_lessons`: 0 dòng.
+
+**Ba việc phải làm đúng thứ tự**, nếu không hệ thống ghi nhận sai:
+
+1. Nhập buổi với `status = 'scheduled'`. Trigger doanh thu chỉ chạy khi trạng
+   thái **đổi** sang `completed` — nhập thẳng `completed` sẽ không sinh gì.
+2. Sửa `is_billable = false` cho buổi miễn phí **sau khi** insert điểm danh.
+   Trigger `tg_attendance_defaults` ghi đè cột này lúc INSERT.
+3. Rồi mới `update ... status = 'completed'`.
+
+**Lùi ngày hiệu lực đơn giá.** Cả ba học viên Thiên Ái / Toàn / Hậu có đơn giá
+ghi hiệu lực từ 01/09/2026, trong khi lịch sử học bắt đầu từ 31/05/2025.
+`fn_resolve_tuition_rate` sẽ không tìm thấy đơn giá và ghi nhận doanh thu = 0.
+Đã lùi `effective_from` về ngày buổi đầu tiên của từng người. Không thêm dòng
+đơn giá mới vì **không có bằng chứng nào** cho thấy giá đã từng đổi.
+
+**Mở lại 3 hợp đồng đang `paused`.** `fn_pick_enrollment` chỉ chọn hợp đồng
+`active`; để `paused` thì buổi nhập vào không sinh doanh thu. Cả ba hợp đồng đều
+chưa chốt — còn công nợ hoặc còn buổi chưa đối soát.
+
+**Ba giáo viên mới trong dữ liệu.** Báo cáo Thiên Ái có Mr. Andy (1 buổi),
+Mr. Marbin (3 buổi), Ms. Jai (2 buổi) — chưa có trong hệ thống. Đã tạo với
+`status = 'archived'` và `needs_review = true`: mới chỉ có **tên gọi**, chưa có
+họ tên đầy đủ, liên hệ hay đơn giá.
+
+### Giả định phải được cô Ngọc xác nhận
+
+| # | Chỗ chưa chắc | Đã giả định gì | Ảnh hưởng tiền |
+|---|---|---|---|
+| 1 | Buổi kiểm tra đầu vào 30 phút của **Toàn** (10/06/2026) có thu phí không? Báo cáo không nói. | Đặt **không thu phí**, theo tiền lệ của Hậu (cùng Ms. Nhi, cùng chương trình, cùng giai đoạn — báo cáo ghi rõ miễn phí). Tiền lệ ngược: buổi 30 phút của Phúc **có** thu 95.000 đ. | 124.500 đ |
+| 2 | Đơn giá thật của **Toàn** | Giữ **249.000 đ** đang lưu. Nhưng Đặng Thái Chung chuyển 2 × 2.500.000 đ, mà 2.500.000 / 249.000 = 10,04 buổi — không tròn. Trung tâm đã từng ghi 2.500.000 đ = 10 buổi (lớp chị Thảo), tức 250.000 đ/buổi. | 25.000 đ trên 25 buổi |
+| 3 | Số buổi **Toàn** đã mua | Suy ra **20 buổi** = 2 đợt × 10 buổi | quyết định số dư |
+| 4 | **Hậu** đã đóng bao nhiêu | **Chưa có chứng từ nào.** Đã chuyển hợp đồng sang `undetermined` và **xoá** con số "10 buổi đã mua" đang lưu — không có chứng từ thì không ghi nhận tiền. | 2.490.000 đ đang treo |
+| 5 | Ngày cấn trừ 1 buổi của học viên "Đăng" cho **Thiên Ái** | Lấy ngày lập báo cáo 14/07/2026 | 0 đ (chỉ lệch ngày) |
+
+### Đã giải được: Đặng Thái Chung đóng cho ai
+
+Trước đó chưa quy được hai lần chuyển 2.500.000 đ ngày 14/06 và 11/07/2026 về
+học viên nào — Toàn và Hậu đều là học viên Ms. Nhi cùng đơn giá.
+
+Báo cáo *"Báo cáo học tập và số buổi Toàn sau 03-07-2026"* (lập 08/09/2026),
+mục 5, ghi: **"Đã ghi nhận 2 đợt đóng: 14/06/2026 và 11/07/2026"** — trùng khít
+ngày với hai lần chuyển của Đặng Thái Chung. Đây là bằng chứng từ chính báo cáo
+của trung tâm, không phải suy đoán từ số tiền.
+
+### Còn thiếu chứng từ
+
+- Báo cáo nhóm Y Khoa **tháng 5** (cho khoản 2.010.000 đ đóng 05/06/2026)
+- Ảnh chuyển khoản Y Khoa **tháng 7** (2.370.000 đ — đang `needs_review = true`)
+- Feedback cô Lệ Trang **T6–T7**
+- Chứng từ thanh toán của **Hậu**
