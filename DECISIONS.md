@@ -914,3 +914,76 @@ Tách làm hai:
 - **4.792.000 đ** — phần trước đó thiếu chứng từ chuyển khoản
 
 7.227.000 + 4.792.000 = 12.019.000 đ — khớp.
+
+---
+
+## D25 — Báo cáo đối soát 17/07/2026 giải hết chỗ lệch; khoản "thiếu 4.792.000 đ" là tôi sai
+
+Báo cáo **"Báo cáo lịch sử buổi học và quá trình Luân và Tân"**, chốt dữ liệu
+17/07/2026, cho hai thông tin tôi chưa hề có. Vì thiếu chúng nên tôi đã báo sai
+rằng gia đình thiếu chứng từ 4.792.000 đ. **Không có khoản thiếu nào.**
+
+### 1. Mười bốn buổi miễn phí
+
+| Học viên | Buổi không thu phí |
+|---|---|
+| Luân | 11/10/2025 · 28/12/2025 · 03/01/2026 · 04/01/2026 · 10/01/2026 · 11/01/2026 · buổi làm quen cô Sheba 23/05/2026 |
+| Tân | 11/10/2025 (đầu vào) · 5 buổi tặng 20/12/2025 · 27/12/2025 · 03/01/2026 · 04/01/2026 · 11/01/2026 · buổi làm quen cô Sheba 24/05/2026 |
+
+### 2. Bốn đợt thanh toán, mỗi đợt 2.200.000 đ
+
+| Học viên | Đợt | Ngày | Số buổi |
+|---|---|---|---:|
+| Luân | 1 | 22/10/2025 | 10 |
+| Luân | 2 | 07/12/2025 | 10 |
+| Tân | 1 | tháng 10/2025 | 10 |
+| Tân | 2 | 07/12/2025 | 10 |
+
+### Bảng đối soát của báo cáo khớp tuyệt đối
+
+| | Buổi ghi nhận | Đã trả | Miễn phí | Cần đối soát | Thành tiền |
+|---|---:|---:|---:|---:|---:|
+| Luân | 39 | 20 | 7 | 12 | 2.640.000 đ |
+| Tân | 49 | 20 | 7 | 22 | 4.840.000 đ |
+| **Tổng** | **88** | **40** | **14** | **34** | **7.480.000 đ** |
+
+7.480.000 đ **đúng bằng** số tiền anh Bùi Luyện chuyển ngày 18/07/2026.
+
+### Hai mức đơn giá theo thời kỳ, không phải mâu thuẫn
+
+Báo cáo 17/07/2026 ghi **220.000 đ**; báo cáo gia đình kỳ 14/07–30/08/2026 ghi
+**219.000 đ**. Đây là hai mức giá ở hai thời kỳ, và bảng `tuition_rates` có sẵn
+`effective_from`/`effective_to` cho đúng việc này:
+
+- **220.000 đ** — đến 13/07/2026
+- **219.000 đ** — từ 14/07/2026
+
+Cả hai đều kiểm chứng được: ở mức 220.000 thì 12 và 22 buổi cần đối soát ra đúng
+2.640.000 và 4.840.000; ở mức 219.000 thì kỳ mới ra đúng 3.066.000 và 3.285.000.
+
+### Kết quả sau khi sửa
+
+| Học viên | Buổi | Miễn phí | Tính phí | Học phí đến 13/07 | Đã đóng | Số dư mốc đó |
+|---|---:|---:|---:|---:|---:|---:|
+| Bùi Thành Luân | 53 | 7 | 46 | 7.040.000 đ | 7.040.000 đ | **0** |
+| Bùi Thiên Tân | 64 | 7 | 57 | 9.240.000 đ | 9.240.000 đ | **0** |
+
+**Toàn bộ phần trước 14/07/2026 đã thanh toán đủ đến từng đồng.**
+
+Công nợ thật của gia đình chỉ còn kỳ 14/07–30/08/2026:
+
+| Học viên | Còn nợ |
+|---|---:|
+| Bùi Thiên Tân | 3.285.000 đ |
+| Bùi Thành Luân | 3.066.000 đ |
+| Ms. Linh | 876.000 đ |
+| **Tổng** | **7.227.000 đ** |
+
+### Còn một câu hỏi chưa trả lời được
+
+Ảnh chuyển khoản **7.000.000 đ ngày 07/10/2025** ("BUI VAN LUYEN chuyen tien",
+mã 5280BFTVG2M4H46K) **không khớp với bất kỳ đợt nào** trong báo cáo — đợt 1 của
+Luân là 22/10/2025 và của Tân là "tháng 10/2025", mỗi đợt chỉ 2.200.000 đ.
+
+Đã **gỡ khoản này khỏi sổ thu** (trước đó tôi tự chia đôi 3.500.000 đ mỗi bé —
+một suy đoán không có căn cứ). Cần Founder cho biết 7.000.000 đ đó là tiền gì.
