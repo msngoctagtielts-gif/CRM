@@ -254,3 +254,36 @@ where full_name in ('Thiên Ái','Toàn','Hậu') and status = 'paused';
 
 update classes set status = 'active'
 where class_code in ('THIENAI-KO','TOAN-NH','HAU-NH') and status = 'paused';
+
+-- ===========================================================================
+-- BƯỚC 7 (bổ sung 14/09/2026). Founder chốt đơn giá Toàn là 250.000 đ/buổi,
+-- không phải 249.000 đ như sheet đang ghi. Khớp đúng: 2 đợt x 2.500.000 đ
+-- = 20 buổi x 250.000 đ.
+--
+-- Ghi nhận doanh thu đã tạo với đơn giá cũ. fn_consume_lesson không tính lại
+-- dòng đã có, nên phải đưa buổi về 'scheduled' (trigger xoá dòng doanh thu)
+-- rồi cho 'completed' lại.
+-- ===========================================================================
+update tuition_rates tr
+set price_per_lesson = 250000,
+    evidence_note = coalesce(tr.evidence_note || ' | ', '') ||
+      'Founder chot 14/09/2026: don gia Toan la 250.000 d/buoi.'
+from student_enrollments e join students s on s.id = e.student_id
+where tr.enrollment_id = e.id and s.full_name = 'Toàn';
+
+update student_enrollments e
+set price_per_lesson = 250000, needs_review = false, review_note = null
+from students s where s.id = e.student_id and s.full_name = 'Toàn';
+
+update lessons l set status = 'scheduled'::lesson_status
+from classes c where c.id = l.class_id and c.class_code = 'TOAN-NH';
+
+update lessons l set status = 'completed'::lesson_status
+from classes c where c.id = l.class_id and c.class_code = 'TOAN-NH';
+
+update student_enrollments e
+set net_amount = e.gross_amount - coalesce(e.discount_amount, 0)
+from students s where s.id = e.student_id and s.full_name = 'Toàn';
+
+-- Kết quả: 25 buổi x 250.000 = 6.250.000 đ. Đã đóng 5.000.000 đ (đúng 20 buổi).
+-- Còn thiếu 1.250.000 đ = đúng 5 buổi. Số tròn - xác nhận 250.000 là đúng.

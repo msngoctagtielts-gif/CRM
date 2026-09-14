@@ -424,7 +424,7 @@ họ tên đầy đủ, liên hệ hay đơn giá.
 | # | Chỗ chưa chắc | Đã giả định gì | Ảnh hưởng tiền |
 |---|---|---|---|
 | 1 | Buổi kiểm tra đầu vào 30 phút của **Toàn** (10/06/2026) có thu phí không? Báo cáo không nói. | Đặt **không thu phí**, theo tiền lệ của Hậu (cùng Ms. Nhi, cùng chương trình, cùng giai đoạn — báo cáo ghi rõ miễn phí). Tiền lệ ngược: buổi 30 phút của Phúc **có** thu 95.000 đ. | 124.500 đ |
-| 2 | Đơn giá thật của **Toàn** | Giữ **249.000 đ** đang lưu. Nhưng Đặng Thái Chung chuyển 2 × 2.500.000 đ, mà 2.500.000 / 249.000 = 10,04 buổi — không tròn. Trung tâm đã từng ghi 2.500.000 đ = 10 buổi (lớp chị Thảo), tức 250.000 đ/buổi. | 25.000 đ trên 25 buổi |
+| 2 | ~~Đơn giá thật của **Toàn**~~ **ĐÃ CHỐT 14/09/2026: 250.000 đ.** | Đã sửa. 25 buổi × 250.000 = 6.250.000 đ; đã đóng 5.000.000 đ = đúng 20 buổi; còn thiếu 1.250.000 đ = đúng 5 buổi. Số ra tròn, xác nhận đơn giá đúng. **Sheet gốc vẫn ghi 249.000 đ — cô sửa lại sheet.** | đã xử lý |
 | 3 | Số buổi **Toàn** đã mua | Suy ra **20 buổi** = 2 đợt × 10 buổi | quyết định số dư |
 | 4 | **Hậu** đã đóng bao nhiêu | **Chưa có chứng từ nào.** Đã chuyển hợp đồng sang `undetermined` và **xoá** con số "10 buổi đã mua" đang lưu — không có chứng từ thì không ghi nhận tiền. | 2.490.000 đ đang treo |
 | 5 | Ngày cấn trừ 1 buổi của học viên "Đăng" cho **Thiên Ái** | Lấy ngày lập báo cáo 14/07/2026 | 0 đ (chỉ lệch ngày) |
@@ -445,3 +445,65 @@ của trung tâm, không phải suy đoán từ số tiền.
 - Ảnh chuyển khoản Y Khoa **tháng 7** (2.370.000 đ — đang `needs_review = true`)
 - Feedback cô Lệ Trang **T6–T7**
 - Chứng từ thanh toán của **Hậu**
+
+---
+
+## D17 — Nguồn sự thật là sheet feedback, không phải báo cáo PDF (14/09/2026)
+
+**Cô Ngọc nói rõ:** *"trong feedback là tất cả các lớp đã diễn ra thời gian vừa
+qua tôi đã thanh toán lương dựa vào số buổi học viên đã học trong feedback"*.
+
+Hai hệ quả:
+
+1. **Sheet feedback của từng lớp là nguồn gốc**, báo cáo PDF chỉ là bản tổng hợp
+   gửi phụ huynh. File `CRM (10/9)` có cột **ID sheet feedback** trỏ tới sheet
+   riêng của từng lớp — đó mới là nơi giáo viên ghi từng buổi.
+2. **Lương của mọi buổi trong feedback đã trả rồi.** Khi nhập các buổi này vào
+   hệ thống, dòng lương sinh ra phải đánh `status = 'paid'` ngay, kèm ghi chú
+   "đã trả ngoài hệ thống", nếu không hệ thống sẽ báo nợ lương không có thật.
+
+### Khác biệt quan trọng với 5 lớp đã nhập
+
+Năm lớp nhập từ PDF **không có giờ dạy** nên không sinh dòng lương nào. Các sheet
+feedback **có giờ bắt đầu và giờ kết thúc thật**, nên sẽ sinh dòng lương. Đây là
+dữ liệu tốt hơn — giữ được, chỉ cần đánh dấu đã trả.
+
+### Quy mô còn lại
+
+Mười lớp chưa có buổi nào trong hệ thống, cộng một lớp chưa tồn tại (Công Duy):
+
+| Lớp | Số buổi trong feedback | Giáo viên xuất hiện |
+|---|---:|---|
+| LUAN-SH (Bùi Thành Luân) | 41 | Benjamin, Ms. Grace, Ms. Rith, Ms. Sheba |
+| TAN-SH (Bùi Thiên Tân) | 55 | Ms. Phương, Ms. Sheba |
+| TUYET-SH (Ms. Tuyết) | 21 | Teacher Allen, Ms. Wen, Ms. Sheba |
+| NGAN-PH (Bé Ngân) | 14 | Ms. Phương |
+| HOANG-PH (Hoàng & Huệ) | 15 | Ms. Phương |
+| HANG-PH, LINH-PH, KIEN-SH, VY-SH, NHI-PH | chưa đọc | |
+| Công Duy | chưa đọc | Ms. Sheba |
+
+### Vấn đề chất lượng dữ liệu đã phát hiện
+
+- **Tám giáo viên chưa có trong hệ thống**: Benjamin, Ms. Grace, Ms. Rith,
+  Teacher Allen, Ms. Wen, Marie, Ms. Kim, và Mr. Andy / Mr. Marbin / Ms. Jai
+  (đã tạo ở D16). Cùng một người viết nhiều cách: "Ms. Sheba" / "Teacher Sheba",
+  "Ms. Phương" / "Ms Phuong" / "Teacher Phương".
+- **Số buổi bị nhảy cóc**: lớp Tân thiếu buổi 50 và 54; lớp Luân nhảy từ 38
+  sang 45, 46, 48.
+- **Ngày không có năm**: lớp Ngân có dòng ghi "21/6", "25/6", "24/7".
+- **Ngày nghi sai thứ tự**: lớp Tân buổi 56 và 57 ghi 08/01/2026 và 08/02/2026,
+  nằm ngay sau buổi 55 ngày 28/07/2026 — nhiều khả năng là 01/08 và 02/08 bị
+  gõ ngược. **Chưa sửa, cần cô xác nhận.**
+- **Học phí bé Ngân trong sheet ghi 1.790.009.190 đ** — lỗi gõ. Tab khác của
+  cùng file ghi 179.000 đ. Chưa nhập con số nào cho đến khi cô xác nhận.
+- **Ba học viên có trong tab học phí nhưng không có trong danh sách lớp**:
+  C Khang, Khôi (có hoa hồng giới thiệu 50.000 đ/buổi), Uyên.
+- **Bảng điều hành trong Google Sheet đang lỗi**: các ô KPI hiện `#ERROR!`,
+  "Tổng số buổi đã dạy tháng" hiện **46143** (là số sê-ri ngày, không phải số
+  buổi). Đây chính là lý do cần hệ thống riêng.
+
+### Rủi ro vận hành do chính sheet ghi lại
+
+Ghi chú trong sheet lớp Hoàng & Huệ: video buổi học nằm trên kênh YouTube
+**cá nhân của giáo viên**, không thuộc tài khoản trung tâm — mất quyền truy cập
+nếu giáo viên nghỉ. Nên chuyển bản lưu về Drive của trung tâm.
