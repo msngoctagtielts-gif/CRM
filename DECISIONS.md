@@ -507,3 +507,75 @@ Mười lớp chưa có buổi nào trong hệ thống, cộng một lớp chưa
 Ghi chú trong sheet lớp Hoàng & Huệ: video buổi học nằm trên kênh YouTube
 **cá nhân của giáo viên**, không thuộc tài khoản trung tâm — mất quyền truy cập
 nếu giáo viên nghỉ. Nên chuyển bản lưu về Drive của trung tâm.
+
+---
+
+## D18 — Nhập 146 buổi của 5 lớp từ sheet feedback (14/09/2026)
+
+Nối tiếp D17. Đây là lần đầu nhập buổi học **có giờ dạy thật**, nên cũng là lần
+đầu hệ thống sinh dòng trả lương.
+
+| Lớp | Buổi | Có giờ dạy | Học phí phát sinh |
+|---|---:|---:|---:|
+| Bùi Thiên Tân | 55 | 51 | 11.968.350 đ |
+| Bùi Thành Luân | 41 | 30 | 8.979.000 đ |
+| Ms. Tuyết | 21 | 15 | 5.187.492 đ |
+| Ms. Hoàng & Ms. Huệ | 15 | 0 | 3.900.000 đ |
+| Bé Ngân | 14 | 14 | 2.517.000 đ |
+
+Lương sinh ra: **110 dòng, 13.200.000 đ, tất cả đánh `paid`**. Cô Ngọc đã trả
+theo số buổi trong chính sheet feedback này rồi; để `pending` thì hệ thống sẽ
+báo một khoản nợ lương không có thật.
+
+Ba mươi sáu buổi không có giờ trong sheet nên không sinh dòng lương. Đó là
+**thiếu dữ liệu, không phải buổi không được trả** — cô đã trả đủ ngoài hệ thống.
+
+### Quyết định của Founder ngày 14/09/2026
+
+| Câu hỏi | Trả lời |
+|---|---|
+| Lớp Tân buổi 56, 57 ghi 08/01 và 08/02 | Là **tháng 8**: 01/08 và 02/08/2026 |
+| Học phí bé Ngân (sheet ghi 1.790.009.190 đ) | **179.000 đ** |
+| C Khang, Khôi, Uyên | **Không nhập** |
+| Lớp Hoàng & Huệ | **Lớp nhóm** hai học viên |
+| Benjamin, Ms. Grace, Ms. Rith, Teacher Allen, Ms. Wen, Marie | **Đã nghỉ việc** |
+
+### Đơn giá lương gắn với LỚP, không gắn với người
+
+Sáu giáo viên đã nghỉ nên không có bảng lương riêng. Dùng đúng mô hình của
+chính sheet: *"Lương giáo viên tự tính theo số buổi giáo viên báo cáo và mức
+pay/60 phút trong CLASS LIST"* — tức đơn giá thuộc về **lớp**. Bảng
+`teacher_rates` có sẵn `scope = 'class'` cho việc này. Kết quả: 110/110 dòng
+lương có `rate_source = 'class'`, không dòng nào thiếu đơn giá.
+
+### Lớp Hoàng & Huệ: tách đôi, không tính tiền hai lần
+
+Bản ghi cũ gộp hai người thành một học viên tên *"Ms. Hoàng/Huê"*. Đã tách:
+Ms. Hoàng giữ hợp đồng, Ms. Huệ điểm danh với `is_billable = false` — đúng mô
+hình nhóm Y Khoa, vì 260.000 đ là giá **cả nhóm**. Kiểm chứng: Hoàng 3.900.000 đ,
+Huệ 0 đ.
+
+Theo sheet, Huệ chỉ bắt đầu từ buổi 21/05/2026; ba buổi 05/05, 07/05 và 17/05
+chỉ ghi "Ms Hoàng". Nên Huệ có 12 lượt điểm danh trên 15 buổi.
+
+### Con số nợ lớn đang hiện KHÔNG phải nợ thật
+
+Tân 11,97 triệu, Luân 8,98 triệu, Tuyết 5,19 triệu, Hoàng 3,9 triệu, Ngân
+2,52 triệu — đây là **chưa nhập thanh toán**, không phải phụ huynh chưa đóng.
+Tab SYS_THANHTOAN có ghi tiền của Luân và Tân nhưng **các dòng bị trùng lặp**:
+cùng một mã tham chiếu xuất hiện ở nhiều ngày khác nhau (ví dụ đợt 1 của Luân
+2.200.000 đ ghi ở cả 21/10/2025, 12/6/2025 và 19/8/2026). Chưa nhập dòng nào
+cho đến khi cô xác nhận đâu là giao dịch thật.
+
+Thêm một điểm lệch: hai đợt đầu của Luân và Tân ghi **220.000 đ/buổi**, trong
+khi CLASS LIST ghi **219.000 đ**.
+
+### Năm lớp còn lại chưa nhập được
+
+Ms. Hằng, Ms. Linh, Kiên, Vy, Nhi, và Công Duy (chưa có trong hệ thống).
+
+Riêng **Ms. Hằng** đã đọc và **không nhập được**: sheet có hai bảng mâu thuẫn
+nhau. Bảng một đánh số buổi 1-5 (19/6, 25/6, 30/6, 6/7, 15/7); bảng hai đánh số
+1-22 từ 18/3/2025. Ngày 6/7 vừa là buổi 4 ở bảng một vừa là buổi 22 ở bảng hai;
+ngày 15/7 vừa là buổi 5 vừa là buổi 19. Chín dòng (buổi 13-21) bị lặp nguyên
+văn. Không thể biết học viên đã học bao nhiêu buổi nếu không có cô xác nhận.
