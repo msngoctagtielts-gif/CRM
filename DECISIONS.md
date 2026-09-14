@@ -1181,3 +1181,47 @@ Tân, và 36 buổi của Ms. Tuyết.
 **Kết luận về nguồn dữ liệu:** báo cáo PDF là nguồn đầy đủ về SỐ BUỔI; sheet
 feedback là nguồn về NỘI DUNG BUỔI HỌC và GIỜ DẠY THẬT. Hệ thống đang giữ cả
 hai: số buổi lấy từ PDF, giờ dạy lấy từ sheet ở những buổi sheet có ghi.
+
+---
+
+## D30 — Lớp Hậu: PDF 14 buổi, sheet 25 buổi (14/09/2026)
+
+Đây là lớp **đầu tiên sheet nhiều buổi hơn PDF** — ngược với Luân, Tân và
+Ms. Tuyết. Lý do: PDF *"Hành Trình Thay Đổi - Hậu"* chốt kỳ 17/05–04/07/2026,
+còn sheet đã cập nhật tiếp đến 21/08/2026.
+
+| Nguồn | Buổi | Đến ngày |
+|---|---:|---|
+| PDF | 14 | 04/07/2026 |
+| Google Sheet | 25 | 21/08/2026 |
+| **Hệ thống sau khi gộp** | **25** | **21/08/2026** |
+
+PDF khớp chính xác phần của nó: 14 buổi, 4 không tính phí, 10 tính phí. Đã giữ
+nguyên và bổ sung 11 buổi (15–25) từ sheet.
+
+### Học phí
+
+| | |
+|---|---:|
+| 25 buổi, 4 miễn phí → 21 buổi tính phí × 249.000 | **5.229.000 đ** |
+| Đã đóng | **0 đ** — chưa có chứng từ nào |
+
+### Một điểm lệch nhỏ giữa hai nguồn
+
+Buổi 14: **PDF ghi 04/07/2026**, **sheet ghi 03/07/2026** — cùng bài
+*"I'd Love to Try That!"*. Đã giữ ngày 04/07 theo PDF vì đó là chứng từ đã gửi
+học viên. Lệch một ngày, không ảnh hưởng tiền.
+
+### Hai việc còn thiếu
+
+**1. Chưa đọc được quá buổi 25.** Sheet sửa lần cuối 30/08/2026 nhưng nội dung
+trả về bị cắt giữa buổi 25 do giới hạn dung lượng. Theo lịch T4 & T7 thì từ
+21/08 đến 30/08 còn có thể có 2–3 buổi nữa. **Cần Founder xác nhận buổi 21/08
+có phải buổi cuối không.**
+
+**2. Chưa có thông tin thanh toán của Huyền Ngô.** Founder nhắc *"các thông tin
+tôi trao đổi bạn trước đó về ngày mà Huyền Ngô (tức là người nhà Hậu đóng phí
+2 đợt)"*. Tôi đã tìm lại toàn bộ lịch sử hội thoại và các file đã lưu: **không
+có bất kỳ thông tin nào về Huyền Ngô** — không ngày, không số tiền, không ảnh
+chuyển khoản. Có thể tin nhắn đó chưa gửi đến, hoặc nằm ở một cuộc trò chuyện
+khác. **Không ghi nhận khoản nào khi chưa có dữ liệu.**
