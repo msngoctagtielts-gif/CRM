@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
 import { TeacherForm } from './TeacherForm'
+import { InviteTeacherForm } from './InviteTeacherForm'
 
 export const metadata: Metadata = { title: 'Giáo viên' }
 
@@ -102,14 +103,19 @@ export default async function TeachersPage() {
           )}
         </Card>
 
-        <div className="xl:col-span-1">
+        <div className="space-y-5 xl:col-span-1">
+          <InviteTeacherForm
+            teachers={(teachers ?? [])
+              .filter((t) => t.status === 'active' && !t.user_id)
+              .map((t) => ({ id: t.id, ten: t.display_name ?? t.full_name }))}
+          />
           <TeacherForm teachers={(teachers ?? []).map((t) => ({ id: t.id, full_name: t.full_name }))} />
         </div>
       </div>
 
       <p className="mt-4 text-xs leading-relaxed text-navy-400">
-        Giáo viên chưa liên kết tài khoản vẫn được tính lương, nhưng không đăng nhập để nộp báo cáo
-        được. Để liên kết: tạo tài khoản trong Supabase Auth, rồi gán `teachers.user_id`.
+        Giáo viên chưa có tài khoản vẫn được tính lương bình thường, nhưng không đăng nhập để
+        ghi buổi học và nộp báo cáo được. Mời bằng khung bên trên.
       </p>
     </>
   )

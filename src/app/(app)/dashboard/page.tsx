@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
-import { requireFounder } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getFounderMetrics } from '@/lib/dashboard'
 import { resolvePeriod } from '@/lib/period'
@@ -30,7 +31,12 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ period?: string; from?: string; to?: string }>
 }) {
-  await requireFounder()
+  // Middleware đưa MỌI người vừa đăng nhập về /dashboard, nhưng trang này là
+  // bảng tài chính của Founder. Giáo viên vào đây trước đây bị đá sang trang
+  // báo lỗi quyền ngay sau khi đăng nhập lần đầu — đúng khoảnh khắc tệ nhất để
+  // gặp một màn hình từ chối. Đưa họ thẳng tới màn hình làm việc của mình.
+  const nguoiDung = await requireUser()
+  if (nguoiDung.role_code !== 'founder') redirect('/lessons')
   const sp = await searchParams
   const period = resolvePeriod(sp.period, sp.from, sp.to)
   const supabase = await createClient()

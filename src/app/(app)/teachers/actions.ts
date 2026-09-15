@@ -106,3 +106,97 @@ export async function addTeacherRate(
   revalidatePath('/teachers')
   return { ok: true, message: 'Đã thêm đơn giá mới.' }
 }
+
+const inviteSchema = z.object({
+  teacher_id: z.string().uuid('Chưa chọn giáo viên'),
+  email: z.string().email('Email không hợp lệ'),
+})
+
+/**
+ * Tạo tài khoản đăng nhập cho một giáo viên và trả về đường dẫn mời.
+ *
+ * VÌ SAO KHÔNG ĐẶT MẬT KHẨU TẠM RỒI GỬI QUA ZALO:
+ * mật khẩu tạm nằm lại vĩnh viễn trong lịch sử chat của cả hai bên, và gần như
+ * không ai đổi nó sau lần đăng nhập đầu. Cách này sinh một đường dẫn dùng một
+ * lần; giáo viên bấm vào, tự đặt mật khẩu của mình. Trung tâm không bao giờ
+ * biết mật khẩu đó.
+ *
+ * VÌ SAO KHÔNG GỬI EMAIL: dịch vụ gửi thư sẵn có của Supabase bị giới hạn vài
+ * thư mỗi giờ và hay rơi vào hộp spam. Đường dẫn được trả về màn hình để
+ * Founder tự gửi qua Zalo — kênh mà giáo viên chắc chắn đọc.
+ *
+ * Quyền của tài khoản mới là `teacher`, do trigger tg_handle_new_auth_user đọc
+ * từ metadata. Giáo viên KHÔNG thấy được doanh thu, lợi nhuận, hay lương của
+ * người khác — RLS chặn ở tầng cơ sở dữ liệu, không phải ở giao diện.
+ */
+export async function inviteTeacher(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(inviteSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const { teacher_id, email } = parsed.data
+  const supabase = await createClient()
+
+  const { data: teacher } = await supabase
+    .from('teachers')
+    .select('id, full_name, display_name, user_id')
+    .eq('id', teacher_id)
+    .maybeSingle()
+
+  if (!teacher) return { ok: false, error: 'Không tìm thấy giáo viên.' }
+  if (teacher.user_id) {
+    return { ok: false, error: `${teacher.full_name} đã có tài khoản rồi.` }
+  }
+
+  // Service role: tạo tài khoản là việc chỉ máy chủ được làm. Khoá này không
+  // bao giờ đi ra trình duyệt — `import 'server-only'` trong admin.ts chặn.
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const admin = createAdminClient()
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'http://localhost:3000'
+
+  const { data: invited, error: inviteError } = await admin.auth.admin.generateLink({
+    type: 'invite',
+    email,
+    options: {
+      redirectTo: `${siteUrl}/auth/callback`,
+      data: { full_name: teacher.full_name, role_code: 'teacher' },
+    },
+  })
+
+  if (inviteError || !invited?.user) {
+    const thongBao = /already been registered|already exists/i.test(inviteError?.message ?? '')
+      ? 'Email này đã có tài khoản trong hệ thống. Dùng email khác, hoặc gỡ tài khoản cũ trước.'
+      : 'Không tạo được tài khoản. Kiểm tra lại email.'
+    return { ok: false, error: thongBao }
+  }
+
+  // Gắn tài khoản vào hồ sơ giáo viên. Thiếu bước này thì giáo viên đăng nhập
+  // được nhưng `current_teacher_id()` trả null, nên không thấy lớp nào của mình.
+  const { error: linkError } = await supabase
+    .from('teachers')
+    .update({ user_id: invited.user.id, email })
+    .eq('id', teacher_id)
+
+  if (linkError) {
+    return {
+      ok: false,
+      error:
+        'Đã tạo tài khoản nhưng chưa gắn được vào hồ sơ giáo viên. Báo lại để xử lý thủ công.',
+    }
+  }
+
+  revalidatePath('/teachers')
+
+  const duongDan = invited.properties?.action_link ?? ''
+  return {
+    ok: true,
+    message:
+      `Đã tạo tài khoản cho ${teacher.display_name ?? teacher.full_name}. ` +
+      `Gửi đường dẫn này cho cô qua Zalo — dùng một lần rồi hết hiệu lực:\n\n${duongDan}`,
+  }
+}

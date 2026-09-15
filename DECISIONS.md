@@ -1350,3 +1350,56 @@ gói thứ ba, giống hệt cách lớp Ms. Tuyết vận hành (D26).
 Cả hai lớp của Ms. Nhi đều bị ghi nhầm cùng một kiểu. **Nên rà lại cột
 "Học phí/60p" của CLASS LIST cho các lớp còn lại** — đây là cột nuôi toàn bộ
 phép tính học phí.
+
+## D35 — Mời giáo viên bằng đường dẫn, không phát mật khẩu tạm
+
+*Ngày 15/09/2026. Founder yêu cầu tạo tài khoản cho Ms. Rose, Ms. Phương,
+Ms. Sheba, Ms. Hòa.*
+
+**Quyết định:** hệ thống KHÔNG đặt mật khẩu tạm cho giáo viên. Founder bấm
+"Mời giáo viên", hệ thống sinh một đường dẫn dùng một lần; giáo viên bấm vào và
+tự đặt mật khẩu.
+
+**Vì sao không dùng mật khẩu tạm:** mật khẩu tạm phải đi qua Zalo, rồi nằm lại
+vĩnh viễn trong lịch sử chat của cả hai bên. Và gần như không ai đổi nó sau lần
+đăng nhập đầu — chính Founder cũng đang dùng mật khẩu tạm từ ngày mở hệ thống.
+Với đường dẫn mời, trung tâm không bao giờ biết mật khẩu của giáo viên.
+
+**Vì sao không gửi email tự động:** dịch vụ gửi thư sẵn có của Supabase giới
+hạn vài thư mỗi giờ và hay rơi vào hộp spam. Đường dẫn hiện trên màn hình để
+Founder tự gửi qua Zalo — kênh giáo viên chắc chắn đọc.
+
+**Ràng buộc:** cần đặt `NEXT_PUBLIC_SITE_URL` bằng địa chỉ thật của hệ thống.
+Đặt sai thì giáo viên bấm link sẽ rơi về localhost.
+
+**Giả định chưa xác nhận:** email của bốn cô. Hệ thống chưa có email của giáo
+viên nào; Founder phải cung cấp.
+
+## D36 — Kết quả kiểm chứng quyền của giáo viên
+
+*Ngày 15/09/2026.* Yêu cầu gốc của Founder: "Teachers MUST NOT see: center
+profit, total revenue, other teachers' payroll, sensitive Founder financial
+data."
+
+Đã kiểm bằng THỬ NGHIỆM THẬT, không chỉ đọc policy: tạo một tài khoản giáo viên
+tạm gắn với Ms. Sheba, đóng vai tài khoản đó rồi đếm số dòng đọc được, sau đó
+rollback nên không để lại gì (đã xác nhận: vẫn đúng 1 tài khoản trong hệ thống).
+
+| Bảng | Tổng | Giáo viên đọc được | Đạt |
+|---|---:|---:|:--:|
+| Lớp học | 21 | 7 (lớp của Sheba) | ✓ |
+| Phiếu thu học phí | 46 | **0** | ✓ |
+| Doanh thu từng buổi | 426 | **0** | ✓ |
+| Chi phí trung tâm | 2 | **0** | ✓ |
+| Hợp đồng học phí | 21 | **0** | ✓ |
+| Dòng lương | 144 | 57 (của chính mình) | ✓ |
+| Bảng lương | 7 | 1 (của chính mình) | ✓ |
+| Bảng điều khiển lớp | 21 | 7 | ✓ |
+| **Tổng công nợ nhìn thấy** | 13.246.000 đ | **0 đ** | ✓ |
+
+Vai trò của tài khoản mới tạo là `teacher`, do trigger `tg_handle_new_auth_user`
+đọc từ metadata — không phải do giao diện gán.
+
+Không tính được lợi nhuận vì không đọc được cả doanh thu lẫn chi phí. Không
+thấy lương người khác. Rào chặn nằm ở RLS trong cơ sở dữ liệu, nên đúng kể cả
+khi ai đó gọi thẳng API mà không qua giao diện.
