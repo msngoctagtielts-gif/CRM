@@ -14,6 +14,7 @@ import {
   classifyVideoSource,
   enforceNoFabrication,
   extractModelText,
+  giayTuChuoi,
   hasQuotableSource,
   parseFeedbackJSON,
   studentLabelFor,
@@ -160,4 +161,72 @@ test('JSON bị cắt giữa dòng thì trả null thay vì nội dung nửa v�
   // câu trả lời đứt ngang, finishReason = MAX_TOKENS.
   const truncated = '{"student_quote":"She go to school at seven.","strengths":"Tân trả lời rõ ràn'
   assert.equal(parseFeedbackJSON(truncated), null)
+})
+
+
+/**
+ * Đối chiếu giờ dạy với video (Founder chốt 15/09/2026).
+ *
+ * Con số này quyết định việc hỏi lại giáo viên về giờ khai, nên sai ở đây là
+ * nghi oan người ta hoặc bỏ lọt buổi khai sai.
+ */
+test('giayTuChuoi đọc đúng mọi dạng độ dài video', () => {
+  assert.equal(giayTuChuoi('28:19'), 28 * 60 + 19)
+  assert.equal(giayTuChuoi('1:05:30'), 3600 + 5 * 60 + 30)
+  assert.equal(giayTuChuoi('05:00'), 300)
+  // Model đôi khi viết thừa chữ quanh con số.
+  assert.equal(giayTuChuoi('Video dài 57:13'), 57 * 60 + 13)
+  // Không đọc được thì trả null, KHÔNG đoán bừa một con số.
+  assert.equal(giayTuChuoi(''), null)
+  assert.equal(giayTuChuoi('khoảng một tiếng'), null)
+  assert.equal(giayTuChuoi('00:00'), null)
+})
+
+test('không xem được video thì độ dài bị xoá, không được giữ lại', () => {
+  const input = {
+    studentLabel: 'Luân',
+    studentAge: null,
+    className: 'Luân - Ms. Sheba',
+    lessonDate: '2026-09-15',
+    durationMinutes: 60,
+    lessonContent: '',
+    teacherNotes: '',
+    transcript: '',
+    videoUrl: 'https://drive.google.com/file/d/abc/view',
+    videoSource: 'google_drive' as const,
+  }
+  const draft = {
+    ...EMPTY_DRAFT,
+    student_quote: 'I eat popcorn',
+    video_timestamp: '12:30',
+    video_duration: '58:00',
+  }
+  const { draft: safe, dropped } = enforceNoFabrication(draft, input)
+
+  // Đây là chốt chặn quan trọng nhất: AI không mở được video thì mọi con số
+  // độ dài đều là phỏng đoán, mà phỏng đoán không được dùng để chất vấn
+  // giáo viên về giờ dạy.
+  assert.equal(safe.video_duration, '')
+  assert.equal(safe.student_quote, '')
+  assert.equal(safe.video_timestamp, '')
+  assert.ok(dropped.includes('độ dài video'))
+})
+
+test('xem được video thì giữ nguyên độ dài để đối chiếu', () => {
+  const input = {
+    studentLabel: 'Luân',
+    studentAge: null,
+    className: 'Luân - Ms. Sheba',
+    lessonDate: '2026-09-15',
+    durationMinutes: 60,
+    lessonContent: '',
+    teacherNotes: '',
+    transcript: 'Teacher: How are you? Luan: I am fine.',
+    videoUrl: 'https://youtu.be/abc',
+    videoSource: 'youtube' as const,
+  }
+  const draft = { ...EMPTY_DRAFT, video_duration: '28:19' }
+  const { draft: safe, dropped } = enforceNoFabrication(draft, input)
+  assert.equal(safe.video_duration, '28:19')
+  assert.deepEqual(dropped, [])
 })

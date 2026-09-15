@@ -60,16 +60,20 @@ export function ClassBoard({
   rows,
   isFounder,
   hopDong = [],
+  lechGio,
 }: {
   rows: DongBang[]
   isFounder: boolean
   hopDong?: HopDongCuaLop[]
+  /** class_id -> số buổi có giờ khai lệch quá 10 phút so với video. */
+  lechGio?: Map<string, number>
 }) {
   const dangChay = rows.filter((r) => r.buoi_gan_nhat !== null)
   const imLangLau = dangChay.filter((r) => (r.ngay_im_lang ?? 0) > 14)
   const tongThieu = rows.reduce((s, r) => s + Math.max(0, Number(r.con_thieu ?? 0)), 0)
   const thieuGio = rows.reduce((s, r) => s + (r.buoi_thieu_gio ?? 0), 0)
   const coVideo = rows.reduce((s, r) => s + (r.so_video ?? 0), 0)
+  const tongLechGio = [...(lechGio?.values() ?? [])].reduce((a, b) => a + b, 0)
   const tongBuoi = rows.reduce((s, r) => s + (r.tong_buoi ?? 0), 0)
 
   // Bảng kê lập theo HỢP ĐỒNG, không theo lớp: lớp nhóm có nhiều học viên thì
@@ -113,6 +117,17 @@ export function ClassBoard({
           />
         )}
       </section>
+
+      {tongLechGio > 0 ? (
+        <Alert kind="warning">
+          <strong>
+            {formatNumber(tongLechGio)} buổi có giờ khai lệch quá 10 phút so với độ dài video.
+          </strong>{' '}
+          Đây là con số cần hỏi lại giáo viên, <em>không</em> phải kết luận khai sai — video có
+          thể bị cắt, mất mạng giữa buổi, hoặc quay làm nhiều đoạn mà chỉ nộp một. Các lớp có
+          buổi lệch được đánh dấu ở cột cuối.
+        </Alert>
+      ) : null}
 
       {thieuGio > 0 ? (
         <Alert kind="warning">
@@ -217,6 +232,11 @@ export function ClassBoard({
                   ) : null}
                   {isFounder ? (
                     <Td>
+                      {r.class_id && (lechGio?.get(r.class_id) ?? 0) > 0 ? (
+                        <Badge tone="warning" className="mb-1">
+                          {lechGio?.get(r.class_id)} buổi lệch giờ
+                        </Badge>
+                      ) : null}
                       {hopDongCua(r.class_id).length === 0 ? (
                         <span className="text-navy-300">—</span>
                       ) : (

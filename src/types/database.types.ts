@@ -2062,6 +2062,20 @@ export type Database = {
         }
         Relationships: []
       }
+      v_doi_chieu_gio_day: {
+        Row: {
+          lesson_id: string | null
+          class_id: string | null
+          ten_lop: string | null
+          giao_vien: string | null
+          lesson_date: string | null
+          phut_khai_bao: number | null
+          phut_video: number | null
+          lech_phut: number | null
+          so_doan_video: number | null
+        }
+        Relationships: []
+      }
       v_data_review: {
         Row: {
           entity_type: string | null

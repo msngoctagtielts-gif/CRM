@@ -7,7 +7,7 @@ import { requireUser } from '@/lib/auth'
 import { friendlyDbError, type ActionResult } from '@/lib/actions'
 import { localInputToISO, minutesBetween } from '@/lib/time'
 import { MISSING_FIELD } from '@/lib/labels'
-import { classifyVideoSource, studentLabelFor, type FeedbackDraft } from '@/lib/ai/feedback'
+import { classifyVideoSource, studentLabelFor, type FeedbackDraft, giayTuChuoi } from '@/lib/ai/feedback'
 import { draftLessonFeedback, isAIConfigured } from '@/lib/ai/provider'
 import type { TablesInsert, TablesUpdate } from '@/types/database.types'
 
@@ -540,7 +540,26 @@ export async function draftFeedbackWithAI(
     }
   }
 
+  // Độ dài THẬT của video, để đối chiếu với giờ dạy giáo viên khai.
+  //
+  // Founder chốt ngày 15/09/2026: từ tháng 9 giáo viên bắt buộc ghi giờ vào và
+  // giờ ra, và phải "căn cứ vào video để biết mức độ chính xác và trung thực
+  // của giáo viên". Khai 60 phút mà video dài 28 phút thì con số đó cần được
+  // hỏi lại — nhưng chỉ hỏi được nếu có vế thứ hai để so.
+  //
+  // `enforceNoFabrication` đã xoá trường này khi AI không xem được video, nên
+  // tới đây còn giá trị nghĩa là AI thật sự đã mở được video.
+  const giay = giayTuChuoi(draft.video_duration)
+  if (giay !== null) {
+    await supabase
+      .from('recordings')
+      .update({ duration_seconds: giay })
+      .eq('lesson_id', lesson.id)
+      .is('duration_seconds', null)
+  }
+
   revalidatePath(`/reports/${lesson.id}`)
+  revalidatePath('/classes')
 
   const notes: string[] = ['AI đã viết bản nháp — hãy đọc lại và sửa trước khi gửi phụ huynh.']
   if (result.dropped.length > 0) {

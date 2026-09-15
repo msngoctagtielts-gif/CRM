@@ -58,6 +58,16 @@ export type FeedbackDraft = {
   next_lesson_recommendation: string
   /** AI tự khai đã dựa vào đâu — để giáo viên biết có cần kiểm lại không. */
   source_note: string
+  /**
+   * Độ dài THẬT của video, dạng "mm:ss" hoặc "hh:mm:ss". Chuỗi rỗng khi AI
+   * không xem được video.
+   *
+   * Founder yêu cầu ngày 15/09/2026: từ tháng 9 giáo viên bắt buộc ghi giờ vào
+   * và giờ ra, và phải "căn cứ vào video để biết mức độ chính xác và trung
+   * thực của giáo viên". Con số này là vế thứ hai của phép đối chiếu đó —
+   * không có nó thì giờ khai báo không có gì kiểm chứng.
+   */
+  video_duration: string
 }
 
 export const EMPTY_DRAFT: FeedbackDraft = {
@@ -69,6 +79,7 @@ export const EMPTY_DRAFT: FeedbackDraft = {
   lesson_content: '',
   next_lesson_recommendation: '',
   source_note: '',
+  video_duration: '',
 }
 
 /** AI có nguồn nghe/đọc được lời học viên hay không. Quyết định việc có được phép trích. */
@@ -122,10 +133,11 @@ export function buildFeedbackPrompt(input: FeedbackInput): string {
     '5. "improvements" phải kèm cách luyện cụ thể cho buổi sau.',
     '6. "homework_sentence_patterns": 2–4 mẫu câu TIẾNG ANH mà học viên phải dùng khi làm bài, bám đúng nội dung đã dạy. Ngăn cách bằng dấu "/".',
     '7. "source_note": một câu tiếng Việt nói rõ bạn đã dựa vào đâu, và nói thẳng nếu chưa có nguồn để trích lời học viên.',
-    '8. Đây là BẢN NHÁP cho giáo viên đọc lại, không phải bản gửi thẳng cho phụ huynh.',
+    '8. "video_duration": độ dài THẬT của video, dạng mm:ss hoặc hh:mm:ss. Chỉ điền khi bạn thật sự xem được video. Không xem được thì để rỗng — KHÔNG đoán theo thời lượng buổi học ghi ở trên.',
+    '9. Đây là BẢN NHÁP cho giáo viên đọc lại, không phải bản gửi thẳng cho phụ huynh.',
     '',
     'Trả về DUY NHẤT một đối tượng JSON với đúng các khoá sau, không thêm chữ nào ngoài JSON:',
-    '{"student_quote":"","video_timestamp":"","strengths":"","improvements":"","homework_sentence_patterns":"","lesson_content":"","next_lesson_recommendation":"","source_note":""}',
+    '{"student_quote":"","video_timestamp":"","strengths":"","improvements":"","homework_sentence_patterns":"","lesson_content":"","next_lesson_recommendation":"","source_note":"","video_duration":""}',
   ].join('\n')
 }
 
@@ -205,7 +217,26 @@ export function enforceNoFabrication(
     dropped.push('timestamp đối chiếu')
     safe.video_timestamp = ''
   }
+  // Không xem được video thì mọi con số độ dài đều là phỏng đoán. Giữ lại là
+  // biến phỏng đoán thành bằng chứng đối chiếu giờ dạy của giáo viên.
+  if (safe.video_duration !== '') {
+    dropped.push('độ dài video')
+    safe.video_duration = ''
+  }
   return { draft: safe, dropped }
+}
+
+/**
+ * Đổi "mm:ss" hoặc "hh:mm:ss" sang số giây. Trả null khi không đọc được.
+ *
+ * Chấp nhận cả dạng có chữ ("dài 28:19") vì model đôi khi viết thừa.
+ */
+export function giayTuChuoi(v: string): number | null {
+  const m = /(?:(\d{1,2}):)?(\d{1,2}):(\d{2})/.exec(v ?? '')
+  if (!m) return null
+  const [, gio, phut, giay] = m
+  const s = (gio ? Number(gio) * 3600 : 0) + Number(phut) * 60 + Number(giay)
+  return Number.isFinite(s) && s > 0 ? s : null
 }
 
 /**

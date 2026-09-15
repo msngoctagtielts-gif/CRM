@@ -1431,3 +1431,48 @@ giá". Hai hướng, cô chọn:
   dạy của cô không xuất hiện trong sổ.
 
 Chưa đặt mức nào cho tới khi Founder chốt. Không tự đoán.
+
+## D38 — Bỏ qua lương lịch sử, siết giờ dạy từ tháng 9
+
+*Ngày 15/09/2026, Founder chốt sau khi em báo: 17/41 buổi trong bảng feedback
+lớp Luân có ghi chú của chính giáo viên nói "no exact Start/End found", nhưng ô
+giờ vẫn được điền theo lịch học.*
+
+**Quá khứ — bỏ qua.** Founder đã trả lương giáo viên và đã thu học phí cho các
+tháng trước, ngoài hệ thống. Không nhập giờ phỏng đoán cho 314 buổi cũ, và
+không dựng khoản chi phí lương lịch sử. Hệ quả phải chấp nhận: **con số lợi
+nhuận của giai đoạn trước tháng 9 không đầy đủ chi phí và không được dùng để ra
+quyết định.** Ô lợi nhuận vẫn đóng.
+
+**Từ tháng 9 — bắt buộc.** Giáo viên phải ghi giờ bắt đầu và giờ kết thúc cho
+mọi buổi. Biểu mẫu ghi buổi học đã đặt hai ô này là bắt buộc, không lưu được
+nếu thiếu.
+
+**Đối chiếu với video.** Founder yêu cầu "căn cứ vào video để biết mức độ chính
+xác và trung thực của giáo viên". Đã dựng:
+
+* AI đọc video trả thêm `video_duration` — độ dài THẬT của video.
+* `enforceNoFabrication` xoá trường này khi AI không mở được video, nên con số
+  vào hệ thống luôn là số đo được, không phải đoán.
+* View `v_doi_chieu_gio_day` so giờ khai với tổng độ dài video của buổi.
+* Bảng điều khiển lớp hiện cảnh báo khi lệch quá 10 phút.
+
+**Ngưỡng 10 phút, và vì sao không coi là bằng chứng gian dối:** video luôn ngắn
+hơn buổi học thật — giáo viên bấm ghi sau khi chào hỏi, tắt trước khi dặn dò
+xong. Lệch trên 10 phút là **con số cần hỏi lại**, không phải kết luận. Video có
+thể bị cắt, mất mạng giữa buổi, hoặc quay làm nhiều đoạn mà chỉ nộp một. Hệ
+thống nêu ra để người hỏi, không tự kết tội.
+
+## D39 — AI viết nhận xét từ video: đã có sẵn, chỉ thiếu khoá
+
+Founder yêu cầu "AI sẽ tự đọc nhận xét thông qua video mà giáo viên cung cấp".
+Tính năng này đã dựng từ D6 và chạy được: `src/lib/ai/` gọi Gemini, đọc trực
+tiếp video YouTube, và `enforceNoFabrication` xoá mọi câu trích dẫn lẫn mốc thời
+gian khi không có nguồn nghe được.
+
+**Chưa chạy vì thiếu `GOOGLE_AI_API_KEY`.** Xem `docs/AI_SETUP.md`.
+
+**Giới hạn phải biết:** Gemini chỉ đọc được video YouTube **công khai**, không
+đọc được unlisted, private, hay link Google Drive riêng tư. Video lớp có mặt và
+giọng trẻ em nên không được để công khai. Đường duy nhất chạy được là **tải file
+lên thẳng cho AI** thay vì đưa link — chưa dựng, cần làm khi bật tính năng.

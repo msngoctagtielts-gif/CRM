@@ -18,9 +18,17 @@ export default async function ClassesPage() {
   const supabase = await createClient()
   const isFounder = user.role_code === 'founder'
 
-  const [{ data: board }, { data: enrollments }, { data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
+  const [{ data: board }, { data: lechGio }, { data: enrollments }, { data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
     await Promise.all([
       supabase.from('v_class_board').select('*'),
+      // Buổi có giờ khai lệch quá 10 phút so với độ dài video. Founder yêu cầu
+      // 15/09/2026: căn cứ video để biết giờ giáo viên khai có chính xác không.
+      isFounder
+        ? supabase
+            .from('v_doi_chieu_gio_day')
+            .select('class_id, lesson_date, phut_khai_bao, phut_video, lech_phut')
+            .gt('lech_phut', 10)
+        : Promise.resolve({ data: [] }),
       isFounder
         ? supabase
             .from('student_enrollments')
@@ -53,6 +61,13 @@ export default async function ClassesPage() {
       enrollment_id: e.id,
       ten_hoc_vien: (e.students as { full_name: string } | null)?.full_name ?? '—',
     }))
+
+  // Gom theo lớp để bảng điều khiển hiện một con số, không đổ cả danh sách buổi.
+  const lechTheoLop = new Map<string, number>()
+  for (const x of lechGio ?? []) {
+    if (!x.class_id) continue
+    lechTheoLop.set(x.class_id, (lechTheoLop.get(x.class_id) ?? 0) + 1)
+  }
 
   const boardRows: DongBang[] = (board ?? [])
     .slice()
@@ -140,7 +155,12 @@ export default async function ClassesPage() {
       />
 
       <div className="mb-6">
-        <ClassBoard rows={boardRows} isFounder={isFounder} hopDong={hopDong} />
+        <ClassBoard
+          rows={boardRows}
+          isFounder={isFounder}
+          hopDong={hopDong}
+          lechGio={lechTheoLop}
+        />
       </div>
 
       {isFounder ? (
