@@ -1476,3 +1476,35 @@ gian khi không có nguồn nghe được.
 đọc được unlisted, private, hay link Google Drive riêng tư. Video lớp có mặt và
 giọng trẻ em nên không được để công khai. Đường duy nhất chạy được là **tải file
 lên thẳng cho AI** thay vì đưa link — chưa dựng, cần làm khi bật tính năng.
+
+## D40 — Sắp xếp hệ thống theo 8 phân hệ của Founder (15/09/2026)
+
+**Bối cảnh.** Cô Ngọc: *"tôi chưa thấy bạn phân hệ cho tôi theo tầng… mỗi lần
+tìm kiếm thông tin là 1 điều rất áp lực vì tôi chưa có sự sắp xêp sẵn có."*
+
+**Quyết định.** Menu đánh số đúng 8 phân hệ trong bảng cô viết, không dùng
+cách gom nhóm do em tự đặt. Phân hệ nào chưa có màn hình thì **không** tạo
+mục rỗng — chỉ phân hệ 6 được xây thật (`/chat-luong`).
+
+**Giới hạn đã biết.** Trang `/chat-luong` chỉ đếm hồ sơ có hay không, không
+chấm chất lượng nội dung. Nó không thay việc cô đọc báo cáo.
+
+## D41 — Cách nhập nội dung buổi học lịch sử từ 21 bảng feedback
+
+**Ghép theo NGÀY, không theo số buổi.** Số thứ tự trong sheet đếm cả buổi
+không có trong hệ thống nên lệch.
+
+**Ngày trong sheet không thống nhất một định dạng.** Cùng một bảng có
+`24/09/2025` (ngày/tháng), `10/15/25` (tháng/ngày kiểu Mỹ) và `2025-12-05`.
+Không thể đoán từ một ô lẻ. Quy tắc: sinh hết các cách đọc hợp lệ, đối chiếu
+với ngày thật trong hệ thống; **đúng một** ứng viên khớp thì lấy, không khớp
+hoặc khớp từ hai trở lên thì **bỏ qua và báo ra**. Không bao giờ đoán.
+
+**Nhãn đánh giá.** CSDL chỉ nhận 5 mã cố định; sheet ghi tiếng Việt lẫn tiếng
+Anh. Ánh xạ theo VỊ TRÍ TRÊN THANG, và giữ nguyên chữ gốc của giáo viên trong
+`teaching_report_students.comments` để không mất gì.
+
+**Không nhập giờ vào/giờ ra ở bước này** — giờ dạy sinh ra dòng trả lương, mà
+lương các buổi cũ đã trả ngoài hệ thống (D38).
+
+Script: `supabase/data-imports/doc_sheet.py` + `sinh_gon.py`.
