@@ -16,6 +16,7 @@ import {
   School,
   Banknote,
   CalendarCheck,
+  ShieldCheck,
   Users,
   Wallet,
   X,
@@ -24,26 +25,50 @@ import { cn } from '@/lib/cn'
 
 type Item = { href: string; label: string; icon: React.ElementType }
 
+/**
+ * Tám phân hệ theo đúng cách Founder chia việc (chốt ngày 15/09/2026).
+ *
+ * Trước đây menu gom thành bốn nhóm do em tự đặt — "Học tập", "Tài chính"… —
+ * nên mỗi lần cô cần một thông tin lại phải đoán xem nó nằm ở nhóm nào. Số
+ * thứ tự giữ nguyên thứ tự trong bảng cô viết, để cô nói "vào phân hệ 5" là
+ * tìm thấy ngay, không phải đọc hết menu.
+ *
+ * Nhóm nào chưa có màn hình thì KHÔNG đưa vào đây. Một mục bấm vào ra trang
+ * trống còn tệ hơn là không có mục đó.
+ */
 const FOUNDER_NAV: { section: string; items: Item[] }[] = [
   {
-    section: 'Tổng quan',
+    section: '1 · Điều hành',
     items: [
-      { href: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Tổng quan trung tâm', icon: LayoutDashboard },
       { href: '/month-end', label: 'Chốt tháng', icon: CalendarCheck },
     ],
   },
   {
-    section: 'Học tập',
+    section: '2 · Hồ sơ học viên',
+    items: [{ href: '/students', label: 'Học viên', icon: Users }],
+  },
+  {
+    section: '3 · Quản lý lớp',
+    items: [{ href: '/classes', label: 'Bảng điều khiển lớp', icon: School }],
+  },
+  {
+    section: '4 · Hồ sơ giáo viên',
+    items: [{ href: '/teachers', label: 'Giáo viên', icon: GraduationCap }],
+  },
+  {
+    section: '5 · Vận hành giảng dạy',
     items: [
-      { href: '/students', label: 'Học viên', icon: Users },
-      { href: '/teachers', label: 'Giáo viên', icon: GraduationCap },
-      { href: '/classes', label: 'Lớp học', icon: School },
-      { href: '/lessons', label: 'Buổi học', icon: CalendarDays },
-      { href: '/reports', label: 'Báo cáo giảng dạy', icon: BookOpen },
+      { href: '/lessons', label: 'Nhập buổi học', icon: CalendarDays },
+      { href: '/reports', label: 'Báo cáo buổi học', icon: BookOpen },
     ],
   },
   {
-    section: 'Tài chính',
+    section: '6 · Học thuật & chất lượng',
+    items: [{ href: '/chat-luong', label: 'Độ đầy đủ hồ sơ buổi', icon: ShieldCheck }],
+  },
+  {
+    section: '7 · Tài chính',
     items: [
       { href: '/payments', label: 'Thu học phí', icon: Wallet },
       { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
@@ -52,7 +77,7 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
     ],
   },
   {
-    section: 'Vận hành',
+    section: '8 · Cảnh báo & việc cần làm',
     items: [
       { href: '/alerts', label: 'Cảnh báo chất lượng', icon: AlertTriangle },
       { href: '/review', label: 'Cần đối soát', icon: ClipboardCheck },
@@ -64,6 +89,7 @@ const TEACHER_NAV: { section: string; items: Item[] }[] = [
   {
     section: 'Giảng dạy',
     items: [
+      { href: '/lessons', label: 'Nhập buổi học', icon: CalendarDays },
       { href: '/reports', label: 'Báo cáo của tôi', icon: BookOpen },
       { href: '/classes', label: 'Lớp của tôi', icon: School },
       { href: '/students', label: 'Học viên của tôi', icon: Users },

@@ -2062,6 +2062,22 @@ export type Database = {
         }
         Relationships: []
       }
+      v_ho_so_buoi_hoc: {
+        Row: {
+          lesson_id: string | null
+          class_id: string | null
+          ten_lop: string | null
+          teacher_id: string | null
+          giao_vien: string | null
+          lesson_date: string | null
+          topic: string | null
+          co_gio: boolean | null
+          co_noi_dung: boolean | null
+          co_nhan_xet: boolean | null
+          co_video: boolean | null
+        }
+        Relationships: []
+      }
       v_doi_chieu_gio_day: {
         Row: {
           lesson_id: string | null
