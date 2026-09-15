@@ -49,11 +49,13 @@ function GhiTot($ThongDiep) { Write-Host "  $ThongDiep" -ForegroundColor Green }
 # ---------------------------------------------------------------------------
 # Kiểm chuỗi kết nối — cùng luật với dump.sh
 #
-# Ngày 15/09/2026 job trên GitHub hỏng với "password authentication failed for
-# user postgres". Mật khẩu không sai. Pooler dùng chung của Supabase đòi tên
-# đăng nhập dạng postgres.<project-ref>; postgres trơn chỉ đúng cho kết nối
-# trực tiếp. Postgres lại báo lỗi như thể sai mật khẩu, nên người ta đi đổi một
-# mật khẩu vốn đúng. Kiểm ở đây để chỉ thẳng chỗ hỏng.
+# Tài liệu Supabase: tên đăng nhập sai cho ra "Tenant or user not found", KHÔNG
+# phải lỗi xác thực; còn "a valid username with the wrong password lands here".
+# Nên khi thấy "password authentication failed" thì gần như luôn là MẬT KHẨU,
+# và cái bẫy hay gặp nhất là mật khẩu có ký tự đặc biệt chưa percent-encode —
+# "A password that works in a GUI field can fail in a URI for this reason alone."
+#
+# Kiểm mật khẩu trước, tên đăng nhập sau.
 # ---------------------------------------------------------------------------
 function KiemChuoiKetNoi {
     param([Parameter(Mandatory)] [string] $Chuoi)
@@ -75,6 +77,29 @@ function KiemChuoiKetNoi {
 
     if ($dinhDanh -match 'YOUR-PASSWORD') {
         return 'Chuỗi còn nguyên chỗ giữ [YOUR-PASSWORD]. Thay bằng mật khẩu cơ sở dữ liệu thật.'
+    }
+
+    if ($dinhDanh -notmatch ':') {
+        return 'Chuỗi kết nối không có phần mật khẩu.'
+    }
+    $matKhau = $dinhDanh.Substring($dinhDanh.IndexOf(':') + 1)
+    if ([string]::IsNullOrEmpty($matKhau)) {
+        return 'Chuỗi kết nối không có phần mật khẩu.'
+    }
+
+    # Ký tự phải percent-encode khi nằm trong chuỗi kết nối. Không mã hoá thì
+    # URI bị cắt hoặc hiểu sai, và Postgres báo y như sai mật khẩu. Nguy hiểm
+    # nhất là '#' — nó cắt cụt toàn bộ phần sau, hỏng hoàn toàn im lặng.
+    $kyTuCam = @('#', '?', '@', '/', ':', '&', ' ') | Where-Object { $matKhau.Contains($_) }
+    if ($kyTuCam) {
+        return @"
+Mật khẩu chứa ký tự phải mã hoá: $($kyTuCam -join ' ')
+      Trong chuỗi kết nối, các ký tự này phải viết dưới dạng percent-encode:
+        #  ->  %23      ?  ->  %3F      @  ->  %40
+        /  ->  %2F      :  ->  %3A      &  ->  %26      (dấu cách) -> %20
+      Cách gọn hơn: đổi mật khẩu cơ sở dữ liệu sang loại CHỈ CÓ chữ và số.
+      Supabase -> Database -> Settings -> Reset database password.
+"@
     }
 
     if ($mayChu -like '*pooler.supabase.com' -and $nguoiDung -notmatch '\.') {

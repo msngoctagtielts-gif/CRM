@@ -18,20 +18,28 @@ set -euo pipefail
 
 # --- Kiểm chuỗi kết nối TRƯỚC khi gọi psql -----------------------------------
 #
-# Ngày 15/09/2026 job này hỏng với "password authentication failed for user
-# postgres". Mật khẩu không sai. Nguyên nhân là TÊN ĐĂNG NHẬP: Session pooler
-# dùng chung của Supabase đòi `postgres.<project-ref>`, còn `postgres` trơn chỉ
-# đúng cho kết nối trực tiếp và pooler riêng.
+# Lịch sử của khối này, vì nó dạy một bài học:
 #
-# Thông báo lỗi của Postgres nói về mật khẩu, nên nó đẩy người ta đi đổi một
-# mật khẩu vốn không sai. Kiểm ở đây để chỉ thẳng vào chỗ thật sự hỏng.
+# Ngày 15/09/2026 job hỏng với "password authentication failed for user
+# postgres". Chẩn đoán đầu tiên đổ cho TÊN ĐĂNG NHẬP thiếu mã dự án. SAI. Tài
+# liệu Supabase nói rõ tên đăng nhập sai cho ra "Tenant or user not found",
+# KHÔNG phải lỗi xác thực; còn "a valid username with the wrong password lands
+# here". Founder sửa tên đăng nhập, chạy lại 3 lần, vẫn hỏng y hệt.
 #
-# Không in mật khẩu ra log ở bất kỳ nhánh nào dưới đây.
+# Nguyên nhân thật gần như luôn là MẬT KHẨU, và cái bẫy hay gặp nhất là mật
+# khẩu có ký tự đặc biệt chưa được percent-encode. Supabase viết: "A password
+# that works in a GUI field can fail in a URI for this reason alone."
+#
+# Nên khối này kiểm mật khẩu trước, tên đăng nhập sau.
+# Không in mật khẩu ra log ở bất kỳ nhánh nào.
 
 _sau_scheme="${SUPABASE_DB_URL#*://}"
-_dinh_danh="${_sau_scheme%%@*}"
-_may_chu="${_sau_scheme#*@}"
+# Userinfo kết thúc ở dấu @ CUỐI CÙNG, không phải dấu @ đầu tiên (RFC 3986).
+# Tách theo dấu @ đầu tiên là hỏng ngay khi mật khẩu có chứa @.
+_dinh_danh="${_sau_scheme%@*}"
+_may_chu="${_sau_scheme##*@}"
 _nguoi_dung="${_dinh_danh%%:*}"
+_mat_khau="${_dinh_danh#*:}"
 _may_chu="${_may_chu%%[:/]*}"
 
 if [[ "$_dinh_danh" == *"YOUR-PASSWORD"* ]]; then
@@ -40,12 +48,38 @@ if [[ "$_dinh_danh" == *"YOUR-PASSWORD"* ]]; then
   exit 1
 fi
 
+if [[ "$_dinh_danh" != *:* || -z "$_mat_khau" ]]; then
+  echo "LỖI: chuỗi kết nối không có phần mật khẩu." >&2
+  exit 1
+fi
+
+# Ký tự phải percent-encode khi nằm trong chuỗi kết nối. Không mã hoá thì URI
+# bị cắt hoặc hiểu sai, và Postgres báo y như sai mật khẩu.
+#   #  cắt cụt toàn bộ phần sau — nguy hiểm nhất vì hỏng hoàn toàn im lặng
+#   ?  bắt đầu phần tham số
+#   @  kết thúc phần đăng nhập
+#   /  bắt đầu phần đường dẫn
+#   :  ngăn cách tên đăng nhập với mật khẩu
+#   &  ngăn cách tham số
+_ky_tu_cam=''
+for _kt in '#' '?' '@' '/' ':' '&' ' '; do
+  [[ "$_mat_khau" == *"$_kt"* ]] && _ky_tu_cam+="$_kt"
+done
+
+if [[ -n "$_ky_tu_cam" ]]; then
+  echo "LỖI: mật khẩu chứa ký tự phải mã hoá: $_ky_tu_cam" >&2
+  echo "      Trong chuỗi kết nối, các ký tự này phải viết dưới dạng percent-encode:" >&2
+  echo "        #  ->  %23      ?  ->  %3F      @  ->  %40" >&2
+  echo "        /  ->  %2F      :  ->  %3A      &  ->  %26      (dấu cách) -> %20" >&2
+  echo "      Cách gọn hơn: đổi mật khẩu cơ sở dữ liệu sang loại CHỈ CÓ chữ và số." >&2
+  echo "      Supabase → Database → Settings → Reset database password." >&2
+  exit 1
+fi
+
 if [[ "$_may_chu" == *pooler.supabase.com && "$_nguoi_dung" != *.* ]]; then
   echo "LỖI: tên đăng nhập '$_nguoi_dung' thiếu mã dự án." >&2
   echo "      Pooler dùng chung đòi dạng postgres.<project-ref>, không phải postgres." >&2
   echo "      Máy chủ đang dùng: $_may_chu" >&2
-  echo "      Cách sửa: mở Supabase → Connect → Session pooler → copy TRỌN chuỗi," >&2
-  echo "      chỉ thay mỗi phần mật khẩu. Đừng tự ghép chuỗi bằng tay." >&2
   exit 1
 fi
 
