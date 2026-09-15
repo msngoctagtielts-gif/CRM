@@ -1,6 +1,7 @@
 import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { Nav } from '@/components/Nav'
+import { BuildStamp } from '@/components/BuildStamp'
 
 const ROLE_LABEL: Record<string, string> = {
   founder: 'Founder / Quản trị',
@@ -45,6 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
         <div className="mx-auto max-w-7xl">{children}</div>
+        <BuildStamp />
       </main>
     </div>
   )
