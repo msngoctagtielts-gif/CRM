@@ -2041,6 +2041,27 @@ export type Database = {
         }
         Relationships: []
       }
+      v_class_board: {
+        Row: {
+          class_id: string | null
+          ten_lop: string | null
+          trang_thai_lop: Database["public"]["Enums"]["class_status"] | null
+          teacher_id: string | null
+          giao_vien: string | null
+          si_so: number | null
+          tong_buoi: number | null
+          buoi_gan_nhat: string | null
+          ngay_im_lang: number | null
+          buoi_thang_nay: number | null
+          buoi_thieu_gio: number | null
+          so_bao_cao: number | null
+          so_video: number | null
+          video_dang_muon: number | null
+          con_thieu: number | null
+          so_lich: number | null
+        }
+        Relationships: []
+      }
       v_data_review: {
         Row: {
           entity_type: string | null

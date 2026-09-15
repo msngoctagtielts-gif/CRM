@@ -9,6 +9,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
 import { ClassForm } from './ClassForm'
+import { ClassBoard, type DongBang } from './ClassBoard'
 
 export const metadata: Metadata = { title: 'Lớp học' }
 
@@ -17,8 +18,9 @@ export default async function ClassesPage() {
   const supabase = await createClient()
   const isFounder = user.role_code === 'founder'
 
-  const [{ data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
+  const [{ data: board }, { data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
     await Promise.all([
+      supabase.from('v_class_board').select('*'),
       supabase
         .from('classes')
         .select('*, teachers(full_name), programs(name_vi), levels(code)')
@@ -36,13 +38,19 @@ export default async function ClassesPage() {
         : Promise.resolve({ data: [] }),
     ])
 
+  // Lớp im lặng lâu nhất lên đầu — đó là thứ cần hỏi trước. Lớp chưa có buổi
+  // nào xuống cuối vì chưa có gì để theo dõi.
+  const boardRows: DongBang[] = (board ?? [])
+    .slice()
+    .sort((a, b) => (b.ngay_im_lang ?? -1) - (a.ngay_im_lang ?? -1))
+
   const countOf = (classId: string) =>
     (rosters ?? []).filter((r) => r.class_id === classId).length
 
   const list = (
     <Card>
       <CardHeader
-        title={isFounder ? 'Tất cả lớp học' : 'Lớp tôi đang dạy'}
+        title={isFounder ? 'Hồ sơ lớp' : 'Lớp tôi đang dạy'}
         description={`${(classes ?? []).length} lớp`}
       />
       {(classes ?? []).length === 0 ? (
@@ -116,6 +124,10 @@ export default async function ClassesPage() {
         title={isFounder ? 'Lớp học' : 'Lớp của tôi'}
         description="Hỗ trợ lớp 1-1, 1-2 và nhóm nhỏ. Thời lượng chuẩn 60 phút, cho phép 30 / 60 / 90."
       />
+
+      <div className="mb-6">
+        <ClassBoard rows={boardRows} isFounder={isFounder} />
+      </div>
 
       {isFounder ? (
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
