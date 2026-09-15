@@ -11,6 +11,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { StatCard } from '@/components/ui/StatCard'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
+import { LessonLogForm, type LopChon } from './LessonLogForm'
 
 export const metadata: Metadata = { title: 'Buổi học' }
 
@@ -32,6 +33,24 @@ export default async function LessonsPage({
     .lte('lesson_date', period.to)
     .order('scheduled_start_at', { ascending: false })
     .limit(400)
+
+  // Danh sách lớp cho biểu mẫu ghi buổi. Giáo viên chỉ thấy lớp mình dạy — RLS
+  // trên `classes` đã lọc sẵn, đây chỉ là nguồn cho ô chọn.
+  const { data: lopRaw } = await supabase
+    .from('classes')
+    .select('id, name, teacher_id, teachers(display_name), class_students(status)')
+    .eq('status', 'active')
+    .order('name')
+
+  const lops: LopChon[] = (lopRaw ?? []).map((c) => ({
+    id: c.id,
+    ten: c.name,
+    teacher_id: c.teacher_id,
+    teacher_ten: (c.teachers as { display_name: string | null } | null)?.display_name ?? null,
+    si_so: ((c.class_students ?? []) as { status: string }[]).filter(
+      (s) => s.status === 'active',
+    ).length,
+  }))
 
   const all = lessons ?? []
   const today = todayISO()
@@ -59,6 +78,10 @@ export default async function LessonsPage({
           accent={all.some((l) => l.is_overdue) ? 'burgundy' : 'sage'}
         />
       </section>
+
+      <div className="mb-5">
+        <LessonLogForm lops={lops} />
+      </div>
 
       <Card>
         <CardHeader
