@@ -8,7 +8,7 @@ import { Alert } from '@/components/ui/Alert'
 import type { ActionResult } from '@/lib/actions'
 import { inviteTeacher } from './actions'
 
-export type GiaoVienChuaCoTaiKhoan = { id: string; ten: string }
+export type GiaoVienChuaCoTaiKhoan = { id: string; ten: string; email: string | null }
 
 /**
  * Mời giáo viên vào hệ thống.
@@ -21,6 +21,11 @@ export type GiaoVienChuaCoTaiKhoan = { id: string; ten: string }
 export function InviteTeacherForm({ teachers }: { teachers: GiaoVienChuaCoTaiKhoan[] }) {
   const [state, action] = useActionState<ActionResult | null, FormData>(inviteTeacher, null)
   const [daCopy, setDaCopy] = useState(false)
+  const [chon, setChon] = useState('')
+
+  // Email đã lưu trong hồ sơ giáo viên thì điền sẵn — Founder chỉ chọn tên rồi
+  // bấm. Vẫn cho sửa, vì hồ sơ có thể ghi email cũ.
+  const emailSan = teachers.find((t) => t.id === chon)?.email ?? ''
 
   // Thông điệp thành công có dạng "…:\n\n<đường dẫn>". Tách ra để hiện nút copy
   // thay vì bắt Founder bôi đen một chuỗi dài trên điện thoại.
@@ -66,13 +71,19 @@ export function InviteTeacherForm({ teachers }: { teachers: GiaoVienChuaCoTaiKho
             ) : null}
 
             <Field label="Giáo viên" required>
-              <Select name="teacher_id" required defaultValue="">
+              <Select
+                name="teacher_id"
+                required
+                value={chon}
+                onChange={(e) => setChon(e.target.value)}
+              >
                 <option value="" disabled>
                   — Chọn giáo viên —
                 </option>
                 {teachers.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.ten}
+                    {t.email ? '' : '  (chưa có email)'}
                   </option>
                 ))}
               </Select>
@@ -83,7 +94,14 @@ export function InviteTeacherForm({ teachers }: { teachers: GiaoVienChuaCoTaiKho
               required
               hint="Dùng làm tên đăng nhập. Phải là email giáo viên thật sự đang dùng."
             >
-              <Input type="email" name="email" required placeholder="ten@gmail.com" />
+              <Input
+                key={chon}
+                type="email"
+                name="email"
+                required
+                defaultValue={emailSan}
+                placeholder="ten@gmail.com"
+              />
             </Field>
 
             <SubmitButton className="w-full" pendingLabel="Đang tạo…">

@@ -107,7 +107,7 @@ export default async function TeachersPage() {
           <InviteTeacherForm
             teachers={(teachers ?? [])
               .filter((t) => t.status === 'active' && !t.user_id)
-              .map((t) => ({ id: t.id, ten: t.display_name ?? t.full_name }))}
+              .map((t) => ({ id: t.id, ten: t.display_name ?? t.full_name, email: t.email }))}
           />
           <TeacherForm teachers={(teachers ?? []).map((t) => ({ id: t.id, full_name: t.full_name }))} />
         </div>
