@@ -54,13 +54,28 @@ function mucImLang(ngay: number | null): { tone: 'success' | 'warning' | 'danger
  * `lesson_consumptions` đã cho ra 0; ẩn hẳn cột để không ai hiểu nhầm số 0 đó
  * là "học viên đã đóng đủ".
  */
-export function ClassBoard({ rows, isFounder }: { rows: DongBang[]; isFounder: boolean }) {
+export type HopDongCuaLop = { class_id: string; enrollment_id: string; ten_hoc_vien: string }
+
+export function ClassBoard({
+  rows,
+  isFounder,
+  hopDong = [],
+}: {
+  rows: DongBang[]
+  isFounder: boolean
+  hopDong?: HopDongCuaLop[]
+}) {
   const dangChay = rows.filter((r) => r.buoi_gan_nhat !== null)
   const imLangLau = dangChay.filter((r) => (r.ngay_im_lang ?? 0) > 14)
   const tongThieu = rows.reduce((s, r) => s + Math.max(0, Number(r.con_thieu ?? 0)), 0)
   const thieuGio = rows.reduce((s, r) => s + (r.buoi_thieu_gio ?? 0), 0)
   const coVideo = rows.reduce((s, r) => s + (r.so_video ?? 0), 0)
   const tongBuoi = rows.reduce((s, r) => s + (r.tong_buoi ?? 0), 0)
+
+  // Bảng kê lập theo HỢP ĐỒNG, không theo lớp: lớp nhóm có nhiều học viên thì
+  // mỗi em một bảng kê riêng, vì học phí và số tiền đã đóng của mỗi em khác nhau.
+  const hopDongCua = (classId: string | null) =>
+    classId ? hopDong.filter((h) => h.class_id === classId) : []
 
   return (
     <div className="space-y-5">
@@ -124,6 +139,7 @@ export function ClassBoard({ rows, isFounder }: { rows: DongBang[]; isFounder: b
               <Th align="center">Nội dung</Th>
               <Th align="center">Video</Th>
               {isFounder ? <Th align="right">Còn thiếu</Th> : null}
+              {isFounder ? <Th>Bảng kê</Th> : null}
             </tr>
           </thead>
           <tbody>
@@ -196,6 +212,25 @@ export function ClassBoard({ rows, isFounder }: { rows: DongBang[]; isFounder: b
                         <span className="text-sage-700">dư {formatCurrency(-thieu)}</span>
                       ) : (
                         <span className="text-navy-300">—</span>
+                      )}
+                    </Td>
+                  ) : null}
+                  {isFounder ? (
+                    <Td>
+                      {hopDongCua(r.class_id).length === 0 ? (
+                        <span className="text-navy-300">—</span>
+                      ) : (
+                        <div className="flex flex-col gap-0.5">
+                          {hopDongCua(r.class_id).map((h) => (
+                            <Link
+                              key={h.enrollment_id}
+                              href={`/bang-ke/${h.enrollment_id}`}
+                              className="whitespace-nowrap text-xs font-medium text-navy-700 underline underline-offset-2 hover:text-navy-900"
+                            >
+                              {hopDongCua(r.class_id).length > 1 ? h.ten_hoc_vien : 'Xem bảng kê'}
+                            </Link>
+                          ))}
+                        </div>
                       )}
                     </Td>
                   ) : null}

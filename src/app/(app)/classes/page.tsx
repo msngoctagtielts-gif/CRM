@@ -9,7 +9,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
 import { ClassForm } from './ClassForm'
-import { ClassBoard, type DongBang } from './ClassBoard'
+import { ClassBoard, type DongBang, type HopDongCuaLop } from './ClassBoard'
 
 export const metadata: Metadata = { title: 'Lớp học' }
 
@@ -18,9 +18,15 @@ export default async function ClassesPage() {
   const supabase = await createClient()
   const isFounder = user.role_code === 'founder'
 
-  const [{ data: board }, { data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
+  const [{ data: board }, { data: enrollments }, { data: classes }, { data: rosters }, { data: programs }, { data: levels }, { data: teachers }] =
     await Promise.all([
       supabase.from('v_class_board').select('*'),
+      isFounder
+        ? supabase
+            .from('student_enrollments')
+            .select('id, class_id, students!student_id(full_name)')
+            .in('status', ['active', 'paused'])
+        : Promise.resolve({ data: [] }),
       supabase
         .from('classes')
         .select('*, teachers(full_name), programs(name_vi), levels(code)')
@@ -40,6 +46,14 @@ export default async function ClassesPage() {
 
   // Lớp im lặng lâu nhất lên đầu — đó là thứ cần hỏi trước. Lớp chưa có buổi
   // nào xuống cuối vì chưa có gì để theo dõi.
+  const hopDong: HopDongCuaLop[] = (enrollments ?? [])
+    .filter((e): e is typeof e & { class_id: string } => e.class_id !== null)
+    .map((e) => ({
+      class_id: e.class_id,
+      enrollment_id: e.id,
+      ten_hoc_vien: (e.students as { full_name: string } | null)?.full_name ?? '—',
+    }))
+
   const boardRows: DongBang[] = (board ?? [])
     .slice()
     .sort((a, b) => (b.ngay_im_lang ?? -1) - (a.ngay_im_lang ?? -1))
@@ -126,7 +140,7 @@ export default async function ClassesPage() {
       />
 
       <div className="mb-6">
-        <ClassBoard rows={boardRows} isFounder={isFounder} />
+        <ClassBoard rows={boardRows} isFounder={isFounder} hopDong={hopDong} />
       </div>
 
       {isFounder ? (
