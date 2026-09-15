@@ -16,6 +16,41 @@ set -euo pipefail
 : "${SUPABASE_DB_URL:?Thiếu SUPABASE_DB_URL (chuỗi kết nối Session pooler)}"
 : "${BACKUP_PASSPHRASE:?Thiếu BACKUP_PASSPHRASE (mật khẩu giải mã bản sao lưu)}"
 
+# --- Kiểm chuỗi kết nối TRƯỚC khi gọi psql -----------------------------------
+#
+# Ngày 15/09/2026 job này hỏng với "password authentication failed for user
+# postgres". Mật khẩu không sai. Nguyên nhân là TÊN ĐĂNG NHẬP: Session pooler
+# dùng chung của Supabase đòi `postgres.<project-ref>`, còn `postgres` trơn chỉ
+# đúng cho kết nối trực tiếp và pooler riêng.
+#
+# Thông báo lỗi của Postgres nói về mật khẩu, nên nó đẩy người ta đi đổi một
+# mật khẩu vốn không sai. Kiểm ở đây để chỉ thẳng vào chỗ thật sự hỏng.
+#
+# Không in mật khẩu ra log ở bất kỳ nhánh nào dưới đây.
+
+_sau_scheme="${SUPABASE_DB_URL#*://}"
+_dinh_danh="${_sau_scheme%%@*}"
+_may_chu="${_sau_scheme#*@}"
+_nguoi_dung="${_dinh_danh%%:*}"
+_may_chu="${_may_chu%%[:/]*}"
+
+if [[ "$_dinh_danh" == *"YOUR-PASSWORD"* ]]; then
+  echo "LỖI: chuỗi kết nối còn nguyên chỗ giữ mật khẩu [YOUR-PASSWORD]." >&2
+  echo "      Thay nó bằng mật khẩu cơ sở dữ liệu thật rồi lưu lại secret." >&2
+  exit 1
+fi
+
+if [[ "$_may_chu" == *pooler.supabase.com && "$_nguoi_dung" != *.* ]]; then
+  echo "LỖI: tên đăng nhập '$_nguoi_dung' thiếu mã dự án." >&2
+  echo "      Pooler dùng chung đòi dạng postgres.<project-ref>, không phải postgres." >&2
+  echo "      Máy chủ đang dùng: $_may_chu" >&2
+  echo "      Cách sửa: mở Supabase → Connect → Session pooler → copy TRỌN chuỗi," >&2
+  echo "      chỉ thay mỗi phần mật khẩu. Đừng tự ghép chuỗi bằng tay." >&2
+  exit 1
+fi
+
+echo "> Chuỗi kết nối hợp lệ · người dùng $_nguoi_dung · máy chủ $_may_chu"
+
 OUT_DIR="${1:-backups}"
 STAMP="$(date -u +%Y%m%d-%H%M%S)"
 WORK="$(mktemp -d)"
