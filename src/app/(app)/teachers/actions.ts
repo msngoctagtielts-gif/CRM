@@ -200,3 +200,57 @@ export async function inviteTeacher(
       `Gửi đường dẫn này cho cô qua Zalo — dùng một lần rồi hết hiệu lực:\n\n${duongDan}`,
   }
 }
+
+const revokeSchema = z.object({
+  teacher_id: z.string().uuid('Chưa chọn giáo viên'),
+})
+
+/**
+ * Gỡ tài khoản đăng nhập của một giáo viên.
+ *
+ * Dùng khi: mời nhầm email, giáo viên nghỉ việc, hoặc thử xong muốn dọn.
+ *
+ * Xoá tài khoản Auth là đủ — chuỗi khoá ngoại tự dọn phần còn lại:
+ *   auth.users  --ON DELETE CASCADE-->  public.users
+ *   public.users --ON DELETE SET NULL--> teachers.user_id
+ *
+ * KHÔNG xoá hồ sơ giáo viên, KHÔNG xoá buổi học, KHÔNG xoá dòng lương. Giáo
+ * viên nghỉ việc vẫn phải tra được đã dạy bao nhiêu buổi và còn nợ lương bao
+ * nhiêu — đó là sổ sách, không phải quyền truy cập.
+ */
+export async function revokeTeacherAccount(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(revokeSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const supabase = await createClient()
+  const { data: teacher } = await supabase
+    .from('teachers')
+    .select('id, full_name, display_name, user_id')
+    .eq('id', parsed.data.teacher_id)
+    .maybeSingle()
+
+  if (!teacher) return { ok: false, error: 'Không tìm thấy giáo viên.' }
+  if (!teacher.user_id) return { ok: false, error: 'Giáo viên này chưa có tài khoản.' }
+
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const admin = createAdminClient()
+
+  const { error } = await admin.auth.admin.deleteUser(teacher.user_id)
+  if (error) return { ok: false, error: 'Không gỡ được tài khoản. Thử lại sau.' }
+
+  // Chuỗi ON DELETE đã đưa user_id về null. Xoá nốt email để lần mời sau không
+  // tự điền một địa chỉ đã bị gỡ.
+  await supabase.from('teachers').update({ email: null }).eq('id', teacher.id)
+
+  revalidatePath('/teachers')
+  return {
+    ok: true,
+    message:
+      `Đã gỡ tài khoản của ${teacher.display_name ?? teacher.full_name}. ` +
+      'Hồ sơ, buổi học và dòng lương giữ nguyên.',
+  }
+}

@@ -1403,3 +1403,31 @@ Vai trò của tài khoản mới tạo là `teacher`, do trigger `tg_handle_new
 Không tính được lợi nhuận vì không đọc được cả doanh thu lẫn chi phí. Không
 thấy lương người khác. Rào chặn nằm ở RLS trong cơ sở dữ liệu, nên đúng kể cả
 khi ai đó gọi thẳng API mà không qua giao diện.
+
+## D37 — Ms. Ngọc có hồ sơ giáo viên, dùng chung tài khoản Founder
+
+*Ngày 15/09/2026.* Founder vừa điều hành vừa trực tiếp đứng lớp, nên cần hồ sơ
+giáo viên để được phân lớp, ghi buổi học và tính lương.
+
+**Quyết định:** tạo một dòng trong `teachers` gắn `user_id` bằng chính tài khoản
+Founder, KHÔNG tạo tài khoản thứ hai. Một lần đăng nhập duy nhất.
+
+**Vì sao an toàn:** `is_founder()` đọc `role_code` trong bảng `users`, không đọc
+bảng `teachers`. `current_teacher_id()` chỉ tra theo `user_id` và không kiểm vai
+trò. Nên có hồ sơ giáo viên không làm mất quyền Founder.
+
+Đã kiểm chứng ngay sau khi chèn, đóng vai tài khoản Founder: `role_code` =
+founder, `is_teacher()` = false, `current_teacher_id()` khác null, và đọc được
+đủ 21 lớp, 46 phiếu thu, 426 dòng doanh thu, 2 chi phí, 7 bảng lương.
+
+**Điểm cần Founder quyết, chưa xử lý:** nếu cô nhận lớp và ghi buổi học, hệ
+thống sẽ sinh dòng trả lương cho cô như mọi giáo viên khác. Hiện `teacher_rates`
+chưa có mức nào cho cô, nên buổi học của cô sẽ mang ghi chú "Chưa cấu hình đơn
+giá". Hai hướng, cô chọn:
+
+* **Đặt đơn giá cho cô như giáo viên khác** — chi phí phản ánh đúng công sức bỏ
+  ra, và biết được lớp nào thật sự có lãi sau khi trả công người dạy.
+* **Để 0 đồng** — dễ hơn, nhưng làm lợi nhuận trông cao hơn thực tế, vì công
+  dạy của cô không xuất hiện trong sổ.
+
+Chưa đặt mức nào cho tới khi Founder chốt. Không tự đoán.
