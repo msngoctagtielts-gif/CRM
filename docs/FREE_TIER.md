@@ -81,6 +81,100 @@ Gói Free **không cho tải bản sao lưu**, nên phải tự dump ra ngoài.
 > Kết nối trực tiếp **chỉ có IPv6**, mà máy chạy GitHub Actions **chỉ có IPv4**.
 > Dùng chuỗi trực tiếp thì job sẽ treo rồi báo lỗi mạng khó hiểu.
 
+> ### ⚠ Tên người dùng phải có mã dự án phía sau
+>
+> Lần chạy tay ngày 15/09/2026 hỏng với lỗi:
+>
+> ```
+> FATAL: password authentication failed for user "postgres"
+> ```
+>
+> Máy chủ đọc được tên người dùng là `postgres`. Session pooler (Supavisor)
+> KHÔNG nhận tên đó — phải là `postgres.zyzxqthlgrunkxohvhku`, có dấu chấm và
+> mã dự án. Chuỗi Supabase cho sẵn đã đúng; lỗi phát sinh khi gõ lại bằng tay
+> hoặc khi ghép chuỗi trực tiếp với địa chỉ pooler.
+>
+> Nguyên nhân thứ hai có thể xảy ra cùng lúc: **mật khẩu có ký tự đặc biệt**.
+> Trong chuỗi kết nối, các ký tự `@ : / ? # & %` và dấu cách phải được mã hoá
+> phần trăm. Mật khẩu chạy tốt khi gõ vào ô đăng nhập vẫn có thể hỏng khi nằm
+> trong chuỗi URL, chỉ vì lý do này.
+>
+> | Ký tự | Viết thành |
+> |---|---|
+> | `@` | `%40` |
+> | `#` | `%23` |
+> | `&` | `%26` |
+> | `?` | `%3F` |
+> | `/` | `%2F` |
+> | `:` | `%3A` |
+> | `%` | `%25` |
+> | dấu cách | `%20` |
+>
+> Cách chắc ăn nhất: đổi mật khẩu CSDL sang một chuỗi **chỉ gồm chữ và số**,
+> rồi khỏi phải mã hoá gì.
+
+## 3b. Sao lưu trên máy của Founder
+
+Chỉ dựa vào GitHub là chưa đủ, vì hai lý do đã ghi ngay đầu `backup.yml`:
+artifact tự xoá sau 90 ngày, và GitHub tự tắt workflow theo lịch nếu repo không
+có commit nào trong 60 ngày — tức là việc sao lưu dừng đúng lúc hệ thống đã ổn
+định và không ai sửa code nữa.
+
+Hai nơi lưu độc lập mới gọi là có sao lưu. Một nơi chỉ là một điểm hỏng.
+
+### Cài một lần
+
+Cần `psql` và `pg_dump` phiên bản 17 trở lên, cùng `gpg`:
+
+```bash
+# macOS
+brew install postgresql@17 gnupg
+
+# Ubuntu / WSL trên Windows
+sudo apt install postgresql-client-17 gnupg
+```
+
+Trên Windows, chạy trong **WSL** hoặc **Git Bash**.
+
+Tạo tệp `scripts/backup/.env.backup` với đúng hai dòng:
+
+```bash
+SUPABASE_DB_URL='postgresql://postgres.zyzxqthlgrunkxohvhku:MAT_KHAU@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres'
+BACKUP_PASSPHRASE='mat-khau-ma-hoa'
+```
+
+Tệp này đã nằm trong `.gitignore`, không bao giờ lên GitHub.
+
+### Chạy
+
+```bash
+./scripts/backup/local.sh
+```
+
+Bản sao lưu ghi vào `~/MNEE-Backups`, giữ lại 12 bản mới nhất và tự xoá bản cũ
+hơn. Đổi chỗ lưu bằng `THU_MUC_SAO_LUU`, đổi số bản giữ lại bằng `GIU_LAI`.
+
+### Chạy tự động hằng ngày
+
+**macOS / Linux** — `crontab -e`, thêm một dòng (21:00 mỗi ngày):
+
+```
+0 21 * * * cd /duong/dan/toi/CRM && ./scripts/backup/local.sh >> ~/MNEE-Backups/nhat-ky.log 2>&1
+```
+
+**Windows** — Task Scheduler, tạo tác vụ chạy hằng ngày với lệnh:
+
+```
+wsl bash -lc "cd /duong/dan/toi/CRM && ./scripts/backup/local.sh"
+```
+
+Máy phải bật vào giờ đó. Nếu máy thường tắt buổi tối thì đặt vào giờ hành chính.
+
+### Mỗi tháng một lần
+
+Chép một bản từ `~/MNEE-Backups` sang Google Drive hoặc ổ cứng ngoài. Bản nằm
+cùng một ổ đĩa với máy đang dùng thì không chống được hỏng ổ hay mất máy.
+
 ### Sao lưu tay khi cần
 
 ```bash

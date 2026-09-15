@@ -19,3 +19,7 @@ next-env.d.ts
 coverage/
 supabase/.temp/
 supabase/.branches/
+
+# Thông tin kết nối cơ sở dữ liệu để sao lưu tại máy — KHÔNG BAO GIỜ commit.
+scripts/backup/.env.backup
+backups/
