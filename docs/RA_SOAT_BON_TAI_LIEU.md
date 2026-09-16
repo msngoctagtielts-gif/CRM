@@ -280,3 +280,71 @@ Tôi **không phải luật sư**. Phần nghĩa vụ thuế, thời điểm nê
 doanh, và hiệu lực pháp lý của từng điều khoản cần người có chuyên môn xác nhận.
 Tôi chỉ đối chiếu các tài liệu với nhau, với dữ liệu trong hệ thống, và chỉ ra
 chỗ không khớp.
+
+---
+
+# Phụ lục — Quyết định Founder chốt ngày 16/09/2026 và bản V1.2
+
+Founder đã trả lời toàn bộ các điểm mâu thuẫn. Hai bản V1.2 đã được soạn theo
+đúng những quyết định này bằng `supabase/data-imports/scripts/soan_thoa_thuan.js`.
+
+## Các con số đã chốt
+
+| Nội dung | V1.1 | **V1.2 (đã chốt)** |
+|---|---|---|
+| Buổi 1 | miễn phí | miễn phí (giữ nguyên) |
+| Buổi 2 và 3 | *không nói rõ* | **trả học phí lẻ theo từng buổi** |
+| Gói 10 buổi | từ buổi 4 | từ buổi 4 (giữ nguyên) |
+| Báo huỷ trước | 12 giờ | **05 giờ** |
+| Sĩ số nhóm tối đa | 4 | **6** |
+| Lớp 5–6 học viên | *không nói* | **bắt buộc 75 phút** |
+| Bảo lưu | để trống | **06 tháng, 01 lần/gói, báo trước 07 ngày** |
+| Trả thù lao giáo viên | ngày 01–03 | **ngày 03 hằng tháng** |
+| Hạn nộp báo cáo | 10 giờ | **24 giờ** (khớp cài đặt hệ thống) |
+
+Điểm đáng chú ý nhất: V1.1 **không nói** buổi 2 và 3 có thu tiền hay không. Đọc
+Điều 2 thì suy ra ba buổi đầu miễn phí, trong khi thực tế học viên trả học phí
+lẻ cho buổi 2 và 3. Chênh hai buổi cho mỗi học viên mới, nay đã ghi rõ.
+
+Hạn nộp báo cáo hạ từ 10 xuống 24 giờ để lời hứa với phụ huynh khớp đúng cài
+đặt `report_deadline_hours` trong hệ thống. Hứa 10 giờ mà hệ thống cho 24 là
+một cam kết không có gì bảo đảm.
+
+## Bảng thù lao giáo viên (áp dụng như nhau cho GV Việt Nam và Philippines)
+
+Quy tắc: lớp 1 kèm 1 hưởng mức nền; mỗi học viên tăng thêm cộng 20.000đ.
+
+| Sĩ số | Thời lượng | Giao tiếp | IELTS |
+|---|---|---:|---:|
+| 1 kèm 1 | 60 phút | 120.000 | 150.000 |
+| 1 kèm 2 | 60 phút | 140.000 | 170.000 |
+| 1 kèm 3 | 60 phút | 160.000 | 190.000 |
+| 1 kèm 4 | 60 phút | 180.000 | 210.000 |
+| 1 kèm 5 | **75 phút** | 200.000 | 230.000 |
+| 1 kèm 6 | **75 phút** | 220.000 | 250.000 |
+
+## Hai việc kỹ thuật đã phải làm kèm
+
+**Hệ thống chưa lưu được 75 phút.** Năm bảng (`lessons`, `class_schedules`,
+`classes`, `teacher_rates`, `tuition_packages`) đều ràng buộc thời lượng chỉ
+nhận 30, 60 hoặc 90. Đã thêm 75 vào cả năm, và sửa hai gói 1:5 và 1:6 đang ghi
+tạm 90 phút về đúng 75.
+
+**Số CCCD không được commit vào git.** Thông tin định danh Bên A đọc từ tệp
+`.ben-a.json`, tệp này bị `.gitignore` bỏ qua. Bộ sinh tài liệu vẫn nằm trong
+repo, kèm `.ben-a.example.json` làm mẫu. Kho mã nguồn giữ lịch sử vĩnh viễn —
+một số CCCD lọt vào đó thì không xoá được nữa.
+
+## Chỗ còn mâu thuẫn, cần Founder xác nhận
+
+**Lớp Kiên đang tính 170.000đ/buổi.** Sáng nay Founder xác nhận mức này và nói
+đã trả đủ, gọi là "trường hợp đặc biệt". Nhưng theo bảng thù lao vừa chốt, lớp
+IELTS 1 kèm 1 là **150.000đ**. Hai khả năng: giữ 170.000 như một ngoại lệ có
+ghi chú, hoặc đưa về 150.000 từ kỳ lương tới. Chưa sửa, chờ Founder quyết.
+
+## Chưa làm được
+
+Không dựng hình được hai tài liệu để xem bố cục: LibreOffice trong môi trường
+chạy không mở được bất kỳ tệp .docx nào, kể cả một tệp tối thiểu do chính nó
+tạo ra — lỗi môi trường, không phải lỗi tài liệu. Nội dung đã kiểm chứng bằng
+cách bóc chữ ngược lại từ tệp đã sinh; bố cục thì Founder là người xem đầu tiên.

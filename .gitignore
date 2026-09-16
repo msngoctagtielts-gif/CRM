@@ -23,3 +23,7 @@ supabase/.branches/
 # Thông tin kết nối cơ sở dữ liệu để sao lưu tại máy — KHÔNG BAO GIỜ commit.
 scripts/backup/.env.backup
 backups/
+
+# Thông tin định danh cá nhân của Bên A (số CCCD) — KHÔNG BAO GIỜ commit.
+# Dùng .ben-a.example.json làm mẫu.
+supabase/data-imports/scripts/.ben-a.json
