@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git push)",
+      "Bash(git push -u origin claude/mnee-system-architecture-oxsrc4)",
+      "Bash(git push origin claude/mnee-system-architecture-oxsrc4)"
+    ]
+  }
+}
