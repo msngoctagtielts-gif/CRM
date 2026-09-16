@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   AlertTriangle,
   BookOpen,
@@ -20,83 +20,80 @@ import {
   Users,
   Wallet,
   X,
-} from 'lucide-react'
-import { cn } from '@/lib/cn'
+} from "lucide-react";
+import { cn } from "@/lib/cn";
+import { TimKiem } from "@/components/TimKiem";
 
-type Item = { href: string; label: string; icon: React.ElementType }
+type Item = { href: string; label: string; icon: React.ElementType };
 
 /**
- * Tám phân hệ theo đúng cách Founder chia việc (chốt ngày 15/09/2026).
+ * Menu theo đúng sơ đồ cô Ngọc đưa ngày 16/09/2026, gom thành sáu phân hệ.
  *
- * Trước đây menu gom thành bốn nhóm do em tự đặt — "Học tập", "Tài chính"… —
- * nên mỗi lần cô cần một thông tin lại phải đoán xem nó nằm ở nhóm nào. Số
- * thứ tự giữ nguyên thứ tự trong bảng cô viết, để cô nói "vào phân hệ 5" là
- * tìm thấy ngay, không phải đọc hết menu.
+ * Trước đây menu chia tám nhóm theo bảng cô viết ngày 15/09. Sơ đồ mới của cô
+ * gom lại gọn hơn và đặt tên theo cách cô nghĩ về trung tâm, nên dùng sơ đồ mới.
  *
- * Nhóm nào chưa có màn hình thì KHÔNG đưa vào đây. Một mục bấm vào ra trang
- * trống còn tệ hơn là không có mục đó.
+ * BA CHỖ ĐỔI TÊN so với sơ đồ cô gửi. Sơ đồ có ba mục "Tiến độ học tập",
+ * "Chất lượng giảng dạy" và "Hiệu suất giảng dạy" — cả ba đọc cùng một nguồn là
+ * teaching_reports, chỉ khác CHỦ THỂ. Đặt tên theo chủ thể để không phải đoán.
+ *
+ * MỤC CHƯA CÓ MÀN HÌNH THÌ KHÔNG ĐƯA VÀO. Sơ đồ có 24 mục, hiện 13 mục có màn
+ * hình. Mười một mục còn lại (Khách hàng tiềm năng, Placement, Lịch học, Chương
+ * trình học, Teaching Library, Assessment, Tài liệu, Danh mục, Phân quyền, Cài
+ * đặt, Báo cáo tài chính) đã có bảng dữ liệu nhưng chưa có giao diện. Bấm vào ra
+ * trang trống còn tệ hơn là không có mục đó. Thêm dần khi màn hình xong.
  */
 const FOUNDER_NAV: { section: string; items: Item[] }[] = [
   {
-    section: '1 · Điều hành',
+    section: "Tổng quan",
     items: [
-      { href: '/dashboard', label: 'Tổng quan trung tâm', icon: LayoutDashboard },
-      { href: '/month-end', label: 'Chốt tháng', icon: CalendarCheck },
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/alerts", label: "Việc cần xử lý", icon: AlertTriangle },
+      { href: "/review", label: "Cần đối soát", icon: ClipboardCheck },
+      { href: "/month-end", label: "Chốt tháng", icon: CalendarCheck },
     ],
   },
   {
-    section: '2 · Hồ sơ học viên',
-    items: [{ href: '/students', label: 'Học viên', icon: Users }],
+    section: "Học viên",
+    items: [{ href: "/students", label: "Hồ sơ học viên", icon: Users }],
   },
   {
-    section: '3 · Quản lý lớp',
-    items: [{ href: '/classes', label: 'Bảng điều khiển lớp', icon: School }],
-  },
-  {
-    section: '4 · Hồ sơ giáo viên',
-    items: [{ href: '/teachers', label: 'Giáo viên', icon: GraduationCap }],
-  },
-  {
-    section: '5 · Vận hành giảng dạy',
+    section: "Lớp học & giảng dạy",
     items: [
-      { href: '/lessons', label: 'Nhập buổi học', icon: CalendarDays },
-      { href: '/reports', label: 'Báo cáo buổi học', icon: BookOpen },
+      { href: "/classes", label: "Lớp học", icon: School },
+      { href: "/lessons", label: "Buổi học", icon: CalendarDays },
+      { href: "/reports", label: "Báo cáo buổi học", icon: BookOpen },
+      { href: "/chat-luong", label: "Kiểm định buổi dạy", icon: ShieldCheck },
     ],
   },
   {
-    section: '6 · Học thuật & chất lượng',
-    items: [{ href: '/chat-luong', label: 'Độ đầy đủ hồ sơ buổi', icon: ShieldCheck }],
-  },
-  {
-    section: '7 · Tài chính',
+    section: "Giáo viên",
     items: [
-      { href: '/payments', label: 'Thu học phí', icon: Wallet },
-      { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
-      { href: '/payroll', label: 'Bảng lương', icon: Banknote },
-      { href: '/expenses', label: 'Chi phí', icon: Receipt },
+      { href: "/teachers", label: "Hồ sơ giáo viên", icon: GraduationCap },
     ],
   },
   {
-    section: '8 · Cảnh báo & việc cần làm',
+    section: "Tài chính",
     items: [
-      { href: '/alerts', label: 'Cảnh báo chất lượng', icon: AlertTriangle },
-      { href: '/review', label: 'Cần đối soát', icon: ClipboardCheck },
+      { href: "/payments", label: "Học phí & công nợ", icon: Wallet },
+      { href: "/statements", label: "Phiếu học phí tháng", icon: FileText },
+      { href: "/payroll", label: "Lương giáo viên", icon: Banknote },
+      { href: "/expenses", label: "Chi phí", icon: Receipt },
     ],
   },
-]
+];
 
 const TEACHER_NAV: { section: string; items: Item[] }[] = [
   {
-    section: 'Giảng dạy',
+    section: "Giảng dạy",
     items: [
-      { href: '/lessons', label: 'Nhập buổi học', icon: CalendarDays },
-      { href: '/reports', label: 'Báo cáo của tôi', icon: BookOpen },
-      { href: '/classes', label: 'Lớp của tôi', icon: School },
-      { href: '/students', label: 'Học viên của tôi', icon: Users },
-      { href: '/payroll', label: 'Lương của tôi', icon: Banknote },
+      { href: "/lessons", label: "Nhập buổi học", icon: CalendarDays },
+      { href: "/reports", label: "Báo cáo của tôi", icon: BookOpen },
+      { href: "/classes", label: "Lớp của tôi", icon: School },
+      { href: "/students", label: "Học viên của tôi", icon: Users },
+      { href: "/payroll", label: "Lương của tôi", icon: Banknote },
     ],
   },
-]
+];
 
 export function Nav({
   role,
@@ -106,25 +103,25 @@ export function Nav({
   pendingReports,
   needsReview,
 }: {
-  role: string
-  userName: string
-  roleLabel: string
-  openAlerts: number
-  pendingReports: number
-  needsReview: number
+  role: string;
+  userName: string;
+  roleLabel: string;
+  openAlerts: number;
+  pendingReports: number;
+  needsReview: number;
 }) {
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-  const groups = role === 'founder' ? FOUNDER_NAV : TEACHER_NAV
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const groups = role === "founder" ? FOUNDER_NAV : TEACHER_NAV;
 
   const badgeFor = (href: string) =>
-    href === '/alerts'
+    href === "/alerts"
       ? openAlerts
-      : href === '/reports'
+      : href === "/reports"
         ? pendingReports
-        : href === '/review'
+        : href === "/review"
           ? needsReview
-          : 0
+          : 0;
 
   const links = (
     <nav className="space-y-6">
@@ -135,18 +132,19 @@ export function Nav({
           </p>
           <ul className="mt-2 space-y-0.5">
             {group.items.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
-              const count = badgeFor(item.href)
+              const active =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const count = badgeFor(item.href);
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                       active
-                        ? 'bg-navy-700/70 font-medium text-white'
-                        : 'text-navy-200 hover:bg-navy-700/40 hover:text-white',
+                        ? "bg-navy-700/70 font-medium text-white"
+                        : "text-navy-200 hover:bg-navy-700/40 hover:text-white",
                     )}
                   >
                     <item.icon className="size-4 shrink-0" strokeWidth={1.75} />
@@ -158,26 +156,30 @@ export function Nav({
                     ) : null}
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
         </div>
       ))}
     </nav>
-  )
+  );
 
   const brand = (
     <div className="px-3">
       <p className="text-[0.9375rem] font-semibold tracking-tight text-white">
         Ms.Ngọc <span className="text-gold-400">Elite English</span>
       </p>
-      <p className="mt-0.5 text-[0.6875rem] text-navy-300 italic">Thấu hiểu để dẫn lối.</p>
+      <p className="mt-0.5 text-[0.6875rem] text-navy-300 italic">
+        Thấu hiểu để dẫn lối.
+      </p>
     </div>
-  )
+  );
 
   const footer = (
     <div className="border-t border-navy-700/60 px-3 pt-3">
-      <p className="truncate text-[0.8125rem] font-medium text-white">{userName}</p>
+      <p className="truncate text-[0.8125rem] font-medium text-white">
+        {userName}
+      </p>
       <p className="text-[0.6875rem] text-gold-400">{roleLabel}</p>
       <form action="/auth/signout" method="post" className="mt-2">
         <button
@@ -188,7 +190,7 @@ export function Nav({
         </button>
       </form>
     </div>
-  )
+  );
 
   return (
     <>
@@ -228,6 +230,7 @@ export function Nav({
                 <X className="size-5" />
               </button>
             </div>
+            <TimKiem />
             <div className="flex-1 overflow-y-auto">{links}</div>
             {footer}
           </div>
@@ -235,11 +238,12 @@ export function Nav({
       ) : null}
 
       {/* Sidebar cố định trên desktop */}
-      <aside className="hidden w-64 shrink-0 flex-col gap-6 bg-navy-800 py-5 lg:flex">
+      <aside className="hidden w-64 shrink-0 flex-col gap-4 bg-navy-800 py-5 lg:flex">
         {brand}
+        <TimKiem />
         <div className="flex-1 overflow-y-auto">{links}</div>
         {footer}
       </aside>
     </>
-  )
+  );
 }
