@@ -46,3 +46,25 @@ where p.amount = 0
 --   Dang luu 120.000d/buoi. Don gia IELTS 170.000d moi duoc chot hom nay.
 --   Chenh 100.000d. Khong biet thuc te da tra 120.000 hay 170.000.
 --   KHONG tu sua vi day la tien da tra cho nguoi lao dong.
+
+-- ---------------------------------------------------------------------------
+-- Chot khoan Ms. Sheba lop Kien (Founder tra loi 16/09/2026)
+-- ---------------------------------------------------------------------------
+-- Founder xac nhan DA TRA DU 170.000d/buoi. He thong ghi 120.000d la ghi thieu,
+-- vi don gia IELTS chua duoc cau hinh vao thoi diem do. Sua de so khop so tien
+-- that da tra, khong phai sua de ap don gia moi len qua khu.
+
+update public.teacher_payable_lessons p
+set rate_amount = 170000, amount = 170000, rate_source = 'class',
+    notes = coalesce(p.notes,'') || ' [SUA 16/09/2026] Founder xac nhan da tra du 170.000d/buoi cho lop Kien (day IELTS). He thong truoc do ghi 120.000d vi don gia IELTS chua duoc cau hinh.'
+from public.classes c, public.teachers t
+where c.id = p.class_id and t.id = p.teacher_id
+  and c.name = 'Kiên - Ms. Sheba' and t.full_name = 'Ms. Sheba'
+  and p.status = 'paid' and p.amount = 120000;
+
+-- ---------------------------------------------------------------------------
+-- KET QUA CUOI CUNG (kiem chung 16/09/2026)
+-- ---------------------------------------------------------------------------
+--   460 / 460 buoi co dong tinh luong (truoc do 145).
+--   0 dong lech so voi don gia. Tong chenh = 0d.
+--   Tong: 57.000.000d  |  da tra 144 buoi  |  cho tra 316 buoi
