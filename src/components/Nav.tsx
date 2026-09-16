@@ -10,6 +10,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   FileText,
+  FolderOpen,
   GraduationCap,
   LayoutDashboard,
   Menu,
@@ -72,6 +73,10 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
     items: [{ href: '/teachers', label: 'Hồ sơ giáo viên', icon: GraduationCap }],
   },
   {
+    section: 'Hồ sơ trung tâm',
+    items: [{ href: '/tai-lieu', label: 'Kho hồ sơ & biểu mẫu', icon: FolderOpen }],
+  },
+  {
     section: 'Tài chính',
     items: [
       { href: '/payments', label: 'Học phí & công nợ', icon: Wallet },
@@ -90,6 +95,7 @@ const TEACHER_NAV: { section: string; items: Item[] }[] = [
       { href: '/reports', label: 'Báo cáo của tôi', icon: BookOpen },
       { href: '/classes', label: 'Lớp của tôi', icon: School },
       { href: '/lich-hoc', label: 'Lịch dạy của tôi', icon: CalendarClock },
+      { href: '/tai-lieu', label: 'Hồ sơ trung tâm', icon: FolderOpen },
       { href: '/students', label: 'Học viên của tôi', icon: Users },
       { href: '/payroll', label: 'Lương của tôi', icon: Banknote },
     ],
