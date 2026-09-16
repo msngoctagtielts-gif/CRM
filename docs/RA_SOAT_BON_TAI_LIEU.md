@@ -335,12 +335,21 @@ tạm 90 phút về đúng 75.
 repo, kèm `.ben-a.example.json` làm mẫu. Kho mã nguồn giữ lịch sử vĩnh viễn —
 một số CCCD lọt vào đó thì không xoá được nữa.
 
-## Chỗ còn mâu thuẫn, cần Founder xác nhận
+## Hai điểm Founder đã chốt nốt (16/09/2026)
 
-**Lớp Kiên đang tính 170.000đ/buổi.** Sáng nay Founder xác nhận mức này và nói
-đã trả đủ, gọi là "trường hợp đặc biệt". Nhưng theo bảng thù lao vừa chốt, lớp
-IELTS 1 kèm 1 là **150.000đ**. Hai khả năng: giữ 170.000 như một ngoại lệ có
-ghi chú, hoặc đưa về 150.000 từ kỳ lương tới. Chưa sửa, chờ Founder quyết.
+**Lớp Kiên giữ 170.000đ/buổi, là ngoại lệ có ghi chú.** Bảng thù lao chuẩn cho
+IELTS 1 kèm 1 là 150.000đ; lớp này cao hơn 20.000đ theo quyết định của Founder.
+Đã ghi thẳng vào cột `notes` của dòng đơn giá trong `teacher_rates`, để người
+đối soát lương về sau thấy lệch thì đọc được lý do ngay tại chỗ, không phải đi
+hỏi. Ngoại lệ có ghi chú thì là chính sách; ngoại lệ không ghi chú thì sau sáu
+tháng không ai phân biệt được với lỗi nhập liệu.
+
+**Sĩ số nhóm tối đa là 6.** Đã xác nhận, khớp với bảng giá SOP (có tới 1:6) và
+bảng thù lao (cũng tới 1:6). Bản V1.2 đã ghi đúng.
+
+Đối chiếu sĩ số thực tế ngày 16/09/2026: 19 lớp 1 kèm 1, một lớp 2 học viên
+(Ms. Hoàng/Huê), một lớp 3 học viên (Y Khoa). **Không lớp nào chạm trần** — quy
+định 6 hiện là trần dự phòng cho lớp nhóm sau này, không phải mô tả hiện trạng.
 
 ## Chưa làm được
 
