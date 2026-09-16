@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Loader2 } from "lucide-react";
-import { timKiem, type KetQua } from "@/lib/tim-kiem";
-import { cn } from "@/lib/cn";
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, Loader2 } from 'lucide-react'
+import { timKiem, type KetQua } from '@/lib/tim-kiem'
+import { cn } from '@/lib/cn'
 
-const NHAN: Record<KetQua["loai"], string> = {
-  hoc_vien: "Học viên",
-  giao_vien: "Giáo viên",
-  lop: "Lớp",
-};
+const NHAN: Record<KetQua['loai'], string> = {
+  hoc_vien: 'Học viên',
+  giao_vien: 'Giáo viên',
+  lop: 'Lớp',
+}
 
 /**
  * Ô tìm kiếm toàn cục, đặt ngay dưới tên trung tâm ở mọi trang.
@@ -22,68 +22,67 @@ const NHAN: Record<KetQua["loai"], string> = {
  * thì thành 6 lượt truy vấn cho một lần tìm.
  */
 export function TimKiem() {
-  const [tuKhoa, setTuKhoa] = useState("");
-  const [ketQua, setKetQua] = useState<KetQua[]>([]);
-  const [mo, setMo] = useState(false);
-  const [chon, setChon] = useState(0);
-  const [dangChay, batDau] = useTransition();
-  const router = useRouter();
-  const boc = useRef<HTMLDivElement>(null);
+  const [tuKhoa, setTuKhoa] = useState('')
+  const [ketQua, setKetQua] = useState<KetQua[]>([])
+  const [mo, setMo] = useState(false)
+  const [chon, setChon] = useState(0)
+  const [dangChay, batDau] = useTransition()
+  const router = useRouter()
+  const boc = useRef<HTMLDivElement>(null)
   // Kết quả về không đúng thứ tự gửi đi thì lần gõ cũ có thể ghi đè lần mới.
-  const luot = useRef(0);
+  const luot = useRef(0)
 
   useEffect(() => {
     if (tuKhoa.trim().length < 2) {
-      setKetQua([]);
-      return;
+      setKetQua([])
+      return
     }
-    const cua_toi = ++luot.current;
+    const cua_toi = ++luot.current
     const hen = setTimeout(() => {
       batDau(async () => {
-        const ra = await timKiem(tuKhoa);
+        const ra = await timKiem(tuKhoa)
         if (cua_toi === luot.current) {
-          setKetQua(ra);
-          setChon(0);
-          setMo(true);
+          setKetQua(ra)
+          setChon(0)
+          setMo(true)
         }
-      });
-    }, 250);
-    return () => clearTimeout(hen);
-  }, [tuKhoa]);
+      })
+    }, 250)
+    return () => clearTimeout(hen)
+  }, [tuKhoa])
 
   // Bấm ra ngoài thì đóng bảng kết quả.
   useEffect(() => {
     const ngoai = (e: MouseEvent) => {
-      if (boc.current && !boc.current.contains(e.target as Node)) setMo(false);
-    };
-    document.addEventListener("mousedown", ngoai);
-    return () => document.removeEventListener("mousedown", ngoai);
-  }, []);
+      if (boc.current && !boc.current.contains(e.target as Node)) setMo(false)
+    }
+    document.addEventListener('mousedown', ngoai)
+    return () => document.removeEventListener('mousedown', ngoai)
+  }, [])
 
   const diToi = (k: KetQua) => {
-    setMo(false);
-    setTuKhoa("");
-    setKetQua([]);
-    router.push(k.duong_dan);
-  };
+    setMo(false)
+    setTuKhoa('')
+    setKetQua([])
+    router.push(k.duong_dan)
+  }
 
   const phim = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") return setMo(false);
-    if (!ketQua.length) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setChon((c) => (c + 1) % ketQua.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setChon((c) => (c - 1 + ketQua.length) % ketQua.length);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      diToi(ketQua[chon]);
+    if (e.key === 'Escape') return setMo(false)
+    if (!ketQua.length) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setChon((c) => (c + 1) % ketQua.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setChon((c) => (c - 1 + ketQua.length) % ketQua.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      diToi(ketQua[chon])
     }
-  };
+  }
 
-  const khongThay =
-    mo && !dangChay && tuKhoa.trim().length >= 2 && ketQua.length === 0;
+  const khongThay = mo && !dangChay && tuKhoa.trim().length >= 2 && ketQua.length === 0
 
   return (
     <div ref={boc} className="relative px-3">
@@ -125,8 +124,8 @@ export function TimKiem() {
                     onClick={() => diToi(k)}
                     onMouseEnter={() => setChon(i)}
                     className={cn(
-                      "flex w-full items-center gap-2 px-3 py-2 text-left text-[0.8125rem]",
-                      i === chon ? "bg-navy-700 text-white" : "text-navy-100",
+                      'flex w-full items-center gap-2 px-3 py-2 text-left text-[0.8125rem]',
+                      i === chon ? 'bg-navy-700 text-white' : 'text-navy-100',
                     )}
                   >
                     <span className="truncate">{k.ten}</span>
@@ -141,5 +140,5 @@ export function TimKiem() {
         </div>
       ) : null}
     </div>
-  );
+  )
 }
