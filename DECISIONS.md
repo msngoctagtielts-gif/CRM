@@ -1508,3 +1508,41 @@ Anh. Ánh xạ theo VỊ TRÍ TRÊN THANG, và giữ nguyên chữ gốc của g
 lương các buổi cũ đã trả ngoài hệ thống (D38).
 
 Script: `supabase/data-imports/doc_sheet.py` + `sinh_gon.py`.
+
+## D42 — Bốn kiểu mất dữ liệu khi đọc bảng feedback, và cách chặn
+
+Nạp xong 21 lớp mới lộ ra: kiểu lỗi nguy hiểm nhất không phải lỗi báo đỏ, mà
+là **mất buổi học trong im lặng** — script chạy xong, không báo gì, chỉ là số
+buổi ít hơn thực tế. Bốn nguồn đã gặp và cách chặn:
+
+1. **Ngày viết bằng chữ** (`August 11, 2026`) và **ngày không có năm** (`24/7`,
+   `3/8`). Trước đây trả về rỗng nên dòng bị bỏ. Nay sinh hết cách đọc hợp lệ
+   (với ngày thiếu năm thì thử cả hai năm trung tâm có dữ liệu) rồi để bước
+   đối chiếu CSDL chọn — vẫn giữ luật D41 là chỉ lấy khi đúng một ứng viên.
+   Riêng vá này tìm lại 14 buổi đã bị bỏ sót ở các lần nạp trước.
+
+2. **Một tệp chứa nhiều bảng.** Lớp Hoàng/Huê ghi tháng 5 theo khuôn cũ, từ
+   tháng 6 sang khuôn mới. Đọc hết mọi bảng, trùng ngày thì giữ bản đầy đủ hơn.
+
+3. **Nhận dạng dòng tiêu đề.** Bắt buộc phải có cột "giờ bắt đầu" thì bảng
+   nhóm Y Khoa trượt cả bảng; nới ra thành chấm điểm theo số cột nhận ra được
+   thì một dòng DỮ LIỆU dài chứa chữ "homework" lại bị nhận nhầm là tiêu đề,
+   cắt đôi bảng thật (lớp Diệp - Ms. Rose tụt 22 buổi xuống 8). Chốt: chỉ chấm
+   các ô NGẮN, vì tiêu đề cột là nhãn ngắn còn ô dữ liệu là đoạn văn dài.
+
+4. **Dòng trống được nạp thành báo cáo rỗng.** Nay bỏ qua và in lý do: một báo
+   cáo rỗng còn tệ hơn không có, vì màn hình Chất lượng sẽ đếm buổi đó là "đã
+   có hồ sơ" trong khi thật ra chưa có gì.
+
+**Luật kiểm tra bắt buộc:** sau mỗi lần sửa bộ đọc, chạy lại TOÀN BỘ sheet
+đang có và so số buổi với lần trước. Lỗi số 3 chỉ lộ ra nhờ bước này.
+
+**Một tệp có thể chứa dữ liệu của học viên khác.** Sheet của Vy, Nhi, Ms. Linh,
+Kiên và Công Duy đều kèm bảng của Ms. Hằng (sheet gốc đặt tên "Hằng" rồi đổi
+tên). Bộ lọc ngày của D41 tự chặn — ngày của Hằng không khớp lớp đang nạp —
+nhưng khi nạp lớp mới vẫn phải kiểm tra danh sách ngày trước khi chạy.
+
+**Tệp của Founder chứa cả bảng lương, học phí và lợi nhuận** (sheet Hoàng/Huê).
+Các bảng đó không có cột ngày học nên không lọt qua bộ đọc; không có số tiền
+nào bị nạp vào CSDL. Khi chia sẻ sheet cho giáo viên phải chia sẻ riêng sheet
+FEEDBACK VIEW, không chia sẻ nguyên tệp.
