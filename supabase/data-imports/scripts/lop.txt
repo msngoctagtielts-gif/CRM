@@ -1,13 +1,13 @@
 diep_rose	Diệp - Ms. Rose	XONG 22/22
 diep_phuong	Diệp - Ms. Phương	XONG 20/20
 phuc_phuong	Phúc - Ms. Phương
-phuc_sheba	Phúc - Ms. Sheba
+phuc_sheba	Phúc - Ms. Sheba	XONG 17/18 (17/08 trong, chua co ban ghi)
 luan	Luân - Ms. Sheba	XONG
 tan	Tân - Ms. Sheba	XONG
 ngan	Bé Ngân - Ms. Phương
 tuyet	Ms. Tuyết - Ms. Sheba	XONG
 hoanghue	Ms. Hoàng/Huê - Ms. Phương
-ykhoa	Y Khoa - nhóm 3 người
+ykhoa	Y Khoa - nhóm 3 người	XONG 17/17
 thienai	Thiên Ái - Mr. Kobe	XONG
 baongoc	Bảo Ngọc - Ms. Hòa	XONG
 thao	Thảo - Ms. Phương	XONG

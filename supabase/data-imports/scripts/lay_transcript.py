@@ -13,10 +13,10 @@ def quet(x):
         for v in x.values(): quet(v)
     elif isinstance(x, list):
         for v in x: quet(v)
-    elif isinstance(x, str) and 'Ngày học Class Date' in x and moc in x:
+    elif isinstance(x, str) and 'Ngày học' in x and moc in x:
         if tim is None or len(x) > len(tim): tim = x
 for line in open(p, encoding='utf-8'):
-    if moc in line and 'Ngày học Class Date' in line:
+    if moc in line and 'Ngày học' in line:
         quet(json.loads(line))
 if not tim:
     sys.exit(f'khong thay {moc!r}')
