@@ -85,3 +85,40 @@ having count(tr.id) = 0;
 -- ty le - do la bia quy tac tra luong. Cho co Ngoc xac nhan:
 --   30 phut: Ms. Nhi (Hau 17/05, Toan 10/06), Ms. Phuong (Phuc 07/06)
 --   90 phut: Ms. Hoa (Bao Ngoc, 5 buoi 14/08 - 28/08)
+
+-- ---------------------------------------------------------------------------
+-- 4. Don gia cho buoi khac 60 phut (co Ngoc xac nhan 16/09/2026)
+-- ---------------------------------------------------------------------------
+-- Chia theo ty le tu muc 1 kem 1 la 120.000d/60 phut:
+--     30 phut = 60.000d   |   90 phut = 180.000d
+--
+-- CHI them cho ba giao vien THUC SU co buoi khac 60 phut. Khong suy rong ra
+-- cac giao vien khac, va dac biet KHONG suy ra cho Mr. Kobe: nen cua thay la
+-- 150.000d chu khong phai 120.000d, ma co Ngoc moi xac nhan ty le cho muc
+-- 120.000d. Neu ve sau co buoi 30 hay 90 phut cua giao vien khac thi phai hoi
+-- lai truoc khi them.
+
+insert into public.teacher_rates (teacher_id, scope, duration_minutes, rate_amount, currency, effective_from, notes)
+select t.id, 'duration', x.thoi_luong,
+       case x.thoi_luong when 30 then 60000 when 90 then 180000 end,
+       'VND',
+       (select min(l.lesson_date) from public.lessons l where l.teacher_id = t.id),
+       'Nhap 16/09/2026. Co Ngoc xac nhan chia theo ty le tu muc 1 kem 1 la 120.000d/60 phut.'
+from public.teachers t
+join (values ('Ms. Nhi', 30), ('Ms. Phương', 30), ('Ms. Hòa', 90)) as x(ten, thoi_luong)
+  on x.ten = t.full_name
+where not exists (
+  select 1 from public.teacher_rates tr
+  where tr.teacher_id = t.id and tr.scope = 'duration' and tr.duration_minutes = x.thoi_luong
+);
+
+-- KET QUA CUOI (fn_resolve_teacher_rate cua he thong, 16/09/2026):
+--   460 / 460 buoi tim duoc don gia, tu 31/05/2025 den 04/09/2026.
+--   30 phut:   3 buoi -    180.000d
+--   60 phut: 452 buoi - 55.920.000d
+--   90 phut:   5 buoi -    900.000d
+--   TONG           : 57.000.000d
+--
+-- Day la tong luong giao vien PHAI TRA theo don gia, tinh tu du lieu buoi day
+-- trong he thong. KHONG phai so da thuc su chi ra. Doi chieu voi so co Ngoc da
+-- tra that de tim chenh lech.
