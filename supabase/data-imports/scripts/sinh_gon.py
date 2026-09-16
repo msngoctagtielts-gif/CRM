@@ -37,6 +37,9 @@ THAI_DO = {
     "tich cuc": "good", "tich cuc, co gang": "good",
     "hop tac": "average", "binh thuong": "average",
     "can nhac nho": "needs_improvement",
+    # Gia tri dropdown cua bang Be Ngan. Nam cung bac voi "can nhac nho" tren
+    # thang thai do; chu goc cua GV van duoc giu trong cot comments.
+    "chua tap trung": "needs_improvement",
     "khong hop tac": "concerning",
     "very positive": "excellent", "very active": "excellent",
     "active": "good",

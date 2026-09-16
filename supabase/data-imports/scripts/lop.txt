@@ -1,21 +1,23 @@
+# Tiến độ nạp feedback lịch sử (trước 01/09/2026) - chốt 16/09/2026
+# tên tệp	tên lớp trong CSDL	tình trạng
 diep_rose	Diệp - Ms. Rose	XONG 22/22
-diep_phuong	Diệp - Ms. Phương	XONG 20/20
-phuc_phuong	Phúc - Ms. Phương
-phuc_sheba	Phúc - Ms. Sheba	XONG 17/18 (17/08 trong, chua co ban ghi)
-luan	Luân - Ms. Sheba	XONG
-tan	Tân - Ms. Sheba	XONG
-ngan	Bé Ngân - Ms. Phương
+diep_phuong	Diệp - Ms. Phương	XONG 22/22
+phuc_phuong	Phúc - Ms. Phương	XONG 10/10
+phuc_sheba	Phúc - Ms. Sheba	XONG 17/18 (17/08 sheet để trống, GV ghi không có bản ghi)
+luan	Luân - Ms. Sheba	XONG (28/07 sheet trống - Zoom Clips không lấy được lời thoại)
+tan	Tân - Ms. Sheba	XONG (09/08 sheet để trống)
+ngan	Bé Ngân - Ms. Phương	XONG 13/14 (04/09 ngoài phạm vi) - LỚP KHÔNG CÓ VIDEO NÀO
 tuyet	Ms. Tuyết - Ms. Sheba	XONG
-hoanghue	Ms. Hoàng/Huê - Ms. Phương
+hoanghue	Ms. Hoàng/Huê - Ms. Phương	XONG 14/15 (20/08 GV quên bấm quay)
 ykhoa	Y Khoa - nhóm 3 người	XONG 17/17
 thienai	Thiên Ái - Mr. Kobe	XONG
 baongoc	Bảo Ngọc - Ms. Hòa	XONG
-thao	Thảo - Ms. Phương	XONG
-hau	Hậu - Ms. Nhi	XONG
-toan	Toàn - Ms. Nhi	XONG
-hang	Ms. Hằng - Ms. Phương	BO QUA - 0 buoi trong he thong
-linh	Ms. Linh - Ms. Phương
-kien	Kiên - Ms. Sheba
-vy	Vy - Ms. Sheba
-nhi	Nhi - Ms. Phương
-congduy	Công Duy - Ms. Sheba
+thao	Thảo - Ms. Phương	XONG - CẦN CÔ NGỌC XÁC NHẬN buổi trùng (09/08+17/08, 12/08+19/08)
+hau	Hậu - Ms. Nhi	XONG - 3 buổi KHÔNG CÓ trong sheet: 04/07, 12/08, 21/08
+toan	Toàn - Ms. Nhi	XONG - 2 buổi KHÔNG CÓ trong sheet: 21/07, 29/08
+hang	Ms. Hằng - Ms. Phương	CHƯA NẠP - 0 buổi trong hệ thống nhưng sheet có ~23 buổi
+linh	Ms. Linh - Ms. Phương	XONG 4/4
+kien	Kiên - Ms. Sheba	XONG 2/2
+vy	Vy - Ms. Sheba	XONG 8/8
+nhi	Nhi - Ms. Phương	XONG 5/6 (21/08 GV quên bấm quay)
+congduy	Công Duy - Ms. Sheba	XONG 3/3

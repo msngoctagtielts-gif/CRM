@@ -73,6 +73,8 @@ def ngay_ung_vien(o):
     khong khop hoac khop nhieu hon mot thi bo qua va bao ra.
     """
     o = (o or "").strip()
+    # Vai GV ghi kem thu trong ngoac: "03/06/2026(t4)", "07/06/2026 (cn)".
+    o = re.sub(r"\s*\([^)]*\)\s*$", "", o).strip()
     if not o:
         return []
     m = re.match(r"^(\d{4})-(\d{1,2})-(\d{1,2})$", o)
