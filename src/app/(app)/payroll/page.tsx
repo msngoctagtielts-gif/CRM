@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Fragment } from 'react'
 import Link from 'next/link'
 import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
@@ -55,6 +56,39 @@ export default async function PayrollPage() {
   const moc = typeof mocRow?.value === 'string' ? mocRow.value : null
   const chanRows = biChan ?? []
 
+  // Luong THUC TRA theo thang, doc tu buoi da sinh cong.
+  //
+  // VI SAO PHAI CO PHAN NAY
+  //   Bang teacher_payroll la chung tu ky luong co trang thai duyet va nguoi
+  //   duyet. Toan bo 460 buoi lich su duoc tra trong thoi ky con quan ly bang
+  //   Google Sheet nen khong he co chung tu nao — va khong duoc dung nguoc, vi
+  //   nhu vay la tao chung tu gia. Neu man hinh nay chi doc ky luong thi no
+  //   trong ron trong khi trung tam da tra 57 trieu. Doc thang tu buoi da tra
+  //   moi la su that.
+  const { data: luongThang } = await supabase
+    .from('v_luong_gv_thang')
+    .select('thang, teacher_id, ten_giao_vien, so_buoi, so_phut, tien, buoi_da_tra, buoi_chua_tra')
+    .order('thang', { ascending: false })
+
+  const luongRows = luongThang ?? []
+  const tongDaTra = luongRows.reduce((s, r) => s + Number(r.tien ?? 0), 0)
+  const tongBuoi = luongRows.reduce((s, r) => s + Number(r.so_buoi ?? 0), 0)
+
+  // Gom theo thang, giu nguyen thu tu moi nhat truoc.
+  const theoThang: { thang: string; tien: number; buoi: number; dong: typeof luongRows }[] = []
+  for (const r of luongRows) {
+    const thang = String(r.thang ?? '')
+    let nhom = theoThang.find((n) => n.thang === thang)
+    if (!nhom) {
+      nhom = { thang, tien: 0, buoi: 0, dong: [] }
+      theoThang.push(nhom)
+    }
+    nhom.tien += Number(r.tien ?? 0)
+    nhom.buoi += Number(r.so_buoi ?? 0)
+    nhom.dong.push(r)
+  }
+  for (const n of theoThang) n.dong.sort((a, b) => Number(b.tien ?? 0) - Number(a.tien ?? 0))
+
   const rows = periods ?? []
   const pendingRows = pending ?? []
   const pendingAmount = pendingRows.reduce((sum, r) => sum + Number(r.amount), 0)
@@ -69,7 +103,13 @@ export default async function PayrollPage() {
         description="Lương được tính từ các buổi đã dạy, không nhập tay từng buổi."
       />
 
-      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label={isFounder ? 'Tổng đã trả' : 'Tổng tôi đã nhận'}
+          value={formatCurrency(tongDaTra)}
+          caption={`${formatNumber(tongBuoi)} buổi · ${theoThang.length} tháng`}
+          accent="navy"
+        />
         <StatCard
           label="Buổi chờ vào kỳ lương"
           value={pendingRows.length}
@@ -108,14 +148,84 @@ export default async function PayrollPage() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <div className="space-y-5 xl:col-span-2">
           <Card>
-            <CardHeader title="Các kỳ lương" description="Nháp → chờ duyệt → đã duyệt → đã trả" />
+            <CardHeader
+              title={isFounder ? 'Lương đã trả theo tháng' : 'Lương tôi đã nhận theo tháng'}
+              description="Tính từ buổi đã dạy, mới nhất trước. Đây là tiền thật đã trả."
+            />
+            {theoThang.length === 0 ? (
+              <EmptyState
+                title="Chưa có tháng nào được tính công"
+                description="Chưa có buổi dạy nào sinh công tính lương."
+              />
+            ) : (
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Tháng · Giáo viên</Th>
+                    <Th align="right">Buổi</Th>
+                    <Th align="right">Giờ</Th>
+                    <Th align="right">Tiền</Th>
+                    <Th>Tình trạng</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {theoThang.map((n) => (
+                    <Fragment key={n.thang}>
+                      <tr className="bg-navy-50/60">
+                        <Td className="font-semibold text-navy-900">
+                          Tháng {n.thang.slice(5, 7)}/{n.thang.slice(0, 4)}
+                        </Td>
+                        <Td align="right" className="font-semibold">
+                          {formatNumber(n.buoi)}
+                        </Td>
+                        <Td />
+                        <Td align="right" className="font-semibold">
+                          {formatCurrency(n.tien)}
+                        </Td>
+                        <Td />
+                      </tr>
+                      {n.dong.map((r) => {
+                        const chuaTra = Number(r.buoi_chua_tra ?? 0)
+                        return (
+                          <tr key={`${n.thang}-${r.teacher_id}`}>
+                            <Td className="pl-8 text-navy-700">{r.ten_giao_vien}</Td>
+                            <Td align="right">{formatNumber(r.so_buoi)}</Td>
+                            <Td align="right">{formatNumber(Number(r.so_phut ?? 0) / 60, 1)} h</Td>
+                            <Td align="right">{formatCurrency(r.tien)}</Td>
+                            <Td>
+                              {chuaTra === 0 ? (
+                                <Badge tone="success">Đã trả đủ</Badge>
+                              ) : (
+                                <Badge tone="warning">Còn {chuaTra} buổi chưa trả</Badge>
+                              )}
+                            </Td>
+                          </tr>
+                        )
+                      })}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+            <CardBody className="border-t border-navy-100 text-[0.8125rem] text-navy-500">
+              Bảng này đọc thẳng từ buổi đã dạy nên luôn khớp với thực tế. Nó khác với{' '}
+              <strong>kỳ lương</strong> bên dưới — kỳ lương là chứng từ có người duyệt và ngày trả,
+              dùng cho các tháng tới.
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Các kỳ lương"
+              description="Chứng từ duyệt lương: nháp → chờ duyệt → đã duyệt → đã trả"
+            />
             {rows.length === 0 ? (
               <EmptyState
                 title="Chưa có kỳ lương nào"
                 description={
                   isFounder
-                    ? 'Tính bảng lương cho một giáo viên ở khung bên cạnh.'
-                    : 'Founder chưa chốt kỳ lương nào cho bạn.'
+                    ? 'Toàn bộ lương các tháng trước được trả trong thời kỳ còn quản lý bằng Google Sheet nên không có chứng từ kỳ lương — số tiền đã trả nằm ở bảng phía trên. Từ tháng tới, tính kỳ lương ở khung bên cạnh để có chứng từ duyệt và ngày trả.'
+                    : 'Trung tâm chưa chốt kỳ lương nào cho bạn. Số buổi và tiền đã nhận xem ở bảng phía trên.'
                 }
               />
             ) : (
