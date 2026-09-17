@@ -2573,6 +2573,8 @@ export type Database = {
           created_by: string | null
           display_name: string | null
           email: string | null
+          end_reason: string | null
+          ended_date: string | null
           full_name: string
           hired_date: string | null
           id: string
@@ -2593,6 +2595,8 @@ export type Database = {
           created_by?: string | null
           display_name?: string | null
           email?: string | null
+          end_reason?: string | null
+          ended_date?: string | null
           full_name: string
           hired_date?: string | null
           id?: string
@@ -2613,6 +2617,8 @@ export type Database = {
           created_by?: string | null
           display_name?: string | null
           email?: string | null
+          end_reason?: string | null
+          ended_date?: string | null
           full_name?: string
           hired_date?: string | null
           id?: string
@@ -3699,6 +3705,40 @@ export type Database = {
           },
         ]
       }
+      v_luong_gv_thang: {
+        Row: {
+          buoi_chua_tra: number | null
+          buoi_co_video: number | null
+          buoi_da_tra: number | null
+          diem_qc: number | null
+          nam: string | null
+          so_buoi: number | null
+          so_phut: number | null
+          teacher_id: string | null
+          ten_giao_vien: string | null
+          thang: string | null
+          tien: number | null
+          tien_chua_tra: number | null
+          tien_te: string | null
+          trang_thai_gv: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'teacher_payable_lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_payable_lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_overview'
+            referencedColumns: ['teacher_id']
+          },
+        ]
+      }
       v_quality_alerts: {
         Row: {
           body: string | null
@@ -3802,6 +3842,27 @@ export type Database = {
           student_code: string | null
           teacher_id: string | null
           teacher_name: string | null
+        }
+        Relationships: []
+      }
+      v_tai_chinh_thang: {
+        Row: {
+          buoi_chua_gan_hoc_phi: number | null
+          buoi_co_video: number | null
+          buoi_day: number | null
+          buoi_huy: number | null
+          buoi_tinh_luong: number | null
+          chi_khac: number | null
+          diem_qc: number | null
+          doanh_thu: number | null
+          dong_ngoai_te: number | null
+          luong_gv: number | null
+          nam: string | null
+          so_giao_vien: number | null
+          so_hoc_vien: number | null
+          so_lop: number | null
+          thang: string | null
+          thu_tien_mat: number | null
         }
         Relationships: []
       }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { formatCurrency, formatDate } from '@/lib/format'
+import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -21,12 +21,29 @@ export default async function TeachersPage() {
       .select('*')
       .order('status', { ascending: true })
       .order('full_name', { ascending: true }),
-    supabase
-      .from('teacher_rates')
-      .select('*')
-      .order('effective_from', { ascending: false }),
+    supabase.from('teacher_rates').select('*').order('effective_from', { ascending: false }),
     supabase.from('classes').select('id, teacher_id').eq('status', 'active'),
   ])
+
+  // Lịch sử giảng dạy của từng người, kể cả người đã nghỉ. Dữ liệu buổi dạy và
+  // lương không bao giờ bị xoá theo giáo viên, nên phần này vẫn đầy đủ sau
+  // nhiều năm — đó là lý do lưu trữ giáo viên chứ không xoá hồ sơ.
+  const { data: lichSu } = await supabase
+    .from('v_luong_gv_thang')
+    .select('teacher_id, thang, so_buoi, tien')
+
+  const tongHop = new Map<string, { buoi: number; tien: number; thangCuoi: string }>()
+  for (const r of lichSu ?? []) {
+    const id = r.teacher_id ?? ''
+    if (!id) continue
+    const cu = tongHop.get(id) ?? { buoi: 0, tien: 0, thangCuoi: '' }
+    const thang = r.thang ?? ''
+    tongHop.set(id, {
+      buoi: cu.buoi + Number(r.so_buoi ?? 0),
+      tien: cu.tien + Number(r.tien ?? 0),
+      thangCuoi: thang > cu.thangCuoi ? thang : cu.thangCuoi,
+    })
+  }
 
   const today = new Date().toISOString().slice(0, 10)
 
@@ -81,6 +98,16 @@ export default async function TeachersPage() {
                         {t.phone ? ` · ${t.phone}` : ''}
                         {t.hired_date ? ` · từ ${formatDate(t.hired_date)}` : ''}
                       </p>
+                      {tongHop.get(t.id) ? (
+                        <p className="mt-0.5 text-xs text-navy-500">
+                          {formatNumber(tongHop.get(t.id)!.buoi)} buổi · tổng{' '}
+                          {formatCurrency(tongHop.get(t.id)!.tien)} · gần nhất{' '}
+                          {tongHop.get(t.id)!.thangCuoi.slice(5, 7)}/
+                          {tongHop.get(t.id)!.thangCuoi.slice(0, 4)}
+                        </p>
+                      ) : (
+                        <p className="mt-0.5 text-xs text-navy-400">Chưa có buổi dạy nào</p>
+                      )}
                       {!t.user_id ? (
                         <p className="mt-0.5 text-xs text-amber-soft-700">
                           Chưa liên kết tài khoản đăng nhập
@@ -93,8 +120,11 @@ export default async function TeachersPage() {
                     <Td align="right">{rateCell(currentRate(t.id, 90))}</Td>
                     <Td>
                       <Badge tone={t.status === 'active' ? 'success' : 'neutral'}>
-                        {t.status === 'active' ? 'Đang dạy' : 'Lưu trữ'}
+                        {t.status === 'active' ? 'Đang dạy' : 'Đã nghỉ'}
                       </Badge>
+                      {t.ended_date ? (
+                        <p className="mt-1 text-xs text-navy-400">từ {formatDate(t.ended_date)}</p>
+                      ) : null}
                     </Td>
                   </tr>
                 ))}
@@ -109,22 +139,25 @@ export default async function TeachersPage() {
               .filter((t) => t.status === 'active' && !t.user_id)
               .map((t) => ({ id: t.id, ten: t.display_name ?? t.full_name, email: t.email }))}
           />
-          <TeacherForm teachers={(teachers ?? []).map((t) => ({ id: t.id, full_name: t.full_name }))} />
+          <TeacherForm
+            teachers={(teachers ?? []).map((t) => ({ id: t.id, full_name: t.full_name }))}
+          />
         </div>
       </div>
 
       <p className="mt-4 text-xs leading-relaxed text-navy-400">
-        Giáo viên chưa có tài khoản vẫn được tính lương bình thường, nhưng không đăng nhập để
-        ghi buổi học và nộp báo cáo được. Mời bằng khung bên trên.
+        Giáo viên chưa có tài khoản vẫn được tính lương bình thường, nhưng không đăng nhập để ghi
+        buổi học và nộp báo cáo được. Mời bằng khung bên trên.
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-navy-400">
+        Giáo viên ngừng cộng tác thì chuyển trạng thái sang <strong>Đã nghỉ</strong>, không xoá hồ
+        sơ. Buổi dạy, lương và báo cáo của họ vẫn nằm nguyên trong hệ thống và vẫn tra cứu được
+        nhiều năm sau — xoá hồ sơ sẽ làm hỏng lịch sử lương của chính những tháng đó.
       </p>
     </>
   )
 }
 
 function rateCell(amount: string | number | null) {
-  return amount === null ? (
-    <span className="text-navy-300">—</span>
-  ) : (
-    formatCurrency(amount)
-  )
+  return amount === null ? <span className="text-navy-300">—</span> : formatCurrency(amount)
 }
