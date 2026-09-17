@@ -20,5 +20,8 @@
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  // portal/ la mot ung dung Next.js RIENG, co tsconfig rieng. Khong kiem kieu
+  // tu day, neu khong trinh bien dich se doi giai duong dan @/* cua ben kia
+  // theo bang duong dan cua ben nay.
+  "exclude": ["node_modules", "portal"]
 }

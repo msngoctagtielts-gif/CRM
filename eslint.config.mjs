@@ -15,6 +15,8 @@ const config = [
       // Sinh tự động — không sửa tay nên không lint.
       'next-env.d.ts',
       'src/types/database.types.ts',
+      // portal/ la ung dung rieng, co vong doi lint rieng.
+      'portal/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

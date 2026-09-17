@@ -15,7 +15,8 @@ export function DangXuatNut() {
       onClick={async () => {
         setDangChay(true)
         await createClient().auth.signOut()
-        router.replace('/login')
+        router.replace('/dang-nhap')
+        router.refresh()
       }}
       className="rounded-md border border-navy-200 px-3 py-1.5 text-sm font-medium text-navy-700 hover:border-navy-400 disabled:opacity-50"
     >

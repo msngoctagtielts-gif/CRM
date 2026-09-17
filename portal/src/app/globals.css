@@ -1,0 +1,144 @@
+@import 'tailwindcss';
+
+/* ===========================================================================
+   MNEE Management System — hệ thống thiết kế
+   Ms.Ngọc Elite English · "Thấu hiểu để dẫn lối."
+
+   Bảng màu: Navy (nền tảng, tin cậy) · Gold (nhấn, cao cấp)
+             White (khoảng thở) · Burgundy (cảnh báo, số liệu cần chú ý)
+   Nguyên tắc: tối giản, nhiều khoảng trắng, chữ rõ, không màu rực rỡ.
+   =========================================================================== */
+
+@theme {
+  /* Navy — màu chủ đạo */
+  --color-navy-50: #f2f5f9;
+  --color-navy-100: #e2e9f2;
+  --color-navy-200: #c4d2e4;
+  --color-navy-300: #9ab0cd;
+  --color-navy-400: #6885ad;
+  --color-navy-500: #456490;
+  --color-navy-600: #2f4a72;
+  --color-navy-700: #1d3559;
+  --color-navy-800: #13294b;
+  --color-navy-900: #0f2040;
+  --color-navy-950: #08142b;
+
+  /* Gold — nhấn, không lạm dụng */
+  --color-gold-50: #fdfaf1;
+  --color-gold-100: #f9f1da;
+  --color-gold-200: #f1e0b2;
+  --color-gold-300: #e5c87f;
+  --color-gold-400: #d7b058;
+  --color-gold-500: #c8a24a;
+  --color-gold-600: #a9853a;
+  --color-gold-700: #856630;
+  --color-gold-800: #6b532c;
+  --color-gold-900: #594528;
+
+  /* Burgundy — công nợ, cảnh báo, số âm */
+  --color-burgundy-50: #fdf3f4;
+  --color-burgundy-100: #fbe5e8;
+  --color-burgundy-200: #f6cfd5;
+  --color-burgundy-300: #eda8b3;
+  --color-burgundy-400: #df7588;
+  --color-burgundy-500: #c9455f;
+  --color-burgundy-600: #a82e49;
+  --color-burgundy-700: #7b2d3b;
+  --color-burgundy-800: #68252f;
+  --color-burgundy-900: #59222b;
+
+  /* Trạng thái tiết chế */
+  --color-sage-50: #f2f8f4;
+  --color-sage-100: #e0efe5;
+  --color-sage-500: #4f8a64;
+  --color-sage-600: #3d6f4f;
+  --color-sage-700: #315a40;
+
+  --color-amber-soft-50: #fdf8ed;
+  --color-amber-soft-100: #faeecf;
+  --color-amber-soft-600: #97651a;
+  --color-amber-soft-700: #7a5217;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 0.75rem;
+  --shadow-card: 0 1px 2px 0 rgb(15 32 64 / 0.04), 0 1px 3px 0 rgb(15 32 64 / 0.06);
+  --shadow-card-hover: 0 4px 6px -1px rgb(15 32 64 / 0.07), 0 2px 4px -2px rgb(15 32 64 / 0.06);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-navy-50);
+    color: var(--color-navy-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Số liệu tài chính dùng chữ số đều bề rộng để cột thẳng hàng */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  /* Vùng focus rõ ràng — dùng bàn phím vẫn điều hướng được */
+  :focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 2px;
+  }
+
+  /* iOS tự zoom khi font input < 16px; giáo viên nhập báo cáo trên điện thoại */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+@layer components {
+  .mnee-card {
+    background-color: #fff;
+    border: 1px solid var(--color-navy-100);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .mnee-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-navy-400);
+  }
+
+  /* Gạch vàng mảnh dưới tiêu đề mục — dấu hiệu nhận diện thương hiệu */
+  .mnee-rule::after {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 2px;
+    margin-top: 0.5rem;
+    background-color: var(--color-gold-500);
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Bản sao chủ đích: cổng là ứng dụng riêng, không import từ hệ quản trị.
+   Giữ cùng bảng màu để hai bên nhìn cùng một thương hiệu. */

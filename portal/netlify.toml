@@ -1,0 +1,36 @@
+# Cổng thông tin học viên — website RIÊNG BIỆT với hệ quản trị.
+#
+# Netlify site này đặt Base directory = portal, nên nó chỉ build thư mục này.
+# Mã của hệ quản trị (../src) không nằm trong bản build, kể cả dưới dạng mã
+# JavaScript gửi xuống trình duyệt.
+#
+# LƯU Ý CHI PHÍ: hai site dùng CHUNG hạn mức 300 credit/tháng của gói Free.
+# Mỗi lần deploy production tốn 15 credit, nên sửa cả hai bên trong một ngày là
+# tốn gấp đôi. Vì vậy vẫn giữ cơ chế bỏ qua build khi không có gì đổi.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+  ignore = "bash ./should-skip-build.sh"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[context.deploy-preview]
+  command = "echo 'Bỏ qua deploy xem trước để tiết kiệm credit gói Free'"
+
+[context.branch-deploy]
+  command = "echo 'Bỏ qua deploy nhánh để tiết kiệm credit gói Free'"
+
+# Cổng chứa thông tin học tập của trẻ em và học phí gia đình.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    X-Robots-Tag = "noindex, nofollow"
