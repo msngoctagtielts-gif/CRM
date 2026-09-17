@@ -81,6 +81,13 @@ export type Database = {
             foreignKeyName: 'attendance_lesson_id_fkey'
             columns: ['lesson_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'attendance_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: false
             referencedRelation: 'v_lesson_reports'
             referencedColumns: ['lesson_id']
           },
@@ -209,6 +216,13 @@ export type Database = {
             foreignKeyName: 'class_schedules_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'class_schedules_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -271,6 +285,13 @@ export type Database = {
             columns: ['class_id']
             isOneToOne: false
             referencedRelation: 'v_class_board'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'class_students_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['class_id']
           },
           {
@@ -415,6 +436,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'classes_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -637,6 +665,13 @@ export type Database = {
             foreignKeyName: 'homework_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'homework_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -673,6 +708,13 @@ export type Database = {
             columns: ['lesson_id']
             isOneToOne: false
             referencedRelation: 'v_ho_so_buoi_hoc'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'homework_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['lesson_id']
           },
           {
@@ -986,6 +1028,13 @@ export type Database = {
             foreignKeyName: 'lesson_consumptions_lesson_id_fkey'
             columns: ['lesson_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'lesson_consumptions_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: false
             referencedRelation: 'v_lesson_reports'
             referencedColumns: ['lesson_id']
           },
@@ -1095,6 +1144,13 @@ export type Database = {
             foreignKeyName: 'lessons_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -1110,6 +1166,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -1529,6 +1592,13 @@ export type Database = {
             foreignKeyName: 'placement_tests_conducted_by_fkey'
             columns: ['conducted_by']
             isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'placement_tests_conducted_by_fkey'
+            columns: ['conducted_by']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['teacher_id']
           },
@@ -1704,6 +1774,13 @@ export type Database = {
             foreignKeyName: 'recordings_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'recordings_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -1733,6 +1810,13 @@ export type Database = {
             columns: ['lesson_id']
             isOneToOne: false
             referencedRelation: 'v_ho_so_buoi_hoc'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'recordings_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['lesson_id']
           },
           {
@@ -1912,6 +1996,13 @@ export type Database = {
             columns: ['class_id']
             isOneToOne: false
             referencedRelation: 'v_class_board'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'student_enrollments_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['class_id']
           },
           {
@@ -2191,6 +2282,74 @@ export type Database = {
           },
         ]
       }
+      teacher_availability: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          note: string | null
+          start_time: string
+          status: Database['public']['Enums']['record_status']
+          teacher_id: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_time: string
+          id?: string
+          note?: string | null
+          start_time: string
+          status?: Database['public']['Enums']['record_status']
+          teacher_id: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_time?: string
+          id?: string
+          note?: string | null
+          start_time?: string
+          status?: Database['public']['Enums']['record_status']
+          teacher_id?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'teacher_availability_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_availability_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_availability_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_availability_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_overview'
+            referencedColumns: ['teacher_id']
+          },
+        ]
+      }
       teacher_payable_lessons: {
         Row: {
           amount: number
@@ -2291,6 +2450,13 @@ export type Database = {
             foreignKeyName: 'teacher_payable_lessons_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'teacher_payable_lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -2326,6 +2492,13 @@ export type Database = {
             foreignKeyName: 'teacher_payable_lessons_lesson_id_fkey'
             columns: ['lesson_id']
             isOneToOne: true
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'teacher_payable_lessons_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: true
             referencedRelation: 'v_lesson_reports'
             referencedColumns: ['lesson_id']
           },
@@ -2334,6 +2507,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_payable_lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -2447,6 +2627,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_payroll_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -2575,6 +2762,13 @@ export type Database = {
             foreignKeyName: 'fk_teacher_rates_class'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'fk_teacher_rates_class'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -2590,6 +2784,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_rates_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -2621,6 +2822,7 @@ export type Database = {
           specialties: string[] | null
           status: Database['public']['Enums']['record_status']
           teacher_code: string | null
+          teaching_role: string | null
           updated_at: string
           user_id: string | null
         }
@@ -2643,6 +2845,7 @@ export type Database = {
           specialties?: string[] | null
           status?: Database['public']['Enums']['record_status']
           teacher_code?: string | null
+          teaching_role?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -2665,6 +2868,7 @@ export type Database = {
           specialties?: string[] | null
           status?: Database['public']['Enums']['record_status']
           teacher_code?: string | null
+          teaching_role?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -2903,6 +3107,13 @@ export type Database = {
             foreignKeyName: 'teaching_reports_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'teaching_reports_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -2945,6 +3156,13 @@ export type Database = {
             foreignKeyName: 'teaching_reports_lesson_id_fkey'
             columns: ['lesson_id']
             isOneToOne: true
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'teaching_reports_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: true
             referencedRelation: 'v_lesson_reports'
             referencedColumns: ['lesson_id']
           },
@@ -2967,6 +3185,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teaching_reports_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -3052,6 +3277,13 @@ export type Database = {
             foreignKeyName: 'trial_classes_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'trial_classes_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -3101,6 +3333,13 @@ export type Database = {
             foreignKeyName: 'trial_classes_lesson_id_fkey'
             columns: ['lesson_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['lesson_id']
+          },
+          {
+            foreignKeyName: 'trial_classes_lesson_id_fkey'
+            columns: ['lesson_id']
+            isOneToOne: false
             referencedRelation: 'v_lesson_reports'
             referencedColumns: ['lesson_id']
           },
@@ -3130,6 +3369,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'trial_classes_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -3475,6 +3721,13 @@ export type Database = {
             foreignKeyName: 'lessons_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -3483,6 +3736,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -3540,6 +3800,13 @@ export type Database = {
             foreignKeyName: 'classes_teacher_id_fkey'
             columns: ['teacher_id']
             isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'classes_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['teacher_id']
           },
@@ -3581,6 +3848,13 @@ export type Database = {
             columns: ['class_id']
             isOneToOne: false
             referencedRelation: 'v_class_board'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['class_id']
           },
           {
@@ -3634,6 +3908,13 @@ export type Database = {
             columns: ['class_id']
             isOneToOne: false
             referencedRelation: 'v_class_board'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'student_enrollments_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
             referencedColumns: ['class_id']
           },
           {
@@ -3722,6 +4003,13 @@ export type Database = {
             foreignKeyName: 'lessons_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -3730,6 +4018,158 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_overview'
+            referencedColumns: ['teacher_id']
+          },
+        ]
+      }
+      v_ho_so_giao_vien: {
+        Row: {
+          bio: string | null
+          buoi_gan_nhat: string | null
+          display_name: string | null
+          email: string | null
+          end_reason: string | null
+          ended_date: string | null
+          full_name: string | null
+          hired_date: string | null
+          id: string | null
+          lop_dang_day: number | null
+          nationality: string | null
+          phone: string | null
+          phut_moi_tuan: number | null
+          so_khung_lich: number | null
+          so_khung_ranh: number | null
+          teacher_code: string | null
+          tong_buoi: number | null
+          tong_luong: number | null
+          trang_thai: string | null
+          user_id: string | null
+          vai_tro: string | null
+        }
+        Insert: {
+          bio?: string | null
+          buoi_gan_nhat?: never
+          display_name?: string | null
+          email?: string | null
+          end_reason?: string | null
+          ended_date?: string | null
+          full_name?: string | null
+          hired_date?: string | null
+          id?: string | null
+          lop_dang_day?: never
+          nationality?: string | null
+          phone?: string | null
+          phut_moi_tuan?: never
+          so_khung_lich?: never
+          so_khung_ranh?: never
+          teacher_code?: string | null
+          tong_buoi?: never
+          tong_luong?: never
+          trang_thai?: never
+          user_id?: string | null
+          vai_tro?: string | null
+        }
+        Update: {
+          bio?: string | null
+          buoi_gan_nhat?: never
+          display_name?: string | null
+          email?: string | null
+          end_reason?: string | null
+          ended_date?: string | null
+          full_name?: string | null
+          hired_date?: string | null
+          id?: string | null
+          lop_dang_day?: never
+          nationality?: string | null
+          phone?: string | null
+          phut_moi_tuan?: never
+          so_khung_lich?: never
+          so_khung_ranh?: never
+          teacher_code?: string | null
+          tong_buoi?: never
+          tong_luong?: never
+          trang_thai?: never
+          user_id?: string | null
+          vai_tro?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'teachers_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: true
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      v_hoc_vien_cua_giao_vien: {
+        Row: {
+          bai_tap: string | null
+          buoi_gan_nhat: string | null
+          can_cai_thien: string | null
+          class_id: string | null
+          diem_manh: string | null
+          lesson_id: string | null
+          ngay_ke_tu_buoi_cuoi: number | null
+          noi_dung_buoi: string | null
+          qc_score: number | null
+          student_code: string | null
+          student_id: string | null
+          teacher_id: string | null
+          ten_hoc_vien: string | null
+          ten_lop: string | null
+          tong_buoi_voi_gv: number | null
+          trang_thai_hv: string | null
+          trang_thai_lop: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'attendance_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'students'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'attendance_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_finance'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'attendance_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_overview'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -3793,6 +4233,13 @@ export type Database = {
             foreignKeyName: 'lessons_class_id_fkey'
             columns: ['class_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_cua_giao_vien'
+            referencedColumns: ['class_id']
+          },
+          {
+            foreignKeyName: 'lessons_class_id_fkey'
+            columns: ['class_id']
+            isOneToOne: false
             referencedRelation: 'v_student_overview'
             referencedColumns: ['class_id']
           },
@@ -3801,6 +4248,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -3835,6 +4289,13 @@ export type Database = {
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_payable_lessons_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
             referencedColumns: ['id']
           },
           {
@@ -4001,6 +4462,49 @@ export type Database = {
           },
           {
             foreignKeyName: 'teacher_payroll_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'teacher_payroll_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_student_overview'
+            referencedColumns: ['teacher_id']
+          },
+        ]
+      }
+      v_trung_lich_giao_vien: {
+        Row: {
+          gio_lop_1: string | null
+          gio_lop_2: string | null
+          lop_1: string | null
+          lop_2: string | null
+          phut_lop_1: number | null
+          phut_lop_2: number | null
+          teacher_id: string | null
+          ten_giao_vien: string | null
+          weekday: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'classes_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'teachers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'classes_teacher_id_fkey'
+            columns: ['teacher_id']
+            isOneToOne: false
+            referencedRelation: 'v_ho_so_giao_vien'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'classes_teacher_id_fkey'
             columns: ['teacher_id']
             isOneToOne: false
             referencedRelation: 'v_student_overview'

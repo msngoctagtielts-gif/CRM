@@ -74,6 +74,10 @@ export default async function LichHocPage() {
     .order('weekday')
     .order('start_time')
 
+  // Hai lớp của cùng một giáo viên bị đè giờ trong cùng một thứ. Điều kiện chồng
+  // giờ định nghĩa một lần trong view, không viết lại ở đây.
+  const { data: trungLich } = await supabase.from('v_trung_lich_giao_vien').select('*')
+
   // Ngày mốc tính theo giờ Việt Nam, không theo giờ máy chủ — máy chủ Netlify
   // chạy giờ UTC nên sau 17:00 VN là đã sang ngày khác.
   const homNay = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -129,6 +133,26 @@ export default async function LichHocPage() {
       {loiCa ? (
         <Alert kind="danger" title="Không đọc được lịch học">
           {loiCa.message}
+        </Alert>
+      ) : null}
+
+      {(trungLich ?? []).length > 0 ? (
+        <Alert kind="warning" title="Trùng lịch giáo viên" className="mb-5">
+          <ul className="space-y-1">
+            {(trungLich ?? []).map((t, i) => (
+              <li key={i}>
+                <strong>{t.ten_giao_vien}</strong>, {THU.find((x) => x.so === t.weekday)?.ten}:{' '}
+                <span className="tabular">{String(t.gio_lop_1).slice(0, 5)}</span> ({t.phut_lop_1}
+                ′) {t.lop_1} đè lên{' '}
+                <span className="tabular">{String(t.gio_lop_2).slice(0, 5)}</span> ({t.phut_lop_2}′){' '}
+                {t.lop_2}.
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2">
+            Hai lớp không thể dạy cùng lúc. Cần dời một trong hai, hoặc chuyển sang giáo viên dự
+            phòng.
+          </p>
         </Alert>
       ) : null}
 

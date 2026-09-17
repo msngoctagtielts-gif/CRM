@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
@@ -85,6 +86,7 @@ export default async function TeachersPage() {
                   <Th align="right">30 phút</Th>
                   <Th align="right">60 phút</Th>
                   <Th align="right">90 phút</Th>
+                  <Th>Vai trò</Th>
                   <Th>Trạng thái</Th>
                 </tr>
               </thead>
@@ -92,7 +94,14 @@ export default async function TeachersPage() {
                 {(teachers ?? []).map((t) => (
                   <tr key={t.id}>
                     <Td>
-                      <p className="font-medium text-navy-900">{t.full_name}</p>
+                      <p className="font-medium">
+                        <Link
+                          href={`/teachers/${t.id}`}
+                          className="text-navy-900 hover:text-navy-600 hover:underline"
+                        >
+                          {t.full_name}
+                        </Link>
+                      </p>
                       <p className="text-xs text-navy-400">
                         {t.teacher_code}
                         {t.phone ? ` · ${t.phone}` : ''}
@@ -118,6 +127,17 @@ export default async function TeachersPage() {
                     <Td align="right">{rateCell(currentRate(t.id, 30))}</Td>
                     <Td align="right">{rateCell(currentRate(t.id, 60))}</Td>
                     <Td align="right">{rateCell(currentRate(t.id, 90))}</Td>
+                    <Td>
+                      {t.teaching_role === 'chinh' ? (
+                        <Badge tone="success">Dạy chính</Badge>
+                      ) : t.teaching_role === 'du_phong' ? (
+                        <Badge tone="info">Dự phòng</Badge>
+                      ) : t.status === 'active' ? (
+                        <Badge tone="warning">Chưa phân loại</Badge>
+                      ) : (
+                        <span className="text-navy-300">—</span>
+                      )}
+                    </Td>
                     <Td>
                       <Badge tone={t.status === 'active' ? 'success' : 'neutral'}>
                         {t.status === 'active' ? 'Đang dạy' : 'Đã nghỉ'}
@@ -148,6 +168,10 @@ export default async function TeachersPage() {
       <p className="mt-4 text-xs leading-relaxed text-navy-400">
         Giáo viên chưa có tài khoản vẫn được tính lương bình thường, nhưng không đăng nhập để ghi
         buổi học và nộp báo cáo được. Mời bằng khung bên trên.
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-navy-400">
+        Bấm vào tên giáo viên để mở hồ sơ: giờ có thể nhận lớp, lịch đã xếp, và tình trạng học của
+        từng học viên trong buổi gần nhất.
       </p>
       <p className="mt-2 text-xs leading-relaxed text-navy-400">
         Giáo viên ngừng cộng tác thì chuyển trạng thái sang <strong>Đã nghỉ</strong>, không xoá hồ

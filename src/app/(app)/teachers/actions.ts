@@ -12,7 +12,10 @@ const teacherSchema = z.object({
   email: z.string().email('Email không hợp lệ').optional(),
   phone: z.string().max(30).optional(),
   nationality: z.string().max(60).optional(),
-  hired_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  hired_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   bio: z.string().max(2000).optional(),
   rate_30: z.coerce.number().min(0).optional(),
   rate_60: z.coerce.number().min(0).optional(),
@@ -74,7 +77,10 @@ const rateSchema = z.object({
     message: 'Thời lượng chỉ nhận 30, 60 hoặc 90 phút',
   }),
   rate_amount: z.coerce.number().min(0, 'Đơn giá không được âm'),
-  effective_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  effective_from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 })
 
 /**
@@ -156,8 +162,7 @@ export async function inviteTeacher(
   const { createAdminClient } = await import('@/lib/supabase/admin')
   const admin = createAdminClient()
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'http://localhost:3000'
 
   const { data: invited, error: inviteError } = await admin.auth.admin.generateLink({
     type: 'invite',
@@ -185,8 +190,7 @@ export async function inviteTeacher(
   if (linkError) {
     return {
       ok: false,
-      error:
-        'Đã tạo tài khoản nhưng chưa gắn được vào hồ sơ giáo viên. Báo lại để xử lý thủ công.',
+      error: 'Đã tạo tài khoản nhưng chưa gắn được vào hồ sơ giáo viên. Báo lại để xử lý thủ công.',
     }
   }
 
@@ -253,4 +257,119 @@ export async function revokeTeacherAccount(
       `Đã gỡ tài khoản của ${teacher.display_name ?? teacher.full_name}. ` +
       'Hồ sơ, buổi học và dòng lương giữ nguyên.',
   }
+}
+
+// =============================================================================
+// Hồ sơ giáo viên: vai trò giảng dạy và khung giờ có thể nhận lớp
+// =============================================================================
+
+const vaiTroSchema = z.object({
+  teacher_id: z.string().uuid(),
+  // Chuỗi rỗng từ ô chọn nghĩa là "chưa phân loại" — giữ NULL thay vì đoán bừa.
+  teaching_role: z.enum(['chinh', 'du_phong', '']).optional(),
+})
+
+export async function datVaiTroGiangDay(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(vaiTroSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const vaiTro = parsed.data.teaching_role
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('teachers')
+    .update({ teaching_role: vaiTro ? vaiTro : null })
+    .eq('id', parsed.data.teacher_id)
+
+  if (error) return { ok: false, error: friendlyDbError(error.message) }
+
+  revalidatePath('/teachers')
+  revalidatePath(`/teachers/${parsed.data.teacher_id}`)
+  return {
+    ok: true,
+    message: vaiTro
+      ? `Đã đặt vai trò: ${vaiTro === 'chinh' ? 'dạy chính' : 'dự phòng'}.`
+      : 'Đã đưa về chưa phân loại.',
+  }
+}
+
+const khungGioSchema = z.object({
+  teacher_id: z.string().uuid(),
+  weekday: z.coerce.number().int().min(0).max(6),
+  start_time: z.string().regex(/^\d{2}:\d{2}$/, 'Giờ bắt đầu chưa đúng định dạng'),
+  end_time: z.string().regex(/^\d{2}:\d{2}$/, 'Giờ kết thúc chưa đúng định dạng'),
+  note: z.string().max(200).optional(),
+})
+
+export async function themKhungGioRanh(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await requireFounder()
+  const parsed = parseForm(khungGioSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const { start_time, end_time } = parsed.data
+  if (end_time <= start_time) {
+    return { ok: false, error: 'Giờ kết thúc phải sau giờ bắt đầu.' }
+  }
+
+  const supabase = await createClient()
+
+  // Chặn trùng khung giờ ngay ở đây thay vì để hai dòng chồng nhau nằm trong
+  // bảng: hai khung rảnh đè lên nhau không sai về dữ liệu nhưng làm lịch khó
+  // đọc và dễ xếp lớp nhầm.
+  const { data: dangCo } = await supabase
+    .from('teacher_availability')
+    .select('start_time, end_time')
+    .eq('teacher_id', parsed.data.teacher_id)
+    .eq('weekday', parsed.data.weekday)
+    .eq('status', 'active')
+
+  const chong = (dangCo ?? []).some(
+    (k) =>
+      start_time < String(k.end_time).slice(0, 5) && String(k.start_time).slice(0, 5) < end_time,
+  )
+  if (chong) {
+    return { ok: false, error: 'Khung giờ này chồng lên một khung đã có trong cùng thứ.' }
+  }
+
+  const { error } = await supabase.from('teacher_availability').insert({
+    teacher_id: parsed.data.teacher_id,
+    weekday: parsed.data.weekday,
+    start_time: `${start_time}:00`,
+    end_time: `${end_time}:00`,
+    note: parsed.data.note,
+    created_by: user.id,
+  })
+
+  if (error) return { ok: false, error: friendlyDbError(error.message) }
+
+  revalidatePath(`/teachers/${parsed.data.teacher_id}`)
+  return { ok: true, message: 'Đã thêm khung giờ.' }
+}
+
+const xoaKhungGioSchema = z.object({
+  id: z.string().uuid(),
+  teacher_id: z.string().uuid(),
+})
+
+export async function xoaKhungGioRanh(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(xoaKhungGioSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('teacher_availability').delete().eq('id', parsed.data.id)
+
+  if (error) return { ok: false, error: friendlyDbError(error.message) }
+
+  revalidatePath(`/teachers/${parsed.data.teacher_id}`)
+  return { ok: true, message: 'Đã xoá khung giờ.' }
 }
