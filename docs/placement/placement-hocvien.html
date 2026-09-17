@@ -1,0 +1,511 @@
+<title>Thang Trình Độ MNEE</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap">
+<style>
+  :root {
+    --paper:   #FCFBF8;
+    --surface: #FFFFFF;
+    --ink:     #16233F;
+    --slate:   #5C6579;
+    --rule:    #E4E1D8;
+    --gold:    #A87A2E;
+    --gold-dim:#EFE4CB;
+    --sage:    #3F7350;
+    --sage-dim:#E2EDE4;
+    --burgundy:#7B2D3B;
+    --burg-dim:#F3E3E5;
+    --shadow:  0 1px 2px rgba(22,35,63,.05), 0 8px 24px -12px rgba(22,35,63,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0E1626;
+      --surface: #16223A;
+      --ink:     #EDEAE2;
+      --slate:   #9AA3B6;
+      --rule:    #27354F;
+      --gold:    #D6A94B;
+      --gold-dim:#33405C;
+      --sage:    #7CB78D;
+      --sage-dim:#1D3328;
+      --burgundy:#E39AA6;
+      --burg-dim:#35202A;
+      --shadow:  0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0E1626;
+    --surface: #16223A;
+    --ink:     #EDEAE2;
+    --slate:   #9AA3B6;
+    --rule:    #27354F;
+    --gold:    #D6A94B;
+    --gold-dim:#33405C;
+    --sage:    #7CB78D;
+    --sage-dim:#1D3328;
+    --burgundy:#E39AA6;
+    --burg-dim:#35202A;
+    --shadow:  0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 36rem; margin: 0 auto; padding-inline: 20px; padding-block: 0 56px; }
+
+  /* ---- thanh bậc CEFR: chính nó là nội dung, không phải trang trí ---- */
+  .rail {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--paper); border-bottom: 1px solid var(--rule);
+    margin-inline: -20px; padding: 14px 20px 12px;
+  }
+  .rail-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; margin-bottom: 9px;
+  }
+  .brand { font-size: .8125rem; font-weight: 600; letter-spacing: .01em; }
+  .brand span { color: var(--gold); }
+  .counter {
+    font-size: .6875rem; color: var(--slate); letter-spacing: .06em;
+    text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .ladder { display: flex; gap: 5px; }
+  .step { flex: 1; }
+  .step-bar {
+    height: 4px; border-radius: 2px; background: var(--rule);
+    transition: background .35s ease;
+  }
+  .step.done .step-bar { background: var(--gold); }
+  .step.now  .step-bar { background: var(--ink); }
+  .step-label {
+    display: block; margin-top: 6px; font-family: Fraunces, Georgia, serif;
+    font-size: .6875rem; font-weight: 600; letter-spacing: .04em;
+    color: var(--slate); text-align: center;
+  }
+  .step.done .step-label { color: var(--gold); }
+  .step.now  .step-label { color: var(--ink); }
+
+  /* ---------------------------------------------------- chung ---- */
+  h1 {
+    font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: clamp(1.75rem, 6vw, 2.375rem); line-height: 1.15;
+    text-wrap: balance; margin: 28px 0 14px;
+  }
+  h2 {
+    font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: 1.25rem; margin: 0 0 10px; text-wrap: balance;
+  }
+  p { margin: 0 0 14px; }
+  .lede { color: var(--slate); font-size: 1.0625rem; }
+  .fine { font-size: .8125rem; color: var(--slate); line-height: 1.55; }
+  .eyebrow {
+    font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 4px;
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 18px; box-shadow: var(--shadow);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-weight: 600; font-size: .9375rem;
+    padding: 13px 24px; border-radius: 8px; border: 1px solid var(--ink);
+    background: var(--ink); color: var(--paper); cursor: pointer;
+    transition: opacity .15s ease;
+  }
+  .btn:hover { opacity: .88; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-quiet { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .btn:focus-visible, .opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* --------------------------------------------------- câu hỏi ---- */
+  .q-kind {
+    font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600; margin-bottom: 10px;
+  }
+  .q-text {
+    font-family: Fraunces, Georgia, serif; font-size: 1.1875rem; line-height: 1.5;
+    margin: 0 0 6px; text-wrap: balance;
+  }
+  .q-context {
+    font-family: Fraunces, Georgia, serif; font-size: .9375rem; line-height: 1.65;
+    color: var(--slate); background: var(--gold-dim);
+    border-radius: 8px; padding: 12px 14px; margin: 0 0 14px;
+  }
+  .opts { display: grid; gap: 8px; margin-top: 16px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 11px; width: 100%;
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 8px; padding: 13px 15px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover { border-color: var(--gold); }
+  .opt-key {
+    font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: .8125rem;
+    color: var(--slate); min-width: 1.1em; padding-top: 1px;
+  }
+  .opt-txt { font-family: Fraunces, Georgia, serif; font-size: 1rem; line-height: 1.45; }
+  .opt.picked { border-color: var(--ink); background: var(--gold-dim); }
+  .opt.picked .opt-key { color: var(--ink); }
+
+  .nav-row { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+  .nav-row .btn { flex: 1; }
+
+  /* ------------------------------------------------- kết quả ---- */
+  .verdict {
+    text-align: center; padding: 28px 18px;
+    border: 1px solid var(--rule); border-radius: 12px;
+    background: var(--surface); box-shadow: var(--shadow);
+  }
+  .verdict-band {
+    font-family: Fraunces, Georgia, serif; font-weight: 700;
+    font-size: clamp(3rem, 16vw, 4.5rem); line-height: 1;
+    color: var(--gold); letter-spacing: -.02em;
+  }
+  .verdict-name { font-size: 1.0625rem; font-weight: 600; margin-top: 2px; }
+  .verdict-sub { color: var(--slate); font-size: .875rem; margin-top: 8px; }
+
+  .rows { display: grid; gap: 1px; background: var(--rule);
+          border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .row { display: flex; justify-content: space-between; gap: 14px;
+         background: var(--surface); padding: 11px 15px; font-size: .875rem; }
+  .row dt { color: var(--slate); }
+  .row dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
+  .note {
+    border-left: 3px solid var(--gold); padding: 2px 0 2px 14px;
+    font-size: .8125rem; color: var(--slate); line-height: 1.6;
+  }
+  .note-warn { border-left-color: var(--burgundy); color: var(--burgundy); font-weight: 500; }
+
+  .stack   { display: grid; gap: 18px; }
+  .stack-s { display: grid; gap: 10px; }
+  .divider { height: 1px; background: var(--rule); border: 0; margin: 24px 0; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    background: var(--ink); color: var(--paper);
+    padding: 10px 18px; border-radius: 999px; font-size: .8125rem; font-weight: 500;
+    box-shadow: var(--shadow); z-index: 40;
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="rail" id="rail" hidden>
+  <div class="rail-head">
+    <div class="brand">Ms.Ngọc <span>Elite English</span></div>
+    <div class="counter" id="counter">Câu 1 / 24</div>
+  </div>
+  <div class="ladder" id="ladder"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============================================ MÀN HÌNH MỞ ĐẦU -->
+  <section id="scr-start">
+    <div class="eyebrow">Kiểm tra đầu vào</div>
+    <h1>Bạn đang ở bậc nào trên thang CEFR?</h1>
+    <p class="lede">24 câu, khoảng 10 phút. Bài bắt đầu từ mức dễ và đi lên cho tới khi bạn dừng lại — nên không ai làm hết cả 24 câu, và điều đó là bình thường.</p>
+
+    <div class="card stack-s" style="margin-top:22px">
+      <div>
+        <h2 style="font-size:1.0625rem">Bài này đo phần nào</h2>
+        <p class="fine" style="margin:0">Từ vựng, ngữ pháp khi dùng thật, đọc hiểu và cách chọn văn phong. Đây là phần máy chấm được.</p>
+      </div>
+      <hr class="divider" style="margin:4px 0">
+      <div>
+        <h2 style="font-size:1.0625rem">Phần bài này <em>không</em> đo</h2>
+        <p class="fine" style="margin:0">Kỹ năng nói và nghe. Hai kỹ năng đó cần người đối thoại thật, nên giáo viên đánh giá trực tiếp trong buổi học trải nghiệm.</p>
+      </div>
+    </div>
+
+    <p class="note" style="margin-top:20px">Làm bài này <strong>trước</strong> buổi trải nghiệm thì 60 phút miễn phí được dành trọn cho việc học, không mất thời gian ngồi kiểm tra.</p>
+
+    <div class="nav-row">
+      <button class="btn" id="btn-start" type="button">Bắt đầu làm bài</button>
+    </div>
+    <p class="fine" style="margin-top:14px">Bài không lưu thông tin cá nhân. Kết quả hiện ở màn hình cuối, bạn chụp lại hoặc bấm nút sao chép để gửi cho trung tâm qua Zalo.</p>
+  </section>
+
+  <!-- =================================================== CÂU HỎI -->
+  <section id="scr-q" hidden>
+    <div class="q-kind" id="q-kind"></div>
+    <div class="q-context" id="q-context" hidden></div>
+    <p class="q-text" id="q-text"></p>
+    <div class="opts" id="opts"></div>
+    <div class="nav-row">
+      <button class="btn btn-quiet" id="btn-back" type="button" style="flex:0 0 auto;padding-inline:18px">Quay lại</button>
+      <button class="btn" id="btn-next" type="button" disabled>Câu tiếp theo</button>
+    </div>
+  </section>
+
+  <!-- =================================================== KẾT QUẢ -->
+  <section id="scr-done" hidden>
+    <div class="eyebrow">Kết quả tham khảo</div>
+    <h1 style="margin-bottom:18px">Bậc trình độ ước tính</h1>
+
+    <div class="verdict">
+      <div class="verdict-band" id="band">B1</div>
+      <div class="verdict-name" id="band-name">Trung cấp</div>
+      <div class="verdict-sub" id="band-sub"></div>
+    </div>
+
+    <div class="stack" style="margin-top:22px">
+      <div>
+        <h2>Bạn làm được gì ở bậc này</h2>
+        <p id="band-cando" style="margin:0"></p>
+      </div>
+
+      <dl class="rows" id="breakdown"></dl>
+
+      <div>
+        <h2>Lớp phù hợp</h2>
+        <p id="band-class" style="margin:0"></p>
+      </div>
+
+      <p class="note note-warn" id="band-caveat"></p>
+
+      <div>
+        <h2>Bước tiếp theo</h2>
+        <p style="margin:0 0 12px">Gửi kết quả này cho trung tâm qua Zalo. Trung tâm xếp một buổi học trải nghiệm 60 phút miễn phí — giáo viên đánh giá kỹ năng nói và nghe, rồi chốt lớp chính thức.</p>
+        <div class="nav-row">
+          <button class="btn" id="btn-copy" type="button">Sao chép kết quả</button>
+          <button class="btn btn-quiet" id="btn-again" type="button" style="flex:0 0 auto;padding-inline:18px">Làm lại</button>
+        </div>
+      </div>
+
+      <hr class="divider" style="margin:6px 0">
+      <p class="fine" style="margin:0">Bậc CEFR dựa trên Khung tham chiếu trình độ ngôn ngữ chung châu Âu (Council of Europe). Đây là kết quả xếp lớp tham khảo, không phải kết quả của một kỳ thi chuẩn hoá và không thay thế chứng chỉ.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Bốn khối, mỗi khối 6 câu. Làm dưới 4/6 thì dừng — bậc đạt được là khối
+  // liền trước. Ngữ liệu do MNEE tự soạn, không trích Kid's Box hay Speak Now.
+  var BLOCKS = [
+    { band: "A2", name: "Cơ bản", items: [
+      { k: "Ngữ pháp khi dùng", q: "___ you like coffee?", o: ["Do", "Does", "Are", "Is"], a: 0 },
+      { k: "Ngữ pháp khi dùng", q: "She ___ to school every day.", o: ["go", "goes", "going", "gone"], a: 1 },
+      { k: "Ngữ pháp khi dùng", q: "I'm sorry, I ___ understand.", o: ["don't", "doesn't", "not", "am not"], a: 0 },
+      { k: "Ngữ pháp khi dùng", q: "There ___ three people in my family.", o: ["is", "are", "have", "has"], a: 1 },
+      { k: "Từ vựng", q: "He's ___ engineer.", o: ["a", "an", "the", "— (không cần từ nào)"], a: 1 },
+      { k: "Ngữ pháp khi dùng", q: "What time ___ the film start?", o: ["do", "does", "is", "are"], a: 1 }
+    ]},
+    { band: "B1", name: "Trung cấp", items: [
+      { k: "Thì quá khứ", q: "I ___ to Da Nang last summer.", o: ["go", "went", "have gone", "was going"], a: 1 },
+      { k: "So sánh", q: "This road is ___ than the old one.", o: ["more busy", "busier", "busiest", "most busy"], a: 1 },
+      { k: "Hiện tại hoàn thành", q: "I've lived here ___ 2019.", o: ["since", "for", "from", "in"], a: 0 },
+      { k: "Câu điều kiện", q: "If it rains, we ___ stay home.", o: ["will", "would", "had", "are"], a: 0 },
+      { k: "Mệnh đề quan hệ", q: "She's the person ___ car broke down yesterday.", o: ["who", "which", "whose", "that"], a: 2 },
+      { k: "Động từ khuyết thiếu", q: "You ___ wear a helmet. It's the law.", o: ["must", "can", "might", "would"], a: 0 }
+    ]},
+    { band: "B2", name: "Trung cao cấp", items: [
+      { k: "Câu tường thuật", q: "He said he ___ call me the next day.", o: ["will", "would", "is going to", "shall"], a: 1 },
+      { k: "Câu bị động", q: "The report ___ by Friday.", o: ["must finish", "must be finished", "must finishing", "must to finish"], a: 1 },
+      { k: "Từ nối", q: "___ the heavy traffic, we arrived on time.", o: ["Despite", "Although", "However", "Because of"], a: 0 },
+      { k: "Câu ước", q: "I wish I ___ more time to prepare.", o: ["have", "had", "will have", "am having"], a: 1 },
+      { k: "Cụm động từ", q: "The meeting was called ___ because of the storm.", o: ["off", "out", "up", "over"], a: 0 },
+      { k: "Cấu trúc song song", q: "She's not only talented ___ also hardworking.", o: ["and", "but", "so", "yet"], a: 1 }
+    ]},
+    { band: "C1", name: "Cao cấp", items: [
+      { k: "Văn phong", q: "Câu nào phù hợp nhất trong email trang trọng gửi khách hàng?",
+        o: ["I'm afraid we won't be able to meet the deadline.", "Sorry, can't make the deadline.", "We're not gonna finish on time.", "The deadline is impossible."], a: 0 },
+      { k: "Collocation", q: "The new evidence ___ doubt on his account of the events.",
+        o: ["casts", "throws", "puts", "places"], a: 0 },
+      { k: "Ý ngầm", q: "“I suppose it could have been worse.” Người nói đang cảm thấy thế nào?",
+        o: ["Hơi thất vọng", "Rất hài lòng", "Tức giận", "Ngạc nhiên"], a: 0 },
+      { k: "Từ nối", q: "The proposal is expensive. ___, it may be the only viable option.",
+        o: ["Nevertheless", "Therefore", "Moreover", "Similarly"], a: 0 },
+      { k: "Văn phong học thuật", q: "The results ___ that the method may be effective in similar contexts.",
+        o: ["suggest", "prove", "demonstrate conclusively", "show definitely"], a: 0 },
+      { k: "Đọc hiểu ý ngầm",
+        ctx: "“The restaurant has certainly changed since new owners took over. The dining room is spotless now, and the menu has been cut from forty dishes to twelve. Regulars who came for the old favourites have drifted away, though the tables are full again on weekends — with a rather different crowd.”",
+        q: "Người viết ngụ ý điều gì?",
+        o: ["Nhà hàng đổi khác nhưng vẫn đông khách, chỉ là khách khác trước",
+            "Nhà hàng đang làm ăn thua lỗ",
+            "Người viết thích chủ mới hơn chủ cũ",
+            "Nhà hàng sắp phải đóng cửa"], a: 0 }
+    ]}
+  ];
+
+  var BAND_INFO = {
+    "A1": { name: "Sơ cấp",
+      cando: "Hiểu và dùng được những cụm từ quen thuộc nhất về bản thân và gia đình. Giao tiếp đơn giản khi người đối diện nói chậm và sẵn sàng nhắc lại.",
+      lop: "Speak Now 1 — xây nền mẫu câu giao tiếp cơ bản. Nếu bạn dưới 9 tuổi, trung tâm sẽ tư vấn chương trình Kids Communication." },
+    "A2": { name: "Cơ bản",
+      cando: "Trao đổi được thông tin quen thuộc trong sinh hoạt hằng ngày. Dùng chuỗi câu đơn để kể về gia đình, công việc, nơi ở.",
+      lop: "Speak Now 1 hoặc Speak Now 2, tuỳ kết quả buổi nói trực tiếp." },
+    "B1": { name: "Trung cấp",
+      cando: "Xử lý được hầu hết tình huống giao tiếp thường ngày. Kể lại trải nghiệm, nói được mong muốn và lý do một cách mạch lạc.",
+      lop: "Speak Now 3 — thảo luận vấn đề quen thuộc, so sánh, đưa lý do." },
+    "B2": { name: "Trung cao cấp",
+      cando: "Tương tác trôi chảy và khá tự nhiên với người bản xứ. Trình bày rõ ràng, chi tiết về nhiều chủ đề và bảo vệ được quan điểm.",
+      lop: "Speak Now 4 — trình bày quan điểm, tranh luận, giao tiếp công việc." },
+    "C1": { name: "Cao cấp",
+      cando: "Diễn đạt trôi chảy, gần như không cần tìm từ. Hiểu được ý ngầm, đổi văn phong theo ngữ cảnh, tổ chức được lập luận dài.",
+      lop: "Lộ trình cá nhân hoá. Ở bậc này trung tâm thiết kế riêng theo mục tiêu của bạn, không xếp vào cấp độ giáo trình cố định." }
+  };
+
+  var LADDER = ["A2", "B1", "B2", "C1"];
+  var TONG = BLOCKS.reduce(function (n, b) { return n + b.items.length; }, 0);
+
+  var flat = [];
+  BLOCKS.forEach(function (b, bi) {
+    b.items.forEach(function (it, ii) { flat.push({ bi: bi, ii: ii, it: it }); });
+  });
+
+  var idx = 0, answers = new Array(flat.length).fill(null), stopAt = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var scrStart = $("scr-start"), scrQ = $("scr-q"), scrDone = $("scr-done");
+
+  // ---- thanh bậc ---------------------------------------------------
+  $("ladder").innerHTML = LADDER.map(function (b) {
+    return '<div class="step" data-b="' + b + '"><div class="step-bar"></div>' +
+           '<span class="step-label">' + b + '</span></div>';
+  }).join("");
+
+  function veThanh() {
+    var cur = flat[idx].bi;
+    LADDER.forEach(function (b, i) {
+      var el = $("ladder").children[i];
+      el.classList.toggle("done", i < cur);
+      el.classList.toggle("now", i === cur);
+    });
+    $("counter").textContent = "Câu " + (idx + 1) + " / " + TONG;
+  }
+
+  // ---- vẽ một câu ---------------------------------------------------
+  function veCau() {
+    var cur = flat[idx], it = cur.it;
+    $("q-kind").textContent = it.k;
+    var ctx = $("q-context");
+    if (it.ctx) { ctx.textContent = it.ctx; ctx.hidden = false; } else { ctx.hidden = true; }
+    $("q-text").textContent = it.q;
+
+    $("opts").innerHTML = it.o.map(function (o, i) {
+      var chon = answers[idx] === i ? " picked" : "";
+      return '<button type="button" class="opt' + chon + '" data-i="' + i + '">' +
+             '<span class="opt-key">' + "ABCD"[i] + '</span>' +
+             '<span class="opt-txt"></span></button>';
+    }).join("");
+    // Gán text qua textContent để không diễn giải ký tự đặc biệt trong đáp án.
+    Array.prototype.forEach.call($("opts").children, function (btn, i) {
+      btn.querySelector(".opt-txt").textContent = it.o[i];
+    });
+
+    $("btn-next").disabled = answers[idx] === null;
+    $("btn-back").hidden = idx === 0;
+    $("btn-next").textContent = (idx === flat.length - 1) ? "Xem kết quả" : "Câu tiếp theo";
+    veThanh();
+    window.scrollTo(0, 0);
+  }
+
+  $("opts").addEventListener("click", function (e) {
+    var b = e.target.closest(".opt");
+    if (!b) return;
+    answers[idx] = Number(b.dataset.i);
+    Array.prototype.forEach.call($("opts").children, function (el) { el.classList.remove("picked"); });
+    b.classList.add("picked");
+    $("btn-next").disabled = false;
+  });
+
+  // ---- điểm từng khối ----------------------------------------------
+  function diemKhoi(bi) {
+    var dung = 0;
+    flat.forEach(function (f, i) {
+      if (f.bi === bi && answers[i] === f.it.a) dung++;
+    });
+    return dung;
+  }
+
+  // ---- chuyển câu ----------------------------------------------------
+  $("btn-next").addEventListener("click", function () {
+    var cuoiKhoi = (idx === flat.length - 1) || (flat[idx + 1].bi !== flat[idx].bi);
+    if (cuoiKhoi) {
+      var bi = flat[idx].bi;
+      // Quy tắc dừng: dưới 4/6 thì không lên khối tiếp theo.
+      if (diemKhoi(bi) < 4 || idx === flat.length - 1) { stopAt = bi; return ketQua(); }
+    }
+    idx++; veCau();
+  });
+
+  $("btn-back").addEventListener("click", function () { if (idx > 0) { idx--; veCau(); } });
+
+  $("btn-start").addEventListener("click", function () {
+    scrStart.hidden = true; scrQ.hidden = false; $("rail").hidden = false; veCau();
+  });
+
+  // ---- kết quả -------------------------------------------------------
+  function ketQua() {
+    var band, i;
+    // Khối cao nhất đạt từ 4/6 trở lên quyết định bậc. Không khối nào đạt
+    // thì xếp A1 — thấp hơn khối đầu tiên của bài.
+    band = "A1";
+    for (i = 0; i <= stopAt; i++) { if (diemKhoi(i) >= 4) band = BLOCKS[i].band; }
+
+    var info = BAND_INFO[band];
+    $("band").textContent = band;
+    $("band-name").textContent = info.name;
+    $("band-cando").textContent = info.cando;
+    $("band-class").textContent = info.lop;
+    $("band-sub").textContent = "Dừng ở khối " + BLOCKS[stopAt].band +
+      " · trả lời " + (idx + 1) + " trên " + TONG + " câu";
+
+    var rows = "", tongDung = 0;
+    for (i = 0; i <= stopAt; i++) {
+      var d = diemKhoi(i); tongDung += d;
+      rows += '<div class="row"><dt>Khối ' + BLOCKS[i].band + '</dt><dd>' + d + ' / 6</dd></div>';
+    }
+    rows += '<div class="row"><dt>Tổng câu đúng</dt><dd>' + tongDung + ' / ' + (idx + 1) + '</dd></div>';
+    $("breakdown").innerHTML = rows;
+
+    $("band-caveat").textContent = (band === "B2" || band === "C1")
+      ? "Từ B2 trở lên, bài trắc nghiệm không phân định được chính xác B2 hay C1 — khác biệt giữa hai bậc nằm ở phản xạ khi bị phản biện, khả năng đổi văn phong và cách tổ chức lập luận dài. Giáo viên sẽ chốt trong buổi nói trực tiếp."
+      : "Đây là kết quả tham khảo từ phần máy chấm được. Kỹ năng nói và nghe do giáo viên đánh giá trong buổi học trải nghiệm, và bậc cuối cùng có thể khác kết quả này.";
+
+    scrQ.hidden = true; $("rail").hidden = true; scrDone.hidden = false;
+    window.scrollTo(0, 0);
+
+    var dong = ["Kết quả kiểm tra đầu vào — Ms.Ngọc Elite English",
+                "Bậc ước tính: " + band + " (" + info.name + ")",
+                "Đã trả lời: " + (idx + 1) + "/" + TONG + " câu, đúng " + tongDung];
+    for (i = 0; i <= stopAt; i++) dong.push("  Khối " + BLOCKS[i].band + ": " + diemKhoi(i) + "/6");
+    dong.push("Lớp đề xuất: " + info.lop);
+    dong.push("(Kết quả tham khảo — kỹ năng nói và nghe đánh giá trực tiếp trong buổi trải nghiệm.)");
+    window.__ketQuaText = dong.join("\n");
+  }
+
+  $("btn-copy").addEventListener("click", function () {
+    var t = window.__ketQuaText || "";
+    function bao(msg) {
+      var el = document.createElement("div");
+      el.className = "toast"; el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 2400);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { bao("Đã sao chép kết quả"); },
+        function () { bao("Không sao chép được — bạn chụp màn hình giúp nhé"); });
+    } else { bao("Không sao chép được — bạn chụp màn hình giúp nhé"); }
+  });
+
+  $("btn-again").addEventListener("click", function () {
+    idx = 0; stopAt = null; answers = new Array(flat.length).fill(null);
+    scrDone.hidden = true; scrStart.hidden = false; window.scrollTo(0, 0);
+  });
+})();
+</script>

@@ -1,0 +1,585 @@
+<title>Bậc Thang Trình Độ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap">
+<style>
+  :root {
+    --paper:   #0F1828;
+    --surface: #17233A;
+    --raised:  #1E2C47;
+    --ink:     #F1EEE6;
+    --slate:   #9BA6BC;
+    --rule:    #2A3A58;
+    --gold:    #D9AE55;
+    --gold-dim:#3A3020;
+    --sage:    #7FBF92;
+    --sage-dim:#1B3626;
+    --burgundy:#E8A0AC;
+    --burg-dim:#3A2029;
+  }
+  :root[data-theme="light"] {
+    --paper:   #FBFAF7;
+    --surface: #FFFFFF;
+    --raised:  #F4F1E9;
+    --ink:     #16233F;
+    --slate:   #5C6579;
+    --rule:    #E2DFD5;
+    --gold:    #A07428;
+    --gold-dim:#F3E8CF;
+    --sage:    #3B6E4C;
+    --sage-dim:#E3EEE6;
+    --burgundy:#7B2D3B;
+    --burg-dim:#F4E3E6;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --paper:   #FBFAF7;
+      --surface: #FFFFFF;
+      --raised:  #F4F1E9;
+      --ink:     #16233F;
+      --slate:   #5C6579;
+      --rule:    #E2DFD5;
+      --gold:    #A07428;
+      --gold-dim:#F3E8CF;
+      --sage:    #3B6E4C;
+      --sage-dim:#E3EEE6;
+      --burgundy:#7B2D3B;
+      --burg-dim:#F4E3E6;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+    font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column;
+  }
+
+  /* ------------------------------------------------- thanh bậc ---- */
+  .rail {
+    border-bottom: 1px solid var(--rule); background: var(--surface);
+    padding: 12px 24px 10px; flex: 0 0 auto;
+  }
+  .rail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .brand { font-size: .875rem; font-weight: 600; }
+  .brand span { color: var(--gold); }
+  .counter { font-size: .75rem; color: var(--slate); letter-spacing: .06em;
+             text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .ladder { display: flex; gap: 5px; margin-top: 10px; }
+  .step { flex: 1; min-width: 0; }
+  .step-bar { height: 5px; border-radius: 3px; background: var(--rule); transition: background .3s ease; }
+  .step.done .step-bar { background: var(--gold); }
+  .step.now  .step-bar { background: var(--ink); }
+  .step-label { display: block; margin-top: 6px; font-family: Fraunces, Georgia, serif;
+                font-size: .6875rem; font-weight: 600; color: var(--slate);
+                text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .step.done .step-label { color: var(--gold); }
+  .step.now  .step-label { color: var(--ink); }
+
+  /* ----------------------------------------------------- sân khấu -- */
+  .stage {
+    flex: 1 1 auto; display: flex; align-items: center; justify-content: center;
+    padding: 28px 24px; overflow-y: auto;
+  }
+  .inner { width: 100%; max-width: 54rem; }
+
+  h1 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+       font-size: clamp(2rem, 5.5vw, 3.25rem); line-height: 1.1;
+       text-wrap: balance; margin: 0 0 16px; }
+  h2 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+       font-size: 1.1875rem; margin: 0 0 8px; }
+  p { margin: 0 0 14px; }
+  .lede { color: var(--slate); font-size: clamp(1rem, 2.2vw, 1.1875rem); max-width: 42rem; }
+  .fine { font-size: .8125rem; color: var(--slate); line-height: 1.55; }
+  .eyebrow { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+             color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+
+  .q-kind { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+            color: var(--gold); font-weight: 600; margin-bottom: 12px; }
+  .q-context { font-family: Fraunces, Georgia, serif;
+               font-size: clamp(1rem, 2vw, 1.1875rem); line-height: 1.6;
+               color: var(--ink); background: var(--raised);
+               border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0;
+               padding: 16px 20px; margin: 0 0 20px; }
+  .q-text { font-family: Fraunces, Georgia, serif; font-weight: 600;
+            font-size: clamp(1.375rem, 3.6vw, 2.125rem); line-height: 1.32;
+            margin: 0 0 4px; text-wrap: balance; }
+
+  .opts { display: grid; gap: 10px; margin-top: 24px; }
+  @media (min-width: 720px) { .opts.pair { grid-template-columns: 1fr 1fr; } }
+  .opt { display: flex; align-items: flex-start; gap: 14px; width: 100%;
+         font: inherit; text-align: left; cursor: pointer;
+         background: var(--surface); color: var(--ink);
+         border: 2px solid var(--rule); border-radius: 10px; padding: 16px 18px;
+         transition: border-color .15s ease, background .15s ease; }
+  .opt:hover { border-color: var(--gold); }
+  .opt-key { font-family: Fraunces, Georgia, serif; font-weight: 700;
+             font-size: 1rem; color: var(--slate); min-width: 1.2em; padding-top: 2px; }
+  .opt-txt { font-family: Fraunces, Georgia, serif;
+             font-size: clamp(1.0625rem, 2.2vw, 1.3125rem); line-height: 1.4; }
+  .opt.picked { border-color: var(--ink); background: var(--gold-dim); }
+  .opt.picked .opt-key { color: var(--ink); }
+  .opt.right { border-color: var(--sage); background: var(--sage-dim); }
+  .opt.right .opt-key { color: var(--sage); }
+  .opt.wrong { border-color: var(--burgundy); background: var(--burg-dim); }
+  .opt.wrong .opt-key { color: var(--burgundy); }
+
+  /* ------------------------------------------- bảng điều khiển ---- */
+  .bar { flex: 0 0 auto; border-top: 1px solid var(--rule); background: var(--surface);
+         padding: 11px 24px calc(11px + env(safe-area-inset-bottom, 0px));
+         display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .bar-score { font-size: .8125rem; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .bar-score b { color: var(--ink); font-weight: 600; }
+  .bar-spacer { flex: 1 1 auto; }
+  .keys { display: flex; gap: 12px; flex-wrap: wrap; font-size: .6875rem; color: var(--slate); }
+  .keys kbd { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .6875rem;
+              background: var(--raised); border: 1px solid var(--rule);
+              border-radius: 4px; padding: 1px 6px; color: var(--ink); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+         font: inherit; font-weight: 600; font-size: .875rem;
+         padding: 11px 20px; border-radius: 8px; border: 1px solid var(--ink);
+         background: var(--ink); color: var(--paper); cursor: pointer;
+         transition: opacity .15s ease; }
+  .btn:hover { opacity: .88; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-quiet { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .btn-sm { padding: 8px 14px; font-size: .8125rem; }
+  .btn:focus-visible, .opt:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+  .toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+            font-size: .8125rem; color: var(--slate); user-select: none; }
+  .toggle input { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+
+  /* ---------------------------------------------------- kết quả ---- */
+  .verdict { display: grid; gap: 4px; text-align: center; padding: 24px;
+             border: 1px solid var(--rule); border-radius: 14px; background: var(--surface); }
+  .verdict-band { font-family: Fraunces, Georgia, serif; font-weight: 700;
+                  font-size: clamp(3rem, 12vw, 5rem); line-height: 1; color: var(--gold); }
+  .verdict-ielts { font-family: Fraunces, Georgia, serif; font-size: 1.125rem; color: var(--ink); }
+  .verdict-name { font-size: 1rem; font-weight: 600; color: var(--slate); }
+
+  .grid2 { display: grid; gap: 18px; }
+  @media (min-width: 760px) { .grid2 { grid-template-columns: 1fr 1fr; align-items: start; } }
+
+  .rows { display: grid; gap: 1px; background: var(--rule);
+          border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .row { display: flex; justify-content: space-between; gap: 14px;
+         background: var(--surface); padding: 10px 15px; font-size: .875rem; }
+  .row dt { color: var(--slate); }
+  .row dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .note { border-left: 3px solid var(--gold); padding: 3px 0 3px 14px;
+          font-size: .8125rem; color: var(--slate); line-height: 1.6; }
+  .note-warn { border-left-color: var(--burgundy); color: var(--burgundy); }
+
+  .stack { display: grid; gap: 18px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="rail" id="rail">
+  <div class="rail-head">
+    <div class="brand">Ms.Ngọc <span>Elite English</span> · Kiểm tra đầu vào</div>
+    <div class="counter" id="counter">Chưa bắt đầu</div>
+  </div>
+  <div class="ladder" id="ladder"></div>
+</div>
+
+<main class="stage">
+  <div class="inner">
+
+    <!-- ========================================== MÀN HÌNH MỞ ĐẦU -->
+    <section id="scr-start">
+      <div class="eyebrow">Bản trình chiếu — giáo viên điều khiển</div>
+      <h1>Từ mất gốc đến IELTS 7.0</h1>
+      <p class="lede">36 câu chia sáu bậc. Bài dừng ngay khi học viên chạm trần, nên một buổi thường chỉ dùng 18–24 câu.</p>
+
+      <div class="grid2" style="margin-top:26px">
+        <div class="stack">
+          <div>
+            <h2>Giáo viên làm gì</h2>
+            <p class="fine" style="margin:0">Chia sẻ màn hình, đọc to câu hỏi, để học viên trả lời bằng miệng rồi bấm phương án học viên chọn. Điều khiển hoàn toàn bằng bàn phím — không cần rê chuột.</p>
+          </div>
+          <div>
+            <h2>Đáp án được giấu sẵn</h2>
+            <p class="fine" style="margin:0">Học viên đang nhìn cùng màn hình, nên đáp án đúng không hiện. Bật ô “Hiện đáp án” dưới thanh điều khiển khi cần đối chiếu, hoặc bấm <kbd>Space</kbd>.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <div>
+            <h2>Bài này đo phần nào</h2>
+            <p class="fine" style="margin:0">Từ vựng, ngữ pháp khi dùng thật, đọc hiểu, văn phong. Đây là phần chấm được bằng lựa chọn.</p>
+          </div>
+          <div>
+            <h2>Phần bài này <em>không</em> đo</h2>
+            <p class="fine" style="margin:0">Phát âm, độ trôi chảy, phản xạ giữ hội thoại. Giáo viên chấm sáu tiêu chí nói riêng theo Bộ kiểm tra đầu vào bản giấy.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar" style="border:0;background:transparent;padding:22px 0 0">
+        <button class="btn" id="btn-start" type="button">Bắt đầu</button>
+        <span class="fine">hoặc bấm <kbd>Enter</kbd></span>
+      </div>
+    </section>
+
+    <!-- ================================================== CÂU HỎI -->
+    <section id="scr-q" hidden>
+      <div class="q-kind" id="q-kind"></div>
+      <div class="q-context" id="q-context" hidden></div>
+      <p class="q-text" id="q-text"></p>
+      <div class="opts" id="opts"></div>
+    </section>
+
+    <!-- ================================================== KẾT QUẢ -->
+    <section id="scr-done" hidden>
+      <div class="eyebrow">Kết quả tham khảo</div>
+      <h1 style="margin-bottom:20px">Bậc trình độ ước tính</h1>
+
+      <div class="grid2">
+        <div class="stack">
+          <div class="verdict">
+            <div class="verdict-band" id="band">B1</div>
+            <div class="verdict-ielts" id="band-ielts"></div>
+            <div class="verdict-name" id="band-name"></div>
+          </div>
+          <dl class="rows" id="breakdown"></dl>
+        </div>
+
+        <div class="stack">
+          <div>
+            <h2>Học viên làm được gì</h2>
+            <p id="band-cando" style="margin:0"></p>
+          </div>
+          <div>
+            <h2>Lớp đề xuất</h2>
+            <p id="band-class" style="margin:0"></p>
+          </div>
+          <p class="note note-warn" id="band-caveat"></p>
+        </div>
+      </div>
+
+      <div class="bar" style="border:0;background:transparent;padding:22px 0 0">
+        <button class="btn" id="btn-copy" type="button">Sao chép kết quả</button>
+        <button class="btn btn-quiet" id="btn-again" type="button">Làm lại</button>
+      </div>
+
+      <p class="fine" style="margin-top:20px;max-width:46rem">Bậc CEFR dựa trên Khung tham chiếu trình độ ngôn ngữ chung châu Âu (Council of Europe). Band IELTS đi kèm chỉ là <strong>tương quan gần đúng</strong> — theo chính IELTS.org công bố, không có quy đổi tuyệt đối 1:1 giữa hai thang đo. Đây là kết quả xếp lớp tham khảo, không phải kết quả một kỳ thi chuẩn hoá.</p>
+    </section>
+  </div>
+</main>
+
+<div class="bar" id="bar" hidden>
+  <div class="bar-score" id="bar-score"></div>
+  <label class="toggle" for="chk-key">
+    <input type="checkbox" id="chk-key">
+    Hiện đáp án
+  </label>
+  <div class="bar-spacer"></div>
+  <div class="keys">
+    <span><kbd>1</kbd>–<kbd>4</kbd> chọn</span>
+    <span><kbd>Space</kbd> đáp án</span>
+    <span><kbd>←</kbd> lùi</span>
+    <span><kbd>Enter</kbd> tiếp</span>
+  </div>
+  <button class="btn btn-quiet btn-sm" id="btn-back" type="button">Lùi</button>
+  <button class="btn btn-sm" id="btn-next" type="button" disabled>Tiếp</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Sáu bậc, mỗi bậc 6 câu. Dưới 4/6 thì dừng — bậc đạt được là bậc cuối
+  // cùng làm đủ 4/6. Ngữ liệu do MNEE tự soạn, không trích Kid's Box,
+  // Speak Now hay đề thi IELTS thật.
+  var BLOCKS = [
+    { band: "Pre-A1", short: "Mất gốc", items: [
+      { k: "Nền tảng", q: "Hello, ___ name is Nam.", o: ["my", "I", "me", "mine"], a: 0 },
+      { k: "Nền tảng", q: "I ___ from Vietnam.", o: ["am", "is", "are", "be"], a: 0 },
+      { k: "Nền tảng", q: "This ___ a book.", o: ["is", "are", "am", "be"], a: 0 },
+      { k: "Nền tảng", q: "___ is your name?", o: ["What", "Where", "When", "Who"], a: 0 },
+      { k: "Số đếm", q: "Số 15 đọc là gì?", o: ["fifteen", "fifty", "five-ten", "one five"], a: 0 },
+      { k: "Số nhiều", q: "I have two ___.", o: ["cats", "cat", "cates", "catses"], a: 0 }
+    ]},
+    { band: "A1", short: "Sơ cấp", items: [
+      { k: "Ngữ pháp khi dùng", q: "___ you like coffee?", o: ["Do", "Does", "Are", "Is"], a: 0 },
+      { k: "Ngữ pháp khi dùng", q: "She ___ to school every day.", o: ["goes", "go", "going", "gone"], a: 0 },
+      { k: "Ngữ pháp khi dùng", q: "There ___ three people in my family.", o: ["are", "is", "have", "has"], a: 0 },
+      { k: "Mạo từ", q: "He's ___ engineer.", o: ["an", "a", "the", "— (không cần từ nào)"], a: 0 },
+      { k: "Phủ định", q: "I'm sorry, I ___ understand.", o: ["don't", "doesn't", "not", "am not"], a: 0 },
+      { k: "Câu hỏi", q: "What time ___ the film start?", o: ["does", "do", "is", "are"], a: 0 }
+    ]},
+    { band: "A2", short: "Cơ bản", items: [
+      { k: "Quá khứ đơn", q: "I ___ to Da Nang last summer.", o: ["went", "go", "have gone", "was going"], a: 0 },
+      { k: "So sánh hơn", q: "This road is ___ than the old one.", o: ["busier", "more busy", "busiest", "most busy"], a: 0 },
+      { k: "Quá khứ tiếp diễn", q: "She ___ TV when I called.", o: ["was watching", "watched", "watches", "is watching"], a: 0 },
+      { k: "Lượng từ", q: "Would you like ___ tea?", o: ["some", "any", "a", "much"], a: 0 },
+      { k: "Giới từ thời gian", q: "He's lived here ___ ten years.", o: ["for", "since", "from", "during"], a: 0 },
+      { k: "Tương lai gần", q: "Look at those clouds — it ___ rain.", o: ["is going to", "will", "would", "shall"], a: 0 }
+    ]},
+    { band: "B1", short: "Trung cấp", items: [
+      { k: "Hiện tại hoàn thành", q: "I've lived here ___ 2019.", o: ["since", "for", "from", "in"], a: 0 },
+      { k: "Câu điều kiện loại 1", q: "If it rains, we ___ stay home.", o: ["will", "would", "had", "are"], a: 0 },
+      { k: "Mệnh đề quan hệ", q: "She's the person ___ car broke down yesterday.", o: ["whose", "who", "which", "that"], a: 0 },
+      { k: "Động từ khuyết thiếu", q: "You ___ wear a helmet. It's the law.", o: ["must", "can", "might", "would"], a: 0 },
+      { k: "Cấu trúc so sánh", q: "The film was ___ boring that I left early.", o: ["so", "such", "too", "very"], a: 0 },
+      { k: "Danh động từ", q: "I'm used to ___ up early now.", o: ["getting", "get", "got", "be getting"], a: 0 }
+    ]},
+    { band: "B2", short: "Trung cao", items: [
+      { k: "Câu tường thuật", q: "He said he ___ call me the next day.", o: ["would", "will", "is going to", "shall"], a: 0 },
+      { k: "Câu bị động", q: "The report ___ by Friday.", o: ["must be finished", "must finish", "must finishing", "must to finish"], a: 0 },
+      { k: "Từ nối nhượng bộ", q: "___ the heavy traffic, we arrived on time.", o: ["Despite", "Although", "However", "Because of"], a: 0 },
+      { k: "Câu ước", q: "I wish I ___ more time to prepare.", o: ["had", "have", "will have", "am having"], a: 0 },
+      { k: "Cụm động từ", q: "The meeting was called ___ because of the storm.", o: ["off", "out", "up", "over"], a: 0 },
+      { k: "Đảo ngữ", q: "Not only ___ talented, but she also works extremely hard.", o: ["is she", "she is", "does she", "she does"], a: 0 }
+    ]},
+    { band: "C1", short: "Cao cấp", items: [
+      { k: "Văn phong", q: "Câu nào phù hợp nhất trong email trang trọng gửi khách hàng?",
+        o: ["I'm afraid we won't be able to meet the deadline.", "Sorry, can't make the deadline.", "We're not gonna finish on time.", "The deadline is impossible."], a: 0 },
+      { k: "Collocation", q: "The new evidence ___ doubt on his account of the events.",
+        o: ["casts", "throws", "puts", "places"], a: 0 },
+      { k: "Ý ngầm", q: "“I suppose it could have been worse.” Người nói đang cảm thấy thế nào?",
+        o: ["Hơi thất vọng", "Rất hài lòng", "Tức giận", "Ngạc nhiên"], a: 0 },
+      { k: "Từ nối nghịch ý", q: "The proposal is expensive. ___, it may be the only viable option.",
+        o: ["Nevertheless", "Therefore", "Moreover", "Similarly"], a: 0 },
+      { k: "Văn phong học thuật", q: "Câu mở bài nào phù hợp nhất cho một bài luận dạng IELTS Writing Task 2?",
+        o: ["It is often argued that technology has fundamentally reshaped the way we work.",
+            "Everybody knows technology changed work a lot.",
+            "In my opinion technology is 100% good for work.",
+            "Technology and work — a very big topic today!"], a: 0 },
+      { k: "Đọc hiểu ý ngầm",
+        ctx: "“The restaurant has certainly changed since new owners took over. The dining room is spotless now, and the menu has been cut from forty dishes to twelve. Regulars who came for the old favourites have drifted away, though the tables are full again on weekends — with a rather different crowd.”",
+        q: "Người viết ngụ ý điều gì?",
+        o: ["Nhà hàng đổi khác nhưng vẫn đông, chỉ là khách đã khác trước",
+            "Nhà hàng đang làm ăn thua lỗ",
+            "Người viết thích chủ mới hơn chủ cũ",
+            "Nhà hàng sắp phải đóng cửa"], a: 0 }
+    ]}
+  ];
+
+  var BAND_INFO = {
+    "Chưa đạt Pre-A1": { ielts: "chưa đo được", name: "Mất gốc hoàn toàn",
+      cando: "Chưa nhận diện được cấu trúc câu cơ bản nhất. Đây là điểm xuất phát bình thường của rất nhiều học viên người lớn từng học ngữ pháp ở trường nhưng chưa từng dùng tiếng Anh để nói.",
+      lop: "Lớp nền tảng 1 kèm 1. Ưu tiên phản xạ nghe và nhắc lại trước khi học cấu trúc." },
+    "Pre-A1": { ielts: "chưa đo được", name: "Khởi đầu",
+      cando: "Nhận diện được câu chào hỏi, giới thiệu bản thân, số đếm và danh từ số nhiều đơn giản.",
+      lop: "Speak Now 1 với nhịp chậm, hoặc lớp nền tảng riêng nếu học viên chưa dám mở miệng." },
+    "A1": { ielts: "tương đương dưới 4.0", name: "Sơ cấp",
+      cando: "Hiểu và dùng được cụm từ quen thuộc về bản thân, gia đình. Giao tiếp đơn giản khi người đối diện nói chậm.",
+      lop: "Speak Now 1 — xây nền mẫu câu giao tiếp cơ bản." },
+    "A2": { ielts: "tương đương khoảng 4.0", name: "Cơ bản",
+      cando: "Trao đổi thông tin quen thuộc trong sinh hoạt hằng ngày. Kể được việc đã xảy ra bằng chuỗi câu đơn.",
+      lop: "Speak Now 2 — kể chuyện quá khứ, lên kế hoạch, nói sở thích và ý kiến." },
+    "B1": { ielts: "tương đương khoảng 4.5 – 5.5", name: "Trung cấp",
+      cando: "Xử lý được hầu hết tình huống giao tiếp thường ngày. Kể lại trải nghiệm và đưa ra lý do mạch lạc.",
+      lop: "Speak Now 3 — thảo luận vấn đề quen thuộc, so sánh, đưa lý do." },
+    "B2": { ielts: "tương đương khoảng 5.5 – 6.5", name: "Trung cao cấp",
+      cando: "Tương tác trôi chảy, khá tự nhiên. Trình bày rõ ràng, chi tiết và bảo vệ được quan điểm.",
+      lop: "Speak Now 4 — trình bày quan điểm, tranh luận, giao tiếp công việc. Đủ điều kiện bắt đầu lộ trình IELTS." },
+    "C1": { ielts: "tương đương khoảng 7.0 trở lên", name: "Cao cấp",
+      cando: "Diễn đạt trôi chảy, gần như không cần tìm từ. Hiểu ý ngầm, đổi văn phong theo ngữ cảnh, tổ chức được lập luận dài.",
+      lop: "Lộ trình cá nhân hoá theo mục tiêu. Nếu học viên nhắm IELTS 7.0+, trung tâm thiết kế riêng thay vì xếp vào cấp độ giáo trình cố định." }
+  };
+
+  var TONG = BLOCKS.reduce(function (n, b) { return n + b.items.length; }, 0);
+  var flat = [];
+  BLOCKS.forEach(function (b, bi) {
+    b.items.forEach(function (it, ii) { flat.push({ bi: bi, ii: ii, it: it }); });
+  });
+
+  // Trong bo cau hoi goc, dap an dung luon nam o vi tri dau tien - de soat nhung
+  // de lo khi trinh chieu. Xoay vong lua chon mot lan luc nap trang, theo cong
+  // thuc co dinh nen thu tu khong doi khi hoc vien bam qua bam lai.
+  flat.forEach(function (f, i) {
+    var n = f.it.o.length;
+    var shift = (i * 3 + 1) % n;
+    if (shift === 0) return;
+    f.it.o = f.it.o.slice(shift).concat(f.it.o.slice(0, shift));
+    f.it.a = (f.it.a - shift + n) % n;
+  });
+
+  var idx = 0, answers = new Array(flat.length).fill(null), stopAt = null;
+  var man = "start";   // start | q | done
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  $("ladder").innerHTML = BLOCKS.map(function (b) {
+    return '<div class="step"><div class="step-bar"></div>' +
+           '<span class="step-label">' + b.short + '</span></div>';
+  }).join("");
+
+  function veThanh() {
+    var cur = flat[idx].bi;
+    BLOCKS.forEach(function (b, i) {
+      var el = $("ladder").children[i];
+      el.classList.toggle("done", i < cur);
+      el.classList.toggle("now", i === cur);
+    });
+    $("counter").textContent = "Bậc " + BLOCKS[cur].band + " · câu " + (flat[idx].ii + 1) + "/6";
+  }
+
+  function diemKhoi(bi) {
+    var d = 0;
+    flat.forEach(function (f, i) { if (f.bi === bi && answers[i] === f.it.a) d++; });
+    return d;
+  }
+
+  function veCau() {
+    var it = flat[idx].it;
+    $("q-kind").textContent = it.k;
+    var ctx = $("q-context");
+    if (it.ctx) { ctx.textContent = it.ctx; ctx.hidden = false; } else { ctx.hidden = true; }
+    $("q-text").textContent = it.q;
+
+    var dai = it.o.some(function (o) { return o.length > 34; });
+    $("opts").className = "opts" + (dai ? "" : " pair");
+    $("opts").innerHTML = it.o.map(function (o, i) {
+      return '<button type="button" class="opt" data-i="' + i + '">' +
+             '<span class="opt-key">' + (i + 1) + '</span><span class="opt-txt"></span></button>';
+    }).join("");
+    Array.prototype.forEach.call($("opts").children, function (btn, i) {
+      btn.querySelector(".opt-txt").textContent = it.o[i];
+      if (answers[idx] === i) btn.classList.add("picked");
+    });
+    if ($("chk-key").checked) hienDapAn();
+
+    $("btn-next").disabled = answers[idx] === null;
+    $("btn-back").disabled = idx === 0;
+    $("btn-next").textContent = (idx === flat.length - 1) ? "Kết quả" : "Tiếp";
+
+    var xong = 0, dung = 0;
+    for (var i = 0; i < flat.length; i++) if (answers[i] !== null) { xong++; if (answers[i] === flat[i].it.a) dung++; }
+    $("bar-score").innerHTML = "Đã làm <b>" + xong + "</b> / " + TONG +
+      " · đúng <b>" + dung + "</b> · bậc này <b>" + diemKhoi(flat[idx].bi) + "/6</b>";
+
+    veThanh();
+  }
+
+  function hienDapAn() {
+    var it = flat[idx].it;
+    Array.prototype.forEach.call($("opts").children, function (btn, i) {
+      btn.classList.remove("right", "wrong");
+      if (i === it.a) btn.classList.add("right");
+      else if (answers[idx] === i) btn.classList.add("wrong");
+    });
+  }
+  function anDapAn() {
+    Array.prototype.forEach.call($("opts").children, function (btn) { btn.classList.remove("right", "wrong"); });
+  }
+
+  function chon(i) {
+    var it = flat[idx].it;
+    if (i < 0 || i >= it.o.length) return;
+    answers[idx] = i;
+    Array.prototype.forEach.call($("opts").children, function (el) { el.classList.remove("picked"); });
+    $("opts").children[i].classList.add("picked");
+    if ($("chk-key").checked) hienDapAn();
+    $("btn-next").disabled = false;
+    veCau();
+  }
+
+  $("opts").addEventListener("click", function (e) {
+    var b = e.target.closest(".opt");
+    if (b) chon(Number(b.dataset.i));
+  });
+
+  $("chk-key").addEventListener("change", function () {
+    if (man !== "q") return;
+    if (this.checked) hienDapAn(); else anDapAn();
+  });
+
+  function tiep() {
+    var cuoiKhoi = (idx === flat.length - 1) || (flat[idx + 1].bi !== flat[idx].bi);
+    if (cuoiKhoi) {
+      var bi = flat[idx].bi;
+      if (diemKhoi(bi) < 4 || idx === flat.length - 1) { stopAt = bi; return ketQua(); }
+    }
+    idx++; veCau();
+  }
+  function lui() { if (idx > 0) { idx--; veCau(); } }
+
+  $("btn-next").addEventListener("click", tiep);
+  $("btn-back").addEventListener("click", lui);
+
+  function batDau() {
+    man = "q";
+    $("scr-start").hidden = true; $("scr-q").hidden = false;
+    $("bar").hidden = false; $("scr-done").hidden = true;
+    idx = 0; veCau();
+  }
+  $("btn-start").addEventListener("click", batDau);
+
+  function ketQua() {
+    man = "done";
+    var band = "Chưa đạt Pre-A1", i;
+    for (i = 0; i <= stopAt; i++) if (diemKhoi(i) >= 4) band = BLOCKS[i].band;
+    var info = BAND_INFO[band];
+
+    $("band").textContent = band;
+    $("band-ielts").textContent = "IELTS " + info.ielts;
+    $("band-name").textContent = info.name;
+    $("band-cando").textContent = info.cando;
+    $("band-class").textContent = info.lop;
+
+    var rows = "", tongDung = 0, daLam = 0;
+    for (i = 0; i <= stopAt; i++) {
+      var d = diemKhoi(i); tongDung += d; daLam += 6;
+      rows += '<div class="row"><dt>' + BLOCKS[i].band + ' · ' + BLOCKS[i].short +
+              '</dt><dd>' + d + ' / 6</dd></div>';
+    }
+    rows += '<div class="row"><dt>Tổng</dt><dd>' + tongDung + ' / ' + daLam + '</dd></div>';
+    $("breakdown").innerHTML = rows;
+
+    $("band-caveat").textContent = (band === "B2" || band === "C1")
+      ? "Từ B2 trở lên, phần trắc nghiệm không phân định được chính xác B2 hay C1 — khác biệt nằm ở phản xạ khi bị phản biện, khả năng đổi văn phong và cách tổ chức lập luận dài. Chốt bằng phần nói trực tiếp, chấm theo sáu tiêu chí trong Bộ kiểm tra đầu vào bản giấy."
+      : "Đây mới là phần chấm được bằng lựa chọn. Kỹ năng nói và nghe chấm riêng theo sáu tiêu chí trong Bộ kiểm tra đầu vào bản giấy, và bậc cuối cùng có thể khác kết quả này.";
+
+    $("scr-q").hidden = true; $("bar").hidden = true; $("scr-done").hidden = false;
+
+    var dong = ["Kết quả kiểm tra đầu vào — Ms.Ngọc Elite English",
+                "Bậc ước tính: " + band + " (" + info.name + ") · IELTS " + info.ielts,
+                "Điểm từng bậc:"];
+    for (i = 0; i <= stopAt; i++) dong.push("  " + BLOCKS[i].band + ": " + diemKhoi(i) + "/6");
+    dong.push("Lớp đề xuất: " + info.lop);
+    dong.push("(Tham khảo — nói và nghe chấm riêng theo sáu tiêu chí bản giấy.)");
+    window.__kq = dong.join("\n");
+  }
+
+  $("btn-copy").addEventListener("click", function () {
+    var t = window.__kq || "", b = this;
+    var cu = b.textContent;
+    function bao(s) { b.textContent = s; setTimeout(function () { b.textContent = cu; }, 2200); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { bao("Đã sao chép"); },
+        function () { bao("Không sao chép được"); });
+    } else { bao("Không sao chép được"); }
+  });
+
+  $("btn-again").addEventListener("click", function () {
+    man = "start"; idx = 0; stopAt = null; answers = new Array(flat.length).fill(null);
+    $("scr-done").hidden = true; $("scr-start").hidden = false; $("bar").hidden = true;
+    $("counter").textContent = "Chưa bắt đầu";
+    Array.prototype.forEach.call($("ladder").children, function (el) {
+      el.classList.remove("done", "now");
+    });
+  });
+
+  // ---- bàn phím: giáo viên không phải rê chuột khi đang chia sẻ màn hình
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT") return;
+    if (man === "start") { if (e.key === "Enter") { e.preventDefault(); batDau(); } return; }
+    if (man !== "q") return;
+    if (e.key >= "1" && e.key <= "4") { e.preventDefault(); chon(Number(e.key) - 1); }
+    else if (e.key === "Enter" || e.key === "ArrowRight") {
+      e.preventDefault(); if (!$("btn-next").disabled) tiep();
+    }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); lui(); }
+    else if (e.key === " ") {
+      e.preventDefault();
+      $("chk-key").checked = !$("chk-key").checked;
+      if ($("chk-key").checked) hienDapAn(); else anDapAn();
+    }
+  });
+})();
+</script>
