@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Menu,
   Receipt,
+  Scale,
   School,
   Banknote,
   CalendarCheck,
@@ -87,6 +88,7 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
     items: [
       { href: '/tai-chinh', label: 'Tài chính theo năm', icon: TrendingUp },
       { href: '/payments', label: 'Học phí & công nợ', icon: Wallet },
+      { href: '/doi-soat', label: 'Đối soát học phí', icon: Scale },
       { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
       { href: '/payroll', label: 'Lương giáo viên', icon: Banknote },
       { href: '/expenses', label: 'Chi phí', icon: Receipt },
