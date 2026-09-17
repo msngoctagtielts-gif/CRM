@@ -1,0 +1,433 @@
+<title>Lộ Trình Bảy Chặng</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --bg:        #F1F0EC;
+    --surface:   #FFFFFF;
+    --surface-2: #F7F6F2;
+    --ink:       #16203A;
+    --ink-2:     #4B5568;
+    --ink-3:     #7E8698;
+    --line:      #DCD9D1;
+    --line-2:    #EAE7E0;
+    --navy:      #1B2A4A;
+    --navy-txt:  #1B2A4A;
+    --gold:      #A8863B;
+    --gold-rule: #C9A227;
+    --burgundy:  #7A2B3A;
+    --kids:      #2F6B5F;
+    --adult:     #33507F;
+    --sans: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+    --serif: "Lora", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #0D1220;
+      --surface:   #151C2C;
+      --surface-2: #1A2234;
+      --ink:       #E9EDF4;
+      --ink-2:     #AAB4C6;
+      --ink-3:     #828C9F;
+      --line:      #2A3448;
+      --line-2:    #222B3D;
+      --navy:      #0A0F1B;
+      --navy-txt:  #C4D2EC;
+      --gold:      #D9B667;
+      --gold-rule: #C9A227;
+      --burgundy:  #D08C9B;
+      --kids:      #6FC0AE;
+      --adult:     #8FB2E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #0D1220;
+    --surface:   #151C2C;
+    --surface-2: #1A2234;
+    --ink:       #E9EDF4;
+    --ink-2:     #AAB4C6;
+    --ink-3:     #828C9F;
+    --line:      #2A3448;
+    --line-2:    #222B3D;
+    --navy:      #0A0F1B;
+    --navy-txt:  #C4D2EC;
+    --gold:      #D9B667;
+    --gold-rule: #C9A227;
+    --burgundy:  #D08C9B;
+    --kids:      #6FC0AE;
+    --adult:     #8FB2E8;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 0 16px;
+    padding-block: 40px 64px;
+  }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+  p { margin: 0 0 14px; max-width: 62ch; }
+  strong { font-weight: 600; }
+
+  /* ---------- đầu trang ---------- */
+  .brand {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-2);
+  }
+  .rule { height: 3px; background: var(--gold-rule); width: 64px; margin: 14px 0 22px; }
+  h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.12; color: var(--navy-txt); }
+  .sub { font-size: clamp(16px, 2.4vw, 19px); color: var(--ink-2); margin-top: 10px; max-width: 46ch; }
+  .motto { font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 17px; margin-top: 18px; }
+
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 6px 22px;
+    font-size: 13px; color: var(--ink-3);
+    border-top: 1px solid var(--line); margin-top: 26px; padding-top: 14px;
+  }
+
+  /* ---------- khối nội dung ---------- */
+  section { margin-top: 44px; }
+  h2 {
+    font-size: clamp(20px, 3.4vw, 26px); color: var(--navy-txt);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold-rule);
+    display: inline-block; margin-bottom: 20px;
+  }
+  h3 { font-size: 18px; color: var(--navy-txt); margin: 26px 0 10px; }
+
+  .lead {
+    font-size: 17px; line-height: 1.7; color: var(--ink);
+    max-width: 58ch;
+  }
+
+  .note {
+    border-left: 3px solid var(--gold-rule);
+    padding: 2px 0 2px 16px;
+    font-size: 13.5px; color: var(--ink-2); line-height: 1.6;
+    max-width: 62ch; margin: 16px 0;
+  }
+
+  .howto { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 20px 0 8px; }
+  .howto div { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; }
+  .howto b { display: block; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; font-weight: 600; }
+  .howto p { margin: 0; font-size: 14px; }
+
+  /* ---------- bảng lộ trình ---------- */
+  .tablebox { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; min-width: 60rem; }
+  caption { text-align: left; padding: 16px 18px 0; font-size: 13px; color: var(--ink-3); }
+  thead th {
+    background: var(--navy); color: #FFFFFF;
+    font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+    letter-spacing: .04em; text-align: left; vertical-align: bottom;
+    padding: 12px 14px; border-right: 1px solid rgba(255,255,255,.12);
+  }
+  :root[data-theme="dark"] thead th, :root:not([data-theme="light"]) thead th { color: #E9EDF4; }
+  thead th:last-child { border-right: 0; }
+
+  tbody td { padding: 14px; vertical-align: top; font-size: 13.5px; line-height: 1.6; border-top: 1px solid var(--line-2); }
+  tbody tr:hover td { background: var(--surface-2); }
+
+  tr.group th {
+    text-align: left; padding: 14px 14px 10px;
+    background: var(--surface-2); border-top: 1px solid var(--line);
+    font-family: var(--sans); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  tr.group.kids th { color: var(--kids); box-shadow: inset 3px 0 0 var(--kids); }
+  tr.group.adult th { color: var(--adult); box-shadow: inset 3px 0 0 var(--adult); }
+  tr.group th span { display: block; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink-2); font-weight: 400; margin-top: 4px; }
+
+  td.stage { white-space: nowrap; }
+  .num {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    color: var(--gold); line-height: 1; display: block;
+  }
+  .lvl { font-weight: 600; color: var(--navy-txt); display: block; margin-top: 4px; font-size: 14px; }
+  .book { font-size: 12px; color: var(--ink-3); display: block; }
+  td.age, td.cefr { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .chip {
+    display: inline-block; border: 1px solid var(--line); border-radius: 2px;
+    padding: 2px 8px; font-size: 12.5px; font-weight: 600; color: var(--navy-txt);
+    background: var(--surface-2); font-variant-numeric: tabular-nums;
+  }
+
+  /* bảng hẹp: xếp chồng thành từng thẻ */
+  @media (max-width: 760px) {
+    .tablebox { border: 0; background: transparent; overflow-x: visible; }
+    table { min-width: 0; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    tbody tr { display: block; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; }
+    tbody tr.group { background: transparent; border: 0; margin: 24px 0 10px; }
+    tr.group th { display: block; box-shadow: none; padding: 0 0 0 12px; background: transparent; border: 0; }
+    tr.group.kids th { border-left: 3px solid var(--kids); }
+    tr.group.adult th { border-left: 3px solid var(--adult); }
+    tbody td { display: block; border-top: 1px solid var(--line-2); padding: 10px 14px; }
+    tbody tr td:first-child { border-top: 0; background: var(--surface-2); }
+    tbody td[data-label]::before {
+      content: attr(data-label);
+      display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--ink-3); font-weight: 600; margin-bottom: 3px;
+    }
+    tbody tr:hover td { background: var(--surface); }
+    tbody tr:hover td:first-child { background: var(--surface-2); }
+  }
+
+  /* ---------- bảng nhỏ ---------- */
+  .mini { width: 100%; border-collapse: collapse; min-width: 0; background: var(--surface); border: 1px solid var(--line); }
+  .mini th { background: var(--surface-2); color: var(--navy-txt); text-align: left; font-size: 12.5px; font-weight: 600; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  .mini td { padding: 11px 14px; font-size: 13.5px; border-top: 1px solid var(--line-2); vertical-align: top; }
+  .miniwrap { overflow-x: auto; }
+  .mini.cefr { min-width: 44rem; }
+
+  /* ---------- cam kết ---------- */
+  .pledge { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+  .pledge > div { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; }
+  .pledge h3 { margin: 0 0 10px; font-size: 16px; }
+  .pledge.yes h3 { color: var(--kids); }
+  .pledge ul { margin: 0; padding-left: 18px; }
+  .pledge li { margin-bottom: 8px; font-size: 14px; }
+  .no h3 { color: var(--burgundy); }
+
+  ul.plain { padding-left: 18px; margin: 0 0 14px; max-width: 62ch; }
+  ul.plain li { margin-bottom: 8px; }
+
+  footer {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-3); line-height: 1.65;
+  }
+  footer p { max-width: none; }
+
+  @media print {
+    body { background: #FFF; color: #000; font-size: 11pt; }
+    .wrap { max-width: none; padding: 0; }
+    .tablebox, .howto div, .pledge > div, .mini { border-color: #999; }
+    thead th { background: #1B2A4A !important; color: #FFF !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody tr, .pledge > div { break-inside: avoid; }
+    section { break-inside: auto; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="brand">Ms.Ngọc Elite English</div>
+    <div class="rule"></div>
+    <h1>Lộ trình học tập bảy chặng</h1>
+    <p class="sub">Từ buổi đầu chưa nói được câu nào đến khi trình bày được quan điểm bằng tiếng Anh — bảng chi tiết dành cho Quý Phụ huynh và Học viên.</p>
+    <p class="motto">“Thấu hiểu để dẫn lối.”</p>
+    <div class="meta">
+      <span>Bản V1.0 · ngày 17/09/2026</span>
+      <span>Trích từ Lộ trình học tập V1.1</span>
+      <span>Chương trình tiếng Anh giao tiếp</span>
+    </div>
+  </header>
+
+  <section>
+    <p class="lead">Trung tâm chuyên về tiếng Anh giao tiếp. Đích đến của mỗi chặng không phải là học hết một cuốn sách, mà là học viên <strong>nói được</strong> trong những tình huống thật. Bảng dưới đây cho Quý Phụ huynh thấy rõ bảy chặng của lộ trình, mỗi chặng con làm được gì, và làm sao biết con đang tiến bộ.</p>
+
+    <div class="howto">
+      <div>
+        <b>Đọc cột CEFR thế nào</b>
+        <p>CEFR là thang trình độ ngoại ngữ do Hội đồng châu Âu ban hành, từ A1 đến C2. Cambridge English và IELTS đều đối chiếu tới thang này.</p>
+      </div>
+      <div>
+        <b>Tuổi chỉ là khuyến nghị</b>
+        <p>Trung tâm xếp lớp theo kết quả bài kiểm tra đầu vào, không theo tuổi. Học viên từ 9 tuổi trở lên mới bắt đầu sẽ không học từ chặng 1.</p>
+      </div>
+      <div>
+        <b>Không có mốc thời gian</b>
+        <p>Bảng này không ghi mỗi chặng kéo dài bao lâu, vì điều đó phụ thuộc tần suất học và mức luyện tập ngoài giờ của từng học viên.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Bảng lộ trình bảy chặng</h2>
+
+    <div class="tablebox">
+      <table>
+        <caption>Hai chương trình nối liền nhau thành một lộ trình, không phải hai khoá tách rời.</caption>
+        <thead>
+          <tr>
+            <th scope="col" style="width:13%">Chặng</th>
+            <th scope="col" style="width:11%">Tuổi khuyến nghị</th>
+            <th scope="col" style="width:9%">CEFR</th>
+            <th scope="col" style="width:33%">Trong lớp tập trung vào</th>
+            <th scope="col" style="width:34%">Kết thúc chặng, học viên làm được</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="group kids">
+            <th colspan="5" scope="colgroup">Chương trình Kids Communication
+              <span>Giáo trình nền: Kid’s Box (Cambridge), Starter → Level 4 · Xây nền phản xạ nghe và nói</span>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">1</span><span class="lvl">Starter</span><span class="book">Kid’s Box</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">6–7 tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">Pre-A1</span></td>
+            <td data-label="Trong lớp tập trung vào">Bảng chữ cái, số đếm, màu sắc, từ vựng đồ vật quen thuộc. Luyện phản xạ nghe rồi lặp lại ngay trong buổi.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Nghe hiểu và nhắc lại được 100–150 từ chủ đề gần gũi (màu sắc, số đếm, đồ vật, con vật); chào hỏi và giới thiệu tên tuổi rất đơn giản với hỗ trợ của giáo viên.</td>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">2</span><span class="lvl">Level 1–2</span><span class="book">Kid’s Box</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">7–8 tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">Pre-A1</span></td>
+            <td data-label="Trong lớp tập trung vào">Câu đơn giản quanh chủ đề bản thân, gia đình, con vật, đồ ăn. Bắt đầu hỏi và đáp qua lại với giáo viên.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Nghe hiểu chỉ dẫn ngắn trong lớp; nói câu đơn về bản thân, gia đình, sở thích; đọc hiểu từ và câu ngắn có tranh; viết chép và điền được từ đơn giản.</td>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">3</span><span class="lvl">Level 3–4</span><span class="book">Kid’s Box</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">8–10 tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">A1</span></td>
+            <td data-label="Trong lớp tập trung vào">Kể chuyện đơn giản, mô tả hoạt động thường ngày, thì hiện tại và quá khứ cơ bản, hỏi – đáp mở rộng.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Nghe hiểu hội thoại ngắn quen thuộc; nói được đoạn 3–5 câu mô tả người, vật, hoạt động; đọc hiểu đoạn văn ngắn hợp lứa tuổi; viết đoạn 2–4 câu có hướng dẫn.</td>
+          </tr>
+
+          <tr class="group adult">
+            <th colspan="5" scope="colgroup">Chương trình Adult Communication
+              <span>Giáo trình nền: Speak Now (Oxford) 1–4, kèm phim và video theo chủ đề · Nói được việc thật</span>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">4</span><span class="lvl">Speak Now 1</span><span class="book">Oxford</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">Từ 9–10 tuổi trở lên, và người lớn</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">A1 → A2</span></td>
+            <td data-label="Trong lớp tập trung vào">Mẫu câu nền tảng cho tình huống đời sống hằng ngày. Sau mỗi bốn bài có video thực tế để quan sát ngữ điệu và ngôn ngữ cơ thể.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Giới thiệu bản thân, kể thói quen, nói về gia đình, mua sắm, hỏi đường.</td>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">5</span><span class="lvl">Speak Now 2</span><span class="book">Oxford</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">Xếp theo trình độ, không theo tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">A2 → B1</span></td>
+            <td data-label="Trong lớp tập trung vào">Luyện kể lại việc đã xảy ra và nói về dự định. Trích đoạn hoạt hình hoặc sitcom nhẹ, phụ đề tiếng Anh, chủ đề gần gũi.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Kể chuyện đã xảy ra, lên kế hoạch, nói sở thích và ý kiến đơn giản.</td>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">6</span><span class="lvl">Speak Now 3</span><span class="book">Oxford</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">Xếp theo trình độ, không theo tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">B1 → B1+</span></td>
+            <td data-label="Trong lớp tập trung vào">Hội thoại dài hơn, ít câu mẫu hơn. Trích đoạn phim và series thực tế, phân tích ngữ điệu và thành ngữ.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Thảo luận vấn đề quen thuộc, so sánh, đưa ra lý do — hội thoại tự nhiên hơn.</td>
+          </tr>
+
+          <tr>
+            <td class="stage"><span class="num">7</span><span class="lvl">Speak Now 4</span><span class="book">Oxford</span></td>
+            <td class="age" data-label="Tuổi khuyến nghị">Xếp theo trình độ, không theo tuổi</td>
+            <td class="cefr" data-label="CEFR"><span class="chip">B1+ → B2</span></td>
+            <td data-label="Trong lớp tập trung vào">Luyện bảo vệ ý kiến khi bị hỏi ngược. Phim và talk show chủ đề công việc, xã hội; tranh luận và thuyết trình ngắn.</td>
+            <td data-label="Kết thúc chặng, học viên làm được">Trình bày quan điểm, tranh luận, giao tiếp công việc cơ bản.</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">Mức CEFR của từng cấp độ Speak Now là phân bổ của trung tâm trong phổ chung A1–B2 mà Oxford University Press công bố cho trọn bộ bốn cấp; đây là mốc tham chiếu để tư vấn lộ trình, không phải mức do nhà xuất bản công bố cho từng cấp riêng lẻ. Kid’s Box bám sát hệ thống kỳ thi Cambridge Young Learners English (Starters – Movers – Flyers), nên nếu về sau con thi lấy chứng chỉ thì nền đã sẵn.</p>
+  </section>
+
+  <section>
+    <h2>Khi nào con chuyển từ Kids sang Speak Now</h2>
+    <p>Trung tâm không dùng một mốc tuổi cứng. Con chuyển sang Speak Now khi đạt <strong>đồng thời</strong> hai điều kiện:</p>
+    <ul class="plain">
+      <li>Đã hoàn tất Kid’s Box Level 4, tức đạt trình độ A1.</li>
+      <li>Từ khoảng 9–10 tuổi trở lên.</li>
+    </ul>
+    <p>Lý do của cách làm này: Kid’s Box được thiết kế cho lứa tiểu học với hình ảnh và trò chơi hợp tâm lý 6–10 tuổi, còn Speak Now hướng tới chủ đề đời sống thực tế. Chuyển quá sớm khi chưa đủ vốn từ khiến con hụt hẫng; giữ quá lâu khiến con lớn hơn thấy nội dung “trẻ con” và mất hứng. Trung tâm quyết định dựa trên quan sát thực tế từng học viên.</p>
+    <p>Với học viên mới bắt đầu từ 9 tuổi trở lên, trung tâm không bắt đầu từ Kid’s Box Starter mà làm bài kiểm tra đầu vào để xếp thẳng vào cấp độ phù hợp.</p>
+  </section>
+
+  <section>
+    <h2>Làm sao biết con đang tiến bộ</h2>
+    <div class="miniwrap">
+      <table class="mini">
+        <thead><tr><th scope="col">Quý Phụ huynh nhận được</th><th scope="col">Khi nào</th></tr></thead>
+        <tbody>
+          <tr><td>Báo cáo sau mỗi buổi học — con làm được gì, còn cần cải thiện gì</td><td>Trong vòng 24 giờ</td></tr>
+          <tr><td>Video buổi học</td><td>Kèm báo cáo</td></tr>
+          <tr><td>Đánh giá lại để xác nhận con lên cấp độ hay cần củng cố thêm</td><td>Giữa kỳ và cuối kỳ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sáu tiêu chí trung tâm chấm phần nói</h3>
+    <p>Mỗi tiêu chí chấm theo thang 1–5: 5 là vượt chuẩn, 4 đạt tốt, 3 đạt, 2 cần luyện thêm, 1 cần hỗ trợ riêng. Điểm luôn đi kèm câu học viên đã nói trong buổi, để Quý Phụ huynh đối chiếu được.</p>
+    <div class="miniwrap">
+      <table class="mini">
+        <thead><tr><th scope="col">Tiêu chí</th><th scope="col">Trung tâm quan sát điều gì</th></tr></thead>
+        <tbody>
+          <tr><td>Fluency — độ trôi chảy</td><td>Nói liền mạch được bao nhiêu, ngắt quãng để tìm từ nhiều hay ít.</td></tr>
+          <tr><td>Vocabulary — vốn từ</td><td>Dùng đúng từ cho chủ đề đang nói, có xoay được sang cách diễn đạt khác khi bí từ không.</td></tr>
+          <tr><td>Grammar in Use — ngữ pháp khi nói</td><td>Ngữ pháp dùng đúng ngay trong lúc nói, không phải khi làm bài tập.</td></tr>
+          <tr><td>Pronunciation — phát âm</td><td>Người nghe hiểu được không, trọng âm và ngữ điệu đặt đúng chỗ chưa.</td></tr>
+          <tr><td>Interaction — tương tác</td><td>Có hỏi lại, phản hồi, giữ được mạch hội thoại hay chỉ trả lời rồi dừng.</td></tr>
+          <tr><td>Confidence — sự tự tin</td><td>Chủ động mở lời hay chờ được gọi; dám nói tiếp khi nói sai.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Sáu tiêu chí này là bộ chấm riêng của Ms.Ngọc Elite English, dùng thống nhất cho mọi lớp giao tiếp. Đây không phải thang chấm của một kỳ thi chuẩn hoá.</p>
+  </section>
+
+  <section>
+    <h2>Thang CEFR — để Quý Phụ huynh tự đối chiếu</h2>
+    <p>Đọc mô tả “làm được gì” ở mỗi bậc để hình dung con đang ở đâu trên lộ trình.</p>
+    <div class="miniwrap">
+      <table class="mini cefr">
+        <thead><tr><th scope="col">Bậc</th><th scope="col">Nghe</th><th scope="col">Nói — tương tác</th><th scope="col">Nói — trình bày</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip">A1</span></td><td>Hiểu từ và cụm từ quen thuộc về bản thân, gia đình.</td><td>Giao tiếp đơn giản nếu người đối diện nói chậm và sẵn sàng nhắc lại.</td><td>Dùng câu đơn giản mô tả nơi ở, người quen.</td></tr>
+          <tr><td><span class="chip">A2</span></td><td>Hiểu từ vựng tần suất cao liên quan trực tiếp tới bản thân.</td><td>Trao đổi thông tin đơn giản, quen thuộc trong sinh hoạt hằng ngày.</td><td>Dùng chuỗi câu đơn mô tả gia đình, điều kiện sống, công việc.</td></tr>
+          <tr><td><span class="chip">B1</span></td><td>Hiểu ý chính của lời nói rõ ràng về chủ đề quen thuộc.</td><td>Xử lý được hầu hết tình huống giao tiếp khi đi du lịch hoặc sinh hoạt nơi nói tiếng Anh.</td><td>Kết nối câu để mô tả trải nghiệm, mong muốn, lý do.</td></tr>
+          <tr><td><span class="chip">B2</span></td><td>Hiểu bài nói dài, theo dõi được lập luận khá phức tạp.</td><td>Tương tác trôi chảy, tự nhiên với người bản xứ ở mức khá thoải mái.</td><td>Trình bày rõ ràng, chi tiết về nhiều chủ đề quan tâm.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Nguồn: Bảng tự đánh giá CEFR — Council of Europe / Europass, bảng tham chiếu công khai, trung tâm dịch sang tiếng Việt. Đây là khung tham chiếu quốc tế mà hệ thống Cambridge English và IELTS đều đối chiếu tới. Bậc Pre-A1, C1 và C2 không đưa vào bảng này vì nằm ngoài phổ của hai chương trình trên.</p>
+  </section>
+
+  <section>
+    <h2>Điều trung tâm cam kết và điều không cam kết</h2>
+    <div class="pledge">
+      <div class="yes">
+        <h3>Trung tâm cam kết</h3>
+        <ul>
+          <li>Bố trí giáo viên đạt tiêu chuẩn tuyển chọn của trung tâm.</li>
+          <li>Gửi báo cáo cụ thể sau mỗi buổi học, kèm video buổi học.</li>
+          <li>Điều chỉnh phương pháp theo từng học viên, không dạy rập khuôn.</li>
+        </ul>
+      </div>
+      <div class="no">
+        <h3>Trung tâm không cam kết</h3>
+        <ul>
+          <li>Một mốc thời gian cố định để đạt trình độ hay điểm số. Kết quả phụ thuộc tần suất học, mức luyện tập ngoài giờ và đặc điểm từng học viên.</li>
+          <li>Chứng chỉ do cơ quan nhà nước công nhận. Kết thúc lộ trình, học viên nhận Giấy xác nhận hoàn thành và hồ sơ tiến độ học tập của trung tâm.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">Chi tiết tại Thoả thuận đăng ký chương trình học V1.2, Điều 5 và Điều 8.</p>
+  </section>
+
+  <section>
+    <h2>Về luyện thi IELTS</h2>
+    <p>Ms.Ngọc Elite English hiện tập trung vào tiếng Anh giao tiếp. Luyện thi IELTS là hướng trung tâm phát triển ở giai đoạn sau, dành cho học viên đã đạt tối thiểu B1. Quý Phụ huynh hoặc Học viên có nhu cầu IELTS, vui lòng trao đổi trực tiếp để trung tâm tư vấn theo từng trường hợp.</p>
+  </section>
+
+  <footer>
+    <p>Kid’s Box thuộc bản quyền Cambridge University Press &amp; Assessment; Speak Now thuộc bản quyền Oxford University Press. Ms.Ngọc Elite English sử dụng các giáo trình này làm nền tảng và xây dựng thêm lộ trình, chuẩn đầu ra và báo cáo tiến bộ riêng theo phương pháp “Thấu hiểu để dẫn lối”.</p>
+    <p>Bảng lộ trình V1.0 · ban hành 17/09/2026 · trích từ tài liệu Lộ trình học tập V1.1 dành cho Phụ huynh và Học viên.</p>
+  </footer>
+
+</div>
