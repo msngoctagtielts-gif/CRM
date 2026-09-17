@@ -6,7 +6,7 @@ import { currentMonth } from '@/lib/period'
 import { formatCurrency, formatDate, formatDuration, formatNumber } from '@/lib/format'
 import { PAYROLL_STATUS } from '@/lib/labels'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { Card, CardHeader } from '@/components/ui/Card'
+import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { StatCard } from '@/components/ui/StatCard'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
@@ -30,18 +30,30 @@ export default async function PayrollPage() {
       .limit(100),
     supabase
       .from('teacher_payable_lessons')
-      .select('id, teacher_id, lesson_date, duration_minutes, amount, has_video, has_evidence, sent_to_parent, qc_score')
+      .select(
+        'id, teacher_id, lesson_date, duration_minutes, amount, has_video, has_evidence, sent_to_parent, qc_score',
+      )
       .eq('status', 'pending')
       .order('lesson_date', { ascending: false })
       .limit(100),
     isFounder
-      ? supabase
-          .from('teachers')
-          .select('id, full_name')
-          .eq('status', 'active')
-          .order('full_name')
+      ? supabase.from('teachers').select('id, full_name').eq('status', 'active').order('full_name')
       : Promise.resolve({ data: [] }),
   ])
+
+  // Mốc siết và danh sách buổi bị chặn lương. v_buoi_chan_luong định nghĩa điều
+  // kiện chặn ở đúng một chỗ, dùng chung với hàm cảnh báo và luật sinh công —
+  // nên màn hình này không thể nói khác với luật.
+  const [{ data: mocRow }, { data: biChan }] = await Promise.all([
+    supabase.from('settings').select('value').eq('key', 'require_evidence_from').maybeSingle(),
+    supabase
+      .from('v_buoi_chan_luong')
+      .select('lesson_id, lesson_date, ten_lop, ten_giao_vien, ly_do')
+      .order('lesson_date', { ascending: false })
+      .limit(100),
+  ])
+  const moc = typeof mocRow?.value === 'string' ? mocRow.value : null
+  const chanRows = biChan ?? []
 
   const rows = periods ?? []
   const pendingRows = pending ?? []
@@ -70,18 +82,26 @@ export default async function PayrollPage() {
           caption={formatCurrency(unpaidAmount)}
           accent={unpaid.length > 0 ? 'burgundy' : 'sage'}
         />
-        <StatCard label="Tổng số kỳ" value={rows.length} accent="navy" />
+        <StatCard
+          label="Buổi bị chặn lương"
+          value={chanRows.length}
+          caption={moc ? `Áp dụng từ ${formatDate(moc)}` : undefined}
+          accent={chanRows.length > 0 ? 'burgundy' : 'sage'}
+        />
       </section>
 
       {isFounder ? (
         <Alert kind="info" className="mb-5">
-          Buổi học chỉ vào bảng lương khi <strong>có ngày giờ dạy thực tế và đã điểm danh</strong>.
-          Thiếu bằng chứng chất lượng thì vẫn được trả lương, chỉ bị gắn cờ để bạn nhìn thấy.
+          Buổi dạy <strong>trước {moc ? formatDate(moc) : '01/09/2026'}</strong> được tính lương đầy
+          đủ theo hiện trạng đã nhập, không xét thiếu đủ. <strong>Từ ngày đó trở đi</strong>, buổi
+          chỉ sinh công khi có đủ giờ vào, giờ ra và điểm danh đủ sĩ số. Thiếu bằng chứng chất lượng
+          (video, điểm chấm) thì vẫn được trả lương, chỉ bị gắn cờ để bạn nhìn thấy.
         </Alert>
       ) : (
         <Alert kind="info" className="mb-5">
-          Buổi dạy chỉ được tính lương khi bạn đã ghi <strong>ngày và giờ dạy thực tế</strong> trong
-          báo cáo. Thiếu giờ dạy thì buổi đó không vào bảng lương.
+          Từ <strong>{moc ? formatDate(moc) : '01/09/2026'}</strong>, buổi dạy chỉ được tính lương
+          khi bạn đã ghi <strong>giờ vào, giờ ra và điểm danh đủ sĩ số</strong>. Thiếu một trong ba
+          thì buổi đó chưa vào bảng lương — bổ sung xong là buổi tự vào, không cần báo ai.
         </Alert>
       )}
 
@@ -147,6 +167,48 @@ export default async function PayrollPage() {
                 </tbody>
               </Table>
             )}
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Buổi bị chặn lương"
+              description={
+                moc
+                  ? `Buổi từ ${formatDate(moc)} trở đi còn thiếu điều kiện nên chưa sinh công`
+                  : 'Buổi còn thiếu điều kiện nên chưa sinh công'
+              }
+            />
+            {chanRows.length === 0 ? (
+              <EmptyState
+                title="Không có buổi nào bị chặn"
+                description="Mọi buổi đã dạy từ mốc siết trở đi đều đủ giờ vào, giờ ra và điểm danh."
+              />
+            ) : (
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Ngày dạy</Th>
+                    <Th>Lớp</Th>
+                    {isFounder ? <Th>Giáo viên</Th> : null}
+                    <Th>Còn thiếu</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chanRows.map((b) => (
+                    <tr key={b.lesson_id}>
+                      <Td className="whitespace-nowrap">{formatDate(b.lesson_date)}</Td>
+                      <Td>{b.ten_lop}</Td>
+                      {isFounder ? <Td>{b.ten_giao_vien ?? 'Chưa phân công'}</Td> : null}
+                      <Td className="text-burgundy-700">{b.ly_do}</Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+            <CardBody className="border-t border-navy-100 text-[0.8125rem] text-navy-500">
+              Đây không phải danh sách bị trừ lương. Buổi vẫn được trả đủ ngay khi bổ sung đủ giờ
+              dạy và điểm danh — hệ thống tự đưa vào bảng lương, không ai phải duyệt lại.
+            </CardBody>
           </Card>
 
           <Card>
