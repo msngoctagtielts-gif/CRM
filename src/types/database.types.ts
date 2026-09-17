@@ -109,6 +109,13 @@ export type Database = {
             foreignKeyName: 'attendance_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'attendance_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -314,6 +321,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'class_students_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'class_students_student_id_fkey'
@@ -765,6 +779,13 @@ export type Database = {
             foreignKeyName: 'homework_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'homework_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -912,6 +933,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'leads_converted_student_id_fkey'
+            columns: ['converted_student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'leads_converted_student_id_fkey'
@@ -1074,6 +1102,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lesson_consumptions_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'lesson_consumptions_student_id_fkey'
@@ -1534,6 +1569,13 @@ export type Database = {
             foreignKeyName: 'payments_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'payments_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -1666,6 +1708,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'placement_tests_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'placement_tests_student_id_fkey'
@@ -2074,6 +2123,13 @@ export type Database = {
             foreignKeyName: 'student_enrollments_payer_student_id_fkey'
             columns: ['payer_student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'student_enrollments_payer_student_id_fkey'
+            columns: ['payer_student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -2104,6 +2160,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'student_enrollments_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'student_enrollments_student_id_fkey'
@@ -2184,6 +2247,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'student_parents_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'student_parents_student_id_fkey'
@@ -2982,6 +3052,13 @@ export type Database = {
             foreignKeyName: 'teaching_report_students_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'teaching_report_students_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -3384,6 +3461,13 @@ export type Database = {
             foreignKeyName: 'trial_classes_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'trial_classes_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -3640,6 +3724,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'students'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tuition_statements_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
           },
           {
             foreignKeyName: 'tuition_statements_student_id_fkey'
@@ -3979,6 +4070,13 @@ export type Database = {
             foreignKeyName: 'student_enrollments_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'student_enrollments_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -4178,6 +4276,13 @@ export type Database = {
             foreignKeyName: 'attendance_student_id_fkey'
             columns: ['student_id']
             isOneToOne: false
+            referencedRelation: 'v_hoc_vien_tam_ngung'
+            referencedColumns: ['student_id']
+          },
+          {
+            foreignKeyName: 'attendance_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
             referencedRelation: 'v_student_finance'
             referencedColumns: ['student_id']
           },
@@ -4210,6 +4315,63 @@ export type Database = {
             referencedColumns: ['teacher_id']
           },
         ]
+      }
+      v_hoc_vien_tam_ngung: {
+        Row: {
+          buoi_con_lai: number | null
+          buoi_cuoi: string | null
+          con_no_hop_dong: number | null
+          da_dong: number | null
+          email: string | null
+          ghi_chu: string | null
+          giao_vien_cuoi: string | null
+          lien_he: string | null
+          lop_cuoi: string | null
+          phone: string | null
+          student_code: string | null
+          student_id: string | null
+          ten_hoc_vien: string | null
+          tien_buoi_vuot: number | null
+          tong_buoi_da_hoc: number | null
+          trang_thai: string | null
+        }
+        Insert: {
+          buoi_con_lai?: never
+          buoi_cuoi?: never
+          con_no_hop_dong?: never
+          da_dong?: never
+          email?: string | null
+          ghi_chu?: string | null
+          giao_vien_cuoi?: never
+          lien_he?: never
+          lop_cuoi?: never
+          phone?: string | null
+          student_code?: string | null
+          student_id?: string | null
+          ten_hoc_vien?: string | null
+          tien_buoi_vuot?: never
+          tong_buoi_da_hoc?: never
+          trang_thai?: never
+        }
+        Update: {
+          buoi_con_lai?: never
+          buoi_cuoi?: never
+          con_no_hop_dong?: never
+          da_dong?: never
+          email?: string | null
+          ghi_chu?: string | null
+          giao_vien_cuoi?: never
+          lien_he?: never
+          lop_cuoi?: never
+          phone?: string | null
+          student_code?: string | null
+          student_id?: string | null
+          ten_hoc_vien?: string | null
+          tien_buoi_vuot?: never
+          tong_buoi_da_hoc?: never
+          trang_thai?: never
+        }
+        Relationships: []
       }
       v_lesson_reports: {
         Row: {

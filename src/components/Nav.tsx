@@ -20,6 +20,7 @@ import {
   CalendarCheck,
   DatabaseBackup,
   ShieldCheck,
+  UserMinus,
   TrendingUp,
   Users,
   Wallet,
@@ -58,7 +59,10 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
   },
   {
     section: 'Học viên',
-    items: [{ href: '/students', label: 'Hồ sơ học viên', icon: Users }],
+    items: [
+      { href: '/students', label: 'Hồ sơ học viên', icon: Users },
+      { href: '/tam-ngung', label: 'Học viên tạm ngưng', icon: UserMinus },
+    ],
   },
   {
     section: 'Lớp học & giảng dạy',
