@@ -18,6 +18,7 @@ import {
   School,
   Banknote,
   CalendarCheck,
+  DatabaseBackup,
   ShieldCheck,
   TrendingUp,
   Users,
@@ -85,6 +86,7 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
       { href: '/statements', label: 'Phiếu học phí tháng', icon: FileText },
       { href: '/payroll', label: 'Lương giáo viên', icon: Banknote },
       { href: '/expenses', label: 'Chi phí', icon: Receipt },
+      { href: '/sao-luu', label: 'Sao lưu dữ liệu', icon: DatabaseBackup },
     ],
   },
 ]

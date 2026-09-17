@@ -454,6 +454,36 @@ export type Database = {
           },
         ]
       }
+      data_backups: {
+        Row: {
+          created_at: string
+          du_lieu: Json
+          ghi_chu: string | null
+          id: string
+          kich_thuoc_bytes: number
+          loai: string
+          so_dong: Json
+        }
+        Insert: {
+          created_at?: string
+          du_lieu: Json
+          ghi_chu?: string | null
+          id?: string
+          kich_thuoc_bytes: number
+          loai?: string
+          so_dong: Json
+        }
+        Update: {
+          created_at?: string
+          du_lieu?: Json
+          ghi_chu?: string | null
+          id?: string
+          kich_thuoc_bytes?: number
+          loai?: string
+          so_dong?: Json
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           audiences: string[]
@@ -4630,6 +4660,7 @@ export type Database = {
         Args: { p_enrollment_id: string; p_on_date?: string }
         Returns: number
       }
+      fn_sao_luu_thu_cong: { Args: never; Returns: string }
       fn_scan_overdue_reports: {
         Args: never
         Returns: {
@@ -4638,6 +4669,7 @@ export type Database = {
         }[]
       }
       fn_score_report_qc: { Args: { p_report_id: string }; Returns: number }
+      fn_tao_ban_sao_luu: { Args: { p_loai?: string }; Returns: string }
       is_founder: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_teacher: { Args: never; Returns: boolean }
