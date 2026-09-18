@@ -1,0 +1,46 @@
+-- Ms. Hằng — nhập kỳ học 19/06–15/07/2026 và ghi khoản thu.
+-- Chạy ngày 18/09/2026. Đây là BẢN GHI LẠI việc đã thực hiện, không chạy lại.
+--
+-- NGUỒN DUY NHẤT
+--   "Báo cáo tình hình học tập — Ms Hằng", kỳ 19/06/2026–15/07/2026,
+--   phát hành 19/08/2026, bản gửi học viên. Founder gửi file PDF ngày 18/09/2026
+--   kèm câu "đây là c Hằng đã đóng phí".
+--
+-- MÂU THUẪN PHÁT HIỆN TRƯỚC KHI GHI
+--   Hệ thống có sẵn một bộ khung tạo ngày 11/09/2026 KHÔNG khớp lịch sử thật:
+--
+--                        Báo cáo (đã gửi học viên)   Hệ thống ghi
+--     Kỳ học             19/06 – 15/07/2026          bắt đầu 01/09/2026
+--     Số buổi            5 buổi · 270 phút           0 buổi
+--     Học phí            1.120.500 đ theo phút thật  gói 10 buổi · 2.490.000 đ
+--     Ngày vào/ra lớp    —                           11/09 → 17/09 (ngày nhập liệu)
+--
+--   Ghi tiền vào bộ khung đó là sai sổ. Đã hỏi Founder và được chốt ngày
+--   18/09/2026: sửa hợp đồng về đúng thực tế, số tiền đúng bằng báo cáo.
+--
+-- ĐÃ LÀM
+--   1. student_enrollments HD260016: start_date → 19/06/2026,
+--      lessons_purchased → 4,5 · net_amount → 1.120.500 đ
+--   2. tuition_rates: effective_from → 19/06/2026 (nếu để 01/09 thì các buổi
+--      tháng 6–7 rơi về đơn giá mặc định thay vì đơn giá hợp đồng)
+--   3. class_students: joined_at → 19/06, left_at → 15/07 (thay cho ngày nhập liệu)
+--   4. Năm buổi học thật kèm nội dung, điểm mạnh, cần cải thiện, bài tập —
+--      chép từ mục 03 của báo cáo. Giáo viên: Ms. Phương.
+--   5. payments TT26090058 · 1.120.500 đ
+--
+-- KIỂM CHỨNG SAU KHI GHI — khớp từng dòng với bảng học phí trong báo cáo:
+--     19/06  60'  1,00 buổi  249.000 đ
+--     25/06  60'  1,00 buổi  249.000 đ
+--     30/06  30'  0,50 buổi  124.500 đ   ← buổi 30 phút tính nửa, đúng như báo cáo
+--     06/07  60'  1,00 buổi  249.000 đ
+--     15/07  60'  1,00 buổi  249.000 đ
+--     ------------------------------------
+--     tổng   270' 4,50 buổi  1.120.500 đ
+--   Số dư hợp đồng sau khi ghi: đúng 0,00 buổi.
+--
+-- ĐIỂM CÒN TREO
+--   NGÀY CHUYỂN KHOẢN THẬT chưa biết. Founder chỉ nói "đã đóng phí" vào
+--   18/09/2026 mà không cho ngày. Tạm ghi 18/09/2026 và đặt needs_review = true
+--   kèm review_note. Báo cáo phát hành 19/08 nên tiền thực tế vào khoảng
+--   19/08–18/09 — sai ngày sẽ làm lệch báo cáo dòng tiền giữa tháng 8 và tháng 9.
+--   Cô Ngọc cho ngày đúng thì sửa payment_date và bỏ cờ needs_review.
