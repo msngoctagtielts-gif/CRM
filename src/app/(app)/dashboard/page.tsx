@@ -114,24 +114,32 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.revenueRecognized)}
           caption={trendCaption(delta(metrics.revenueRecognized, metrics.previous.revenueRecognized))}
           accent="navy"
+          href="/tai-chinh"
+          hrefLabel="Xem từng tháng"
         />
         <StatCard
           label="Tổng chi phí"
           value={formatCurrency(metrics.totalExpenses)}
           caption={`Gồm lương GV ${formatCurrency(metrics.teacherPayroll)}`}
           accent="burgundy"
+          href="/expenses"
+          hrefLabel="Xem các khoản chi"
         />
         <StatCard
           label="Lợi nhuận gộp"
           value={formatCurrency(metrics.grossProfit)}
           caption={trendCaption(delta(metrics.grossProfit, metrics.previous.grossProfit))}
           accent={metrics.grossProfit >= 0 ? 'sage' : 'burgundy'}
+          href="/tai-chinh"
+          hrefLabel="Xem biểu đồ theo tháng"
         />
         <StatCard
           label="Công nợ học phí"
           value={formatCurrency(metrics.outstandingTuition)}
           caption="Tại thời điểm hiện tại"
           accent="gold"
+          href="/doi-soat"
+          hrefLabel="Xem ai còn thiếu"
         />
       </section>
 
@@ -142,12 +150,16 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.cashReceived)}
           caption="Dòng tiền — không phải doanh thu"
           accent="gold"
+          href="/payments"
+          hrefLabel="Xem từng phiếu thu"
         />
         <StatCard
           label="Học phí đã thu chưa dạy"
           value={formatCurrency(metrics.deferredRevenue)}
           caption="Nghĩa vụ phải dạy, chưa phải lợi nhuận"
           accent="navy"
+          href="/doi-soat"
+          hrefLabel="Xem theo hợp đồng"
         />
       </section>
 
@@ -158,13 +170,23 @@ export default async function DashboardPage({
           value={formatNumber(metrics.students.active)}
           caption={`${metrics.students.new} mới · ${metrics.students.paused} tạm dừng · ${metrics.students.inactive} đã nghỉ`}
           accent="sage"
+          href="/students"
+          hrefLabel="Xem danh sách"
         />
-        <StatCard label="Lớp đang mở" value={formatNumber(metrics.activeClasses)} accent="navy" />
+        <StatCard
+          label="Lớp đang mở"
+          value={formatNumber(metrics.activeClasses)}
+          accent="navy"
+          href="/classes"
+          hrefLabel="Xem các lớp"
+        />
         <StatCard
           label="Buổi đã dạy"
           value={formatNumber(metrics.lessonsCompleted)}
           caption={period.label}
           accent="navy"
+          href="/lessons"
+          hrefLabel="Xem từng buổi"
         />
         <StatCard
           label="Giờ giảng dạy"
@@ -175,6 +197,8 @@ export default async function DashboardPage({
               : `Giữ học viên ${(metrics.retentionRate * 100).toFixed(0)}%`
           }
           accent="gold"
+          href="/payroll"
+          hrefLabel="Xem giờ theo giáo viên"
         />
       </section>
 
