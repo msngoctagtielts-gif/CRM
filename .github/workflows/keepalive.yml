@@ -29,31 +29,30 @@ jobs:
     steps:
       - name: Truy vấn Supabase
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Dùng CHUNG secret với job sao lưu. Bản cũ đòi SUPABASE_URL và
+          # SUPABASE_ANON_KEY — hai secret chưa bao giờ được đặt, nên job này
+          # hỏng mọi lần chạy từ 10/09 tới 17/09/2026 và trung tâm không hề
+          # được bảo vệ khỏi việc project bị tạm dừng. Đổi sang SUPABASE_DB_URL
+          # là secret đã có sẵn và đã chứng minh chạy được ở backup.yml.
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
-            echo "Thiếu secret SUPABASE_URL hoặc SUPABASE_ANON_KEY — xem docs/FREE_TIER.md" >&2
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "Thiếu secret SUPABASE_DB_URL — xem docs/FREE_TIER.md" >&2
             exit 1
           fi
 
-          # Gọi PostgREST để truy vấn thật sự chạm vào PostgreSQL. RLS sẽ trả 0
-          # dòng cho vai trò anon — không sao, cái cần là có hoạt động ở CSDL.
-          code=$(curl -s -o /tmp/out.txt -w '%{http_code}' \
-            "$SUPABASE_URL/rest/v1/settings?select=key&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-            --max-time 30)
+          # psql có sẵn trên ubuntu-latest. Khác pg_dump, psql KHÔNG từ chối khi
+          # client cũ hơn máy chủ, nên không cần cài PostgreSQL 17 như backup.yml.
+          if ! command -v psql > /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
 
-          echo "HTTP $code"
-          # 200 và 206 là bình thường. 401/403 nghĩa là khoá sai. 5xx hoặc lỗi
-          # mạng nghĩa là project có thể đã bị dừng — phải biết ngay.
-          case "$code" in
-            200|206) echo "Project đang hoạt động." ;;
-            401|403) echo "Khoá anon bị từ chối — kiểm tra lại secret." >&2; exit 1 ;;
-            *) echo "Bất thường. Nội dung trả về:" >&2; cat /tmp/out.txt >&2; exit 1 ;;
-          esac
+          # Một truy vấn chạm thật vào PostgreSQL. Không đọc dữ liệu học viên —
+          # chỉ cần có hoạt động để Supabase không tính project là nhàn rỗi.
+          psql "$SUPABASE_DB_URL" -Atc 'select 1' --set ON_ERROR_STOP=1
+          echo "Project đang hoạt động."
 
       - name: Quét cảnh báo (nếu app đã triển khai)
         # Không bắt buộc. Chưa triển khai app thì bỏ qua, không làm hỏng job.
