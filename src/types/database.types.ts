@@ -4886,6 +4886,28 @@ export type Database = {
           },
         ]
       }
+      v_hieu_qua_gv_thang: {
+        Row: {
+          buoi_chua_tra: number | null
+          buoi_co_video: number | null
+          diem_qc: number | null
+          doanh_thu: number | null
+          doanh_thu_moi_gio: number | null
+          loi_nhuan_gop: number | null
+          so_buoi: number | null
+          so_gio: number | null
+          so_hoc_vien: number | null
+          so_phut: number | null
+          teacher_id: string | null
+          teaching_role: string | null
+          ten_giao_vien: string | null
+          thang: string | null
+          tra_giao_vien: number | null
+          trang_thai_gv: string | null
+          ty_suat_phan_tram: number | null
+        }
+        Relationships: []
+      }
       v_luong_gv_thang: {
         Row: {
           buoi_chua_tra: number | null

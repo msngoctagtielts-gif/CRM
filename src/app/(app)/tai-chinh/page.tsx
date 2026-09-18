@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatNumber } from '@/lib/format'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { BieuDoChong, BieuDoCot } from '@/components/ui/BieuDo'
 import { StatCard } from '@/components/ui/StatCard'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
@@ -77,6 +78,21 @@ export default async function TaiChinhPage({
     },
   )
   const conLai = tong.doanh_thu - tong.luong_gv - tong.chi_khac
+
+  // Dữ liệu biểu đồ: cũ trước mới sau, để đọc xu hướng từ trái sang phải.
+  const theoThang = [...trongNam].sort((a, b) => String(a.thang).localeCompare(String(b.thang)))
+  const cotTien = theoThang.map((r) => {
+    const chi = Number(r.luong_gv ?? 0) + Number(r.chi_khac ?? 0)
+    return {
+      nhan: String(r.thang ?? '').slice(5, 7),
+      duoi: chi,
+      tren: Number(r.doanh_thu ?? 0) - chi,
+    }
+  })
+  const cotBuoi = theoThang.map((r) => ({
+    nhan: String(r.thang ?? '').slice(5, 7),
+    gt: Number(r.buoi_day ?? 0),
+  }))
 
   // Ma trận giáo viên × tháng cho năm đang xem.
   const luongNam = luongRows.filter((r) => r.nam === nam)
@@ -202,6 +218,34 @@ export default async function TaiChinhPage({
               đổi các khoản đó sang VND rồi ghi lại.
             </Alert>
           ) : null}
+
+          <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <Card>
+              <CardHeader
+                title={`Doanh thu và lợi nhuận ${nam}`}
+                description="Chiều cao cả cột là doanh thu tháng đó. Cột viền đỏ là tháng lỗ."
+              />
+              <BieuDoChong
+                duLieu={cotTien}
+                nhanDuoi="Lương giáo viên + chi phí khác"
+                nhanTren="Còn lại"
+                dinhDang={(v) => `${Math.round(v / 1000000)}tr`}
+              />
+            </Card>
+
+            <Card>
+              <CardHeader
+                title={`Số buổi dạy ${nam}`}
+                description="Nhìn nhịp hoạt động của trung tâm theo từng tháng."
+              />
+              <BieuDoCot
+                duLieu={cotBuoi}
+                dinhDang={(v) => String(v)}
+                mau="sage"
+                moTa="Tháng có ít buổi bất thường thường là tháng nghỉ lễ, hoặc tháng chưa nhập đủ dữ liệu."
+              />
+            </Card>
+          </div>
 
           <Card className="mb-5">
             <CardHeader

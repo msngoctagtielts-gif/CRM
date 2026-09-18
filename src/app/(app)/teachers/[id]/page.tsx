@@ -10,6 +10,7 @@ import { StatCard } from '@/components/ui/StatCard'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
+import { BieuDoChong, BieuDoCot } from '@/components/ui/BieuDo'
 import { cn } from '@/lib/cn'
 import { ThemKhungGioForm, VaiTroForm, XoaKhungGioNut } from './HoSoForms'
 
@@ -63,8 +64,10 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
         .order('weekday')
         .order('start_time'),
       supabase
-        .from('v_luong_gv_thang')
-        .select('thang, so_buoi, tien')
+        .from('v_hieu_qua_gv_thang')
+        .select(
+          'thang, so_buoi, so_gio, so_hoc_vien, doanh_thu, tra_giao_vien, loi_nhuan_gop, ty_suat_phan_tram, doanh_thu_moi_gio, buoi_co_video, buoi_chua_tra',
+        )
         .eq('teacher_id', id)
         .order('thang', { ascending: false })
         .limit(12),
@@ -76,6 +79,23 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
   const lichRows = lichDay ?? []
   const hvRows = hocVien ?? []
   const luongRows = luong ?? []
+
+  // Biểu đồ đọc từ cũ tới mới, còn bảng để mới nhất lên đầu.
+  const theoThoiGian = [...luongRows].reverse()
+  const cotTaiChinh = theoThoiGian.map((r) => ({
+    nhan: `${String(r.thang).slice(5, 7)}/${String(r.thang).slice(2, 4)}`,
+    duoi: Number(r.tra_giao_vien ?? 0),
+    tren: Number(r.loi_nhuan_gop ?? 0),
+  }))
+  const cotBuoi = theoThoiGian.map((r) => ({
+    nhan: `${String(r.thang).slice(5, 7)}/${String(r.thang).slice(2, 4)}`,
+    gt: Number(r.so_buoi ?? 0),
+  }))
+
+  const tongDoanhThu = luongRows.reduce((a, r) => a + Number(r.doanh_thu ?? 0), 0)
+  const tongTraGV = luongRows.reduce((a, r) => a + Number(r.tra_giao_vien ?? 0), 0)
+  const tongBuoi = luongRows.reduce((a, r) => a + Number(r.so_buoi ?? 0), 0)
+  const tongGio = luongRows.reduce((a, r) => a + Number(r.so_gio ?? 0), 0)
 
   const ten = gv.display_name ?? gv.full_name ?? 'Giáo viên'
   const vaiTro = gv.vai_tro ? VAI_TRO[gv.vai_tro] : null
@@ -150,6 +170,100 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <div className="space-y-5 xl:col-span-2">
+          <Card>
+            <CardHeader
+              title="Hiệu quả theo tháng"
+              description="Doanh thu ghi nhận từ các buổi giáo viên này đã dạy, trừ đi tiền trả cho chính họ. Dùng để xếp loại."
+            />
+            {luongRows.length === 0 ? (
+              <CardBody>
+                <p className="text-sm text-navy-500">Chưa có tháng nào được tính công.</p>
+              </CardBody>
+            ) : (
+              <>
+                <CardBody className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatCard label="Tổng buổi" value={formatNumber(tongBuoi)} accent="navy" />
+                  <StatCard
+                    label="Tổng giờ dạy"
+                    value={`${formatNumber(tongGio, 1)} h`}
+                    accent="sage"
+                  />
+                  <StatCard
+                    label="Doanh thu mang lại"
+                    value={formatCurrency(tongDoanhThu)}
+                    accent="gold"
+                    caption="Doanh thu ghi nhận, không phải tiền mặt đã thu"
+                  />
+                  <StatCard
+                    label="Lợi nhuận gộp"
+                    value={formatCurrency(tongDoanhThu - tongTraGV)}
+                    accent={tongDoanhThu - tongTraGV >= 0 ? 'navy' : 'burgundy'}
+                    caption={`Đã trả giáo viên ${formatCurrency(tongTraGV)}`}
+                  />
+                </CardBody>
+
+                <BieuDoChong
+                  duLieu={cotTaiChinh}
+                  nhanDuoi="Trả giáo viên"
+                  nhanTren="Lợi nhuận gộp"
+                  dinhDang={(v) => `${Math.round(v / 1000)}k`}
+                  moTa="Chiều cao cả cột là doanh thu tháng đó."
+                />
+
+                <Table>
+                  <thead>
+                    <tr>
+                      <Th>Tháng</Th>
+                      <Th align="right">Buổi</Th>
+                      <Th align="right">Giờ</Th>
+                      <Th align="right">Học viên</Th>
+                      <Th align="right">Doanh thu</Th>
+                      <Th align="right">Trả GV</Th>
+                      <Th align="right">Lợi nhuận</Th>
+                      <Th align="right">Tỷ suất</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {luongRows.map((r) => {
+                      const lai = Number(r.loi_nhuan_gop ?? 0)
+                      return (
+                        <tr key={r.thang}>
+                          <Td className="whitespace-nowrap font-medium">
+                            {String(r.thang).slice(5, 7)}/{String(r.thang).slice(0, 4)}
+                          </Td>
+                          <Td align="right">{formatNumber(r.so_buoi)}</Td>
+                          <Td align="right">{formatNumber(r.so_gio, 1)}</Td>
+                          <Td align="right">{formatNumber(r.so_hoc_vien)}</Td>
+                          <Td align="right">{formatCurrency(r.doanh_thu)}</Td>
+                          <Td align="right" className="text-navy-500">
+                            {formatCurrency(r.tra_giao_vien)}
+                          </Td>
+                          <Td
+                            align="right"
+                            className={cn('font-medium', lai < 0 && 'text-burgundy-700')}
+                          >
+                            {formatCurrency(lai)}
+                          </Td>
+                          <Td align="right">
+                            {r.ty_suat_phan_tram == null
+                              ? '—'
+                              : `${formatNumber(r.ty_suat_phan_tram, 1)}%`}
+                          </Td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </Table>
+
+                <CardBody className="border-t border-navy-100 text-[0.8125rem] text-navy-500">
+                  <strong>Doanh thu</strong> là tiền của buổi đã dạy (cơ sở dồn tích), không phải
+                  tiền mặt đã thu — một buổi đã dạy nhưng phụ huynh chưa đóng vẫn tính vào đây.{' '}
+                  <strong>Lợi nhuận gộp</strong> chưa trừ chi phí chung của trung tâm như Zoom hay
+                  phần mềm.
+                </CardBody>
+              </>
+            )}
+          </Card>
           <Card>
             <CardHeader
               title="Giờ có thể nhận lớp"
@@ -295,33 +409,13 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
           <ThemKhungGioForm teacherId={id} />
 
           <Card>
-            <CardHeader title="Lương 12 tháng gần nhất" />
-            {luongRows.length === 0 ? (
-              <CardBody>
-                <p className="text-sm text-navy-500">Chưa có tháng nào được tính công.</p>
-              </CardBody>
-            ) : (
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>Tháng</Th>
-                    <Th align="right">Buổi</Th>
-                    <Th align="right">Tiền</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {luongRows.map((r) => (
-                    <tr key={r.thang}>
-                      <Td className="whitespace-nowrap">
-                        {String(r.thang).slice(5, 7)}/{String(r.thang).slice(0, 4)}
-                      </Td>
-                      <Td align="right">{formatNumber(r.so_buoi)}</Td>
-                      <Td align="right">{formatCurrency(r.tien)}</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
+            <CardHeader title="Số buổi theo tháng" />
+            <BieuDoCot
+              duLieu={cotBuoi}
+              dinhDang={(v) => formatNumber(v)}
+              mau="sage"
+              moTa="12 tháng gần nhất. Nhìn xu hướng lớp của giáo viên này đang lên hay xuống."
+            />
           </Card>
         </div>
       </div>

@@ -16,7 +16,14 @@ import { BuildPayrollForm } from './PayrollForms'
 
 export const metadata: Metadata = { title: 'Bảng lương' }
 
-export default async function PayrollPage() {
+export default async function PayrollPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ gv?: string; thang?: string }>
+}) {
+  const sp = await searchParams
+  const locGV = sp.gv?.trim() || ''
+  const locThang = sp.thang?.trim() || ''
   const user = await requireUser()
   const isFounder = user.role_code === 'founder'
   const supabase = await createClient()
@@ -65,10 +72,17 @@ export default async function PayrollPage() {
   //   nhu vay la tao chung tu gia. Neu man hinh nay chi doc ky luong thi no
   //   trong ron trong khi trung tam da tra 57 trieu. Doc thang tu buoi da tra
   //   moi la su that.
-  const { data: luongThang } = await supabase
+  // Lọc ngay ở truy vấn chứ không kéo hết về rồi lọc bằng JavaScript: cô Ngọc
+  // chọn một giáo viên và một tháng thì chỉ nên tải đúng ngần ấy dòng.
+  let truyVanLuong = supabase
     .from('v_luong_gv_thang')
     .select('thang, teacher_id, ten_giao_vien, so_buoi, so_phut, tien, buoi_da_tra, buoi_chua_tra')
     .order('thang', { ascending: false })
+
+  if (locGV) truyVanLuong = truyVanLuong.eq('teacher_id', locGV)
+  if (locThang) truyVanLuong = truyVanLuong.eq('thang', `${locThang}-01`)
+
+  const { data: luongThang } = await truyVanLuong
 
   const luongRows = luongThang ?? []
   const tongDaTra = luongRows.reduce((s, r) => s + Number(r.tien ?? 0), 0)
@@ -152,6 +166,56 @@ export default async function PayrollPage() {
               title={isFounder ? 'Lương đã trả theo tháng' : 'Lương tôi đã nhận theo tháng'}
               description="Tính từ buổi đã dạy, mới nhất trước. Đây là tiền thật đã trả."
             />
+
+            {/* Biểu mẫu GET thuần: lọc chạy trên máy chủ, không cần JavaScript,
+                và đường dẫn sau khi lọc có thể lưu lại hoặc gửi cho người khác. */}
+            {isFounder ? (
+              <CardBody className="border-b border-navy-100">
+                <form method="get" className="flex flex-wrap items-end gap-3">
+                  <label className="flex flex-col gap-1">
+                    <span className="mnee-label">Giáo viên</span>
+                    <select
+                      name="gv"
+                      defaultValue={locGV}
+                      className="min-w-[12rem] rounded-md border border-navy-200 px-2.5 py-1.5 text-sm"
+                    >
+                      <option value="">Tất cả giáo viên</option>
+                      {(teachers ?? []).map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.full_name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="mnee-label">Tháng</span>
+                    <input
+                      type="month"
+                      name="thang"
+                      defaultValue={locThang}
+                      className="rounded-md border border-navy-200 px-2.5 py-1.5 text-sm"
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="rounded-md bg-navy-800 px-3.5 py-2 text-sm font-medium text-white hover:bg-navy-900"
+                  >
+                    Xem
+                  </button>
+
+                  {locGV || locThang ? (
+                    <Link
+                      href="/payroll"
+                      className="py-2 text-sm text-navy-600 underline hover:text-navy-800"
+                    >
+                      Bỏ lọc
+                    </Link>
+                  ) : null}
+                </form>
+              </CardBody>
+            ) : null}
             {theoThang.length === 0 ? (
               <EmptyState
                 title="Chưa có tháng nào được tính công"
