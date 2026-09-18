@@ -38,9 +38,12 @@
 --     tổng   270' 4,50 buổi  1.120.500 đ
 --   Số dư hợp đồng sau khi ghi: đúng 0,00 buổi.
 --
--- ĐIỂM CÒN TREO
---   NGÀY CHUYỂN KHOẢN THẬT chưa biết. Founder chỉ nói "đã đóng phí" vào
---   18/09/2026 mà không cho ngày. Tạm ghi 18/09/2026 và đặt needs_review = true
---   kèm review_note. Báo cáo phát hành 19/08 nên tiền thực tế vào khoảng
---   19/08–18/09 — sai ngày sẽ làm lệch báo cáo dòng tiền giữa tháng 8 và tháng 9.
---   Cô Ngọc cho ngày đúng thì sửa payment_date và bỏ cờ needs_review.
+-- NGÀY CHUYỂN KHOẢN — ĐÃ CHỐT
+--   Lúc ghi lần đầu chưa biết ngày, nên tạm để 18/09/2026 kèm cờ needs_review.
+--   Founder xác nhận cùng ngày: tiền vào 24/08/2026. Đã sửa payment_date và bỏ
+--   cờ. Con số này rơi đúng vào tháng 8 — chỉ 5 ngày sau khi báo cáo phát hành
+--   (19/08), khớp với việc học viên nhận báo cáo rồi chuyển khoản.
+--
+--   Ảnh hưởng: 1.120.500 đ chuyển từ dòng tiền tháng 9 sang tháng 8.
+--   Sau khi sửa: 08/2026 thu 18.076.500 đ (9 phiếu) · 09/2026 thu 18.125.000 đ
+--   (11 phiếu).
