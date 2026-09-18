@@ -39,6 +39,17 @@ export default async function DashboardPage({
   if (nguoiDung.role_code !== 'founder') redirect('/lessons')
   const sp = await searchParams
   const period = resolvePeriod(sp.period, sp.from, sp.to)
+
+  // Chuyền kỳ đang xem sang màn hình chi tiết, nếu không cô Ngọc bấm từ thẻ
+  // "Tháng này" rồi mở ra một trang liệt kê cả năm — số không khớp với thẻ vừa
+  // bấm, rất dễ tưởng hệ thống tính sai.
+  const kyURL = new URLSearchParams({
+    period: period.key,
+    from: period.from,
+    to: period.to,
+  }).toString()
+  // /tai-chinh lọc theo NĂM chứ không theo khoảng ngày.
+  const namURL = `nam=${period.from.slice(0, 4)}`
   const supabase = await createClient()
   const settings = await getOperatingSettings()
 
@@ -114,7 +125,7 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.revenueRecognized)}
           caption={trendCaption(delta(metrics.revenueRecognized, metrics.previous.revenueRecognized))}
           accent="navy"
-          href="/tai-chinh"
+          href={`/tai-chinh?${namURL}`}
           hrefLabel="Xem từng tháng"
         />
         <StatCard
@@ -122,7 +133,7 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.totalExpenses)}
           caption={`Gồm lương GV ${formatCurrency(metrics.teacherPayroll)}`}
           accent="burgundy"
-          href="/expenses"
+          href={`/expenses?${kyURL}`}
           hrefLabel="Xem các khoản chi"
         />
         <StatCard
@@ -130,7 +141,7 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.grossProfit)}
           caption={trendCaption(delta(metrics.grossProfit, metrics.previous.grossProfit))}
           accent={metrics.grossProfit >= 0 ? 'sage' : 'burgundy'}
-          href="/tai-chinh"
+          href={`/tai-chinh?${namURL}`}
           hrefLabel="Xem biểu đồ theo tháng"
         />
         <StatCard
@@ -150,7 +161,7 @@ export default async function DashboardPage({
           value={formatCurrency(metrics.cashReceived)}
           caption="Dòng tiền — không phải doanh thu"
           accent="gold"
-          href="/payments"
+          href={`/payments?${kyURL}`}
           hrefLabel="Xem từng phiếu thu"
         />
         <StatCard
@@ -185,7 +196,7 @@ export default async function DashboardPage({
           value={formatNumber(metrics.lessonsCompleted)}
           caption={period.label}
           accent="navy"
-          href="/lessons"
+          href={`/lessons?${kyURL}`}
           hrefLabel="Xem từng buổi"
         />
         <StatCard
