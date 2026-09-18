@@ -60,3 +60,13 @@ export type PortalHopDongNhom = {
   nguoi_dung_ten: string | null
   si_so: number | null
 }
+
+export type PortalLichHoc = {
+  student_id: string
+  ten_lop: string | null
+  giao_vien: string | null
+  weekday: number | null
+  start_time: string | null
+  duration_minutes: number | null
+  ngay_ke_tiep: string | null
+}

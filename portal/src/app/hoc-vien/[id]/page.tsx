@@ -2,10 +2,16 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { batBuocDangNhap } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { ngay, so, tien } from '@/lib/dinh-dang'
+import { gio, ngay, so, thu, tien } from '@/lib/dinh-dang'
 import { Khung } from '@/components/Khung'
 import { Nhan, The, TheDau, TheThan } from '@/components/The'
-import type { PortalBuoiHoc, PortalHocPhi, PortalHocVien, PortalHopDongNhom } from '@/types/portal.types'
+import type {
+  PortalBuoiHoc,
+  PortalHocPhi,
+  PortalHocVien,
+  PortalHopDongNhom,
+  PortalLichHoc,
+} from '@/types/portal.types'
 
 const HINH_THUC: Record<string, string> = {
   prepaid_package: 'Gói trả trước',
@@ -21,16 +27,23 @@ export default async function TrangHocVien({ params }: { params: Promise<{ id: s
   // Bốn view đều lọc cứng theo tài khoản đang đăng nhập ở tầng cơ sở dữ liệu.
   // Đổi id trên thanh địa chỉ sang học viên khác thì truy vấn trả về rỗng và
   // trang báo không tìm thấy — không phải vì giao diện chặn.
-  const [{ data: hv }, { data: buoi }, { data: hocPhi }, { data: nhom }] = await Promise.all([
-    supabase.from('v_portal_hoc_vien').select('*').eq('student_id', id).maybeSingle(),
-    supabase
-      .from('v_portal_buoi_hoc')
-      .select('*')
-      .eq('student_id', id)
-      .order('lesson_date', { ascending: false }),
-    supabase.from('v_portal_hoc_phi').select('*').eq('student_id', id),
-    supabase.from('v_portal_hop_dong_nhom').select('*').eq('student_id', id).maybeSingle(),
-  ])
+  const [{ data: hv }, { data: buoi }, { data: hocPhi }, { data: nhom }, { data: lich }] =
+    await Promise.all([
+      supabase.from('v_portal_hoc_vien').select('*').eq('student_id', id).maybeSingle(),
+      supabase
+        .from('v_portal_buoi_hoc')
+        .select('*')
+        .eq('student_id', id)
+        .order('lesson_date', { ascending: false }),
+      supabase.from('v_portal_hoc_phi').select('*').eq('student_id', id),
+      supabase.from('v_portal_hop_dong_nhom').select('*').eq('student_id', id).maybeSingle(),
+      supabase
+        .from('v_portal_lich_hoc')
+        .select('*')
+        .eq('student_id', id)
+        .order('ngay_ke_tiep')
+        .order('start_time'),
+    ])
 
   if (!hv) notFound()
 
@@ -38,6 +51,7 @@ export default async function TrangHocVien({ params }: { params: Promise<{ id: s
   const buoiRows = (buoi ?? []) as PortalBuoiHoc[]
   const phiRows = (hocPhi ?? []) as PortalHocPhi[]
   const g = nhom as PortalHopDongNhom | null
+  const lichRows = (lich ?? []) as PortalLichHoc[]
 
   const coVideo = buoiRows.filter((b) => b.video).length
   const coNhanXet = buoiRows.filter((b) => b.can_cai_thien || b.diem_manh).length
@@ -75,6 +89,29 @@ export default async function TrangHocVien({ params }: { params: Promise<{ id: s
           </The>
         ))}
       </section>
+
+      {lichRows.length > 0 ? (
+        <The className="mb-6">
+          <TheDau
+            tieuDe="Lịch học hằng tuần"
+            moTa="Lịch cố định của lớp. Nếu có buổi nghỉ hoặc học bù, trung tâm sẽ báo riêng."
+          />
+          <TheThan className="space-y-2">
+            {lichRows.map((l, i) => (
+              <div
+                key={`${l.weekday}-${l.start_time}-${i}`}
+                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-navy-100 pb-2 last:border-0 last:pb-0"
+              >
+                <p className="text-sm font-medium text-navy-900">
+                  {thu(l.weekday)} · {gio(l.start_time)}
+                  {l.duration_minutes ? ` · ${l.duration_minutes} phút` : ''}
+                </p>
+                <p className="text-[0.8125rem] text-navy-500">Buổi tới: {ngay(l.ngay_ke_tiep)}</p>
+              </div>
+            ))}
+          </TheThan>
+        </The>
+      ) : null}
 
       <The className="mb-6">
         <TheDau tieuDe="Học phí" />
@@ -130,7 +167,8 @@ export default async function TrangHocVien({ params }: { params: Promise<{ id: s
             {dangDoiChieu ? (
               <p className="rounded-md border border-amber-soft-100 bg-amber-soft-50 px-3 py-2 text-[0.8125rem] leading-relaxed text-amber-soft-700">
                 Trung tâm đang đối chiếu lại số buổi của hợp đồng này, nên tạm thời chưa hiển thị số
-                buổi còn lại. Quý vị cần con số chính xác ngay, vui lòng nhắn trực tiếp cho trung tâm.
+                buổi còn lại. Quý vị cần con số chính xác ngay, vui lòng nhắn trực tiếp cho trung
+                tâm.
               </p>
             ) : null}
           </TheThan>
@@ -149,7 +187,10 @@ export default async function TrangHocVien({ params }: { params: Promise<{ id: s
         ) : (
           <TheThan className="space-y-5">
             {buoiRows.map((b) => (
-              <article key={b.lesson_id} className="border-b border-navy-100 pb-5 last:border-0 last:pb-0">
+              <article
+                key={b.lesson_id}
+                className="border-b border-navy-100 pb-5 last:border-0 last:pb-0"
+              >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-semibold text-navy-900">{ngay(b.lesson_date)}</p>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-navy-400">

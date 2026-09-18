@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { batBuocDangNhap } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { ngay, so } from '@/lib/dinh-dang'
+import { gio, ngay, so, thu } from '@/lib/dinh-dang'
 import { Khung } from '@/components/Khung'
 import { Nhan, The, TheThan } from '@/components/The'
-import type { PortalHocVien, PortalHopDongNhom } from '@/types/portal.types'
+import type { PortalHocVien, PortalHopDongNhom, PortalLichHoc } from '@/types/portal.types'
 
 const KIEU: Record<string, { nhan: string; mau: 'xanh' | 'lam' | 'vang' | 'xam' }> = {
   goi_tra_truoc: { nhan: 'Gói trả trước', mau: 'xanh' },
@@ -17,13 +17,21 @@ export default async function TrangChinh() {
   const nguoiDung = await batBuocDangNhap()
   const supabase = await createClient()
 
-  const [{ data: hv }, { data: nhom }] = await Promise.all([
+  const [{ data: hv }, { data: nhom }, { data: lich }] = await Promise.all([
     supabase.from('v_portal_hoc_vien').select('*').order('ten_hoc_vien'),
     supabase.from('v_portal_hop_dong_nhom').select('*'),
+    supabase.from('v_portal_lich_hoc').select('*').order('ngay_ke_tiep').order('start_time'),
   ])
 
   const rows = (hv ?? []) as PortalHocVien[]
   const nhomTheoHV = new Map(((nhom ?? []) as PortalHopDongNhom[]).map((n) => [n.student_id, n]))
+
+  // Đã sắp xếp sẵn theo ngày rồi giờ, nên bản ghi ĐẦU TIÊN của mỗi học viên
+  // chính là buổi gần nhất sắp tới.
+  const buoiToiTheoHV = new Map<string, PortalLichHoc>()
+  for (const l of (lich ?? []) as PortalLichHoc[]) {
+    if (!buoiToiTheoHV.has(l.student_id)) buoiToiTheoHV.set(l.student_id, l)
+  }
 
   return (
     <Khung tenNguoiDung={nguoiDung.full_name}>
@@ -50,6 +58,7 @@ export default async function TrangChinh() {
           {rows.map((h) => {
             const k = KIEU[h.kieu_hoc_phi ?? ''] ?? null
             const g = nhomTheoHV.get(h.student_id)
+            const toi = buoiToiTheoHV.get(h.student_id)
             return (
               <The key={h.student_id} className="transition hover:border-navy-300">
                 <Link href={`/hoc-vien/${h.student_id}`} className="block">
@@ -61,6 +70,14 @@ export default async function TrangChinh() {
                         {h.giao_vien ? ` · ${h.giao_vien}` : ''}
                       </p>
                     </div>
+
+                    {toi ? (
+                      <p className="rounded-md bg-sage-50 px-3 py-2 text-[0.8125rem] text-sage-700">
+                        <span className="font-medium">Buổi tới:</span> {thu(toi.weekday)}{' '}
+                        {ngay(toi.ngay_ke_tiep)}
+                        {toi.start_time ? ` · ${gio(toi.start_time)}` : ''}
+                      </p>
+                    ) : null}
 
                     <dl className="grid grid-cols-2 gap-3 border-t border-navy-100 pt-3">
                       <div>
