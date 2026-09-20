@@ -1,0 +1,23 @@
+-- 0049 — Cảnh báo số dư: phủ MỌI hình thức hợp đồng, và tự động đóng cảnh báo cũ.
+--
+-- LỖI 1: BỎ SÓT HỢP ĐỒNG KHÔNG PHẢI TRẢ TRƯỚC
+--   Bản 0047 chỉ quét billing_mode = 'prepaid_package'. Ba học viên nợ tiền mà
+--   cảnh báo không hề thấy (đo ngày 20/09/2026, sau khi nhập buổi tháng 9):
+--     Công Duy       undetermined       1.470.000 đ
+--     Bé Ngân        monthly_postpaid     512.000 đ
+--     Vũ Hoàng Phúc  monthly_postpaid     190.000 đ
+--
+--   Điều kiện phải khác nhau theo hình thức, không dùng chung một ngưỡng:
+--     · Trả trước      → nợ tiền là bất thường ngay lập tức.
+--     · Đóng theo tháng → nợ trong tháng là BÌNH THƯỜNG (chưa tới kỳ thu).
+--       Chỉ bất thường khi còn nợ của buổi học thuộc tháng TRƯỚC.
+--
+-- LỖI 2: CẢNH BÁO CŨ KHÔNG TỰ ĐÓNG
+--   Khoá chống trùng gồm cả cột `type`. Khi học viên chuyển từ 'sắp hết buổi'
+--   sang 'đã học vượt tiền', dòng cũ nằm lại. Tân hiện ra HAI dòng mâu thuẫn:
+--   57 buổi "đã đóng đủ" và 61 buổi "còn thiếu". Nay đóng mọi cảnh báo số dư
+--   không được phép quét chạm tới trong lượt này.
+--
+-- Định nghĩa hàm đầy đủ đã áp trong database; xem pg_get_functiondef nếu cần
+-- đối chiếu. Phần thay đổi so với 0047 nằm ở ba chỗ: bỏ lọc billing_mode ở
+-- mệnh đề where, thêm nhánh v_keu theo hình thức, và bước resolve ở cuối.

@@ -1,0 +1,56 @@
+-- Nhập buổi tháng 9/2026 — 13 buổi, 3 lớp. Chạy ngày 20/09/2026.
+-- BẢN GHI LẠI việc đã thực hiện, không chạy lại.
+--
+-- NGUỒN: sheet feedback riêng của từng lớp (không dùng sheet tổng hợp —
+-- xem phần CẢNH BÁO bên dưới).
+--
+-- ĐÃ NHẬP
+--   DUY-SH  5 buổi  11/09 (×2), 14/09, 16/09, 18/09
+--   TAN-SH  4 buổi  08/09, 10/09, 13/09, 17/09
+--   VY-SH   4 buổi  08/09, 10/09, 13/09, 17/09
+--
+-- KHÔNG NHẬP, CÓ LÝ DO
+--   LUAN-SH 08/09 — ghi chú nội bộ của chính GV nói nguồn là "Luan August 9,
+--     2026", và đây là buổi #48 trong khi buổi #49 là 10/08. Đây là buổi
+--     09/08 viết ngày kiểu Mỹ, ĐÃ có trong hệ thống. Nhập là đếm hai lần.
+--   NGAN-PH 04/09 — đã có sẵn trong hệ thống từ trước.
+--
+-- KHÔNG VIẾT MỘT CHỮ NHẬN XÉT NÀO
+--   12/13 dòng trong sheet để trống hoàn toàn phần nội dung, điểm mạnh, cần
+--   cải thiện, bài tập. Chỉ có ngày và link video. Nên teaching_reports tạo ở
+--   trạng thái 'draft' với các ô đó NULL; hệ thống tự chuyển sang 'incomplete'
+--   và liệt kê missing_fields. Bịa nhận xét sẽ phá đúng thứ hệ thống sinh ra
+--   để phát hiện.
+--
+-- THỜI LƯỢNG LÀ SỐ KHAI, CHƯA XÁC MINH
+--   Sheet nay đã có cột "Thời lượng học thực tế (phút)" và MỌI dòng đều ghi
+--   "Chưa xác minh". Bản nhập này dùng 60 phút theo lịch cố định của lớp.
+--   Muốn có số phút thật phải xem video — xem phần dưới.
+--
+--   Lớp Vy và lớp Tân: sheet KHÔNG ghi giờ bắt đầu cho các buổi tháng 9. Giờ
+--   lấy từ class_schedules theo đúng thứ trong tuần; giờ không ảnh hưởng tới
+--   lương hay học phí, chỉ thời lượng mới ảnh hưởng.
+--
+-- CẢNH BÁO: SHEET TỔNG HỢP LỆCH NGÀY MỘT NGÀY
+--   Đối chiếu sheet tổng hợp với sheet riêng từng lớp:
+--     tổng hợp  10/09  13/09  15/09  17/09   (lớp Duy)
+--     lớp riêng 11/09  14/09  16/09  18/09
+--   Lệch đều -1 ngày, nhiều khả năng do quy đổi múi giờ trong script đồng bộ.
+--   Bản nhập này lấy theo SHEET RIÊNG vì nó ghi dạng "September 11, 2026",
+--   không thể hiểu nhầm. Cần sửa script đồng bộ.
+--
+-- HAI BUỔI CÙNG NGÀY 11/09 CỦA LỚP DUY
+--   Sheet có hai dòng (buổi 4 và 5) cùng ngày; dòng buổi 5 không có video.
+--   Đã nhập cả hai theo đúng sheet. Cần GV xác nhận có dạy hai buổi trong
+--   ngày hay là lỗi nhập trùng.
+--
+-- DÒNG 08/09 CỦA LỚP TÂN
+--   Chủ đề ghi "Tổng hợp đánh giá tháng 08/2026" — có vẻ ai đó dùng dòng buổi
+--   học để viết tổng kết tháng. Vẫn nhập vì có 2 video kèm theo, nhưng cần GV
+--   xác nhận đây là buổi dạy thật hay chỉ là dòng tổng kết.
+--
+-- ẢNH HƯỞNG TỚI CÔNG NỢ
+--   Vy   7 → 11 buổi, cần thu 1.960.000 → 3.080.000 đ
+--   Tân  57 → 61 buổi, từ đã đóng đủ thành cần thu 834.000 đ
+--   Duy  đã học 7 buổi, chưa đóng đồng nào — cần thu 1.470.000 đ
+--   Tổng cần thu toàn trung tâm: 4.040.000 → 8.166.000 đ
