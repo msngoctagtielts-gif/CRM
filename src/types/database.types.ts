@@ -4886,6 +4886,27 @@ export type Database = {
           },
         ]
       }
+      v_xac_minh_buoi_hoc: {
+        Row: {
+          class_code: string | null
+          gian_doan: Json | null
+          giao_vien: string | null
+          khong_khi_lop: string | null
+          lech_phut: number | null
+          lesson_date: string | null
+          lesson_id: string | null
+          nguon_xac_minh: string | null
+          phut_khai: number | null
+          phut_thuc_te: number | null
+          so_video_youtube: number | null
+          so_video_zoom: number | null
+          ten_lop: string | null
+          thoi_gian_hv_noi: number | null
+          ty_le_hv_noi_phan_tram: number | null
+          xac_minh_luc: string | null
+        }
+        Relationships: []
+      }
       v_hieu_qua_gv_thang: {
         Row: {
           buoi_chua_tra: number | null
