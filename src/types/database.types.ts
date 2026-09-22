@@ -4921,6 +4921,19 @@ export type Database = {
         }
         Relationships: []
       }
+      v_viec_can_quyet: {
+        Row: {
+          duong_dan: string | null
+          mo_ta: string | null
+          nhom: string | null
+          so_luong: number | null
+          so_tien: number | null
+          tieu_de: string | null
+          uu_tien: number | null
+          viec_can_lam: string | null
+        }
+        Relationships: []
+      }
       v_mat_xich_buoi_hoc: {
         Row: {
           class_code: string | null
