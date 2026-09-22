@@ -87,4 +87,5 @@ qua được bước máy.
 | [`KE-HOACH-XAY-DUNG.md`](KE-HOACH-XAY-DUNG.md) | Sơ đồ trang, bốn giai đoạn, tiêu chí xong |
 | [`UY-TIN.md`](UY-TIN.md) | Bằng chứng uy tín cần thu thập, và lời hứa bị cấm |
 | [`DANH-MUC-KIEM-TRA.md`](DANH-MUC-KIEM-TRA.md) | Danh mục `web-qa` đi qua trước mỗi lần phát hành |
+| [`khoi-founder.md`](khoi-founder.md) | Bản sửa khối Founder trang chủ — mã dán được, kèm ba con số cần có |
 | [`../../scripts/web-audit/README.md`](../../scripts/web-audit/README.md) | Cách dùng công cụ soi lỗi |

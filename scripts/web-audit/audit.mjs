@@ -530,6 +530,13 @@ const MAU_CHO_TRONG = [
   { mau: /example\.com|yourdomain|your-domain|placeholder/i, ten: 'địa chỉ mẫu chưa thay' },
   { mau: /\bxxx+\b|\[\s*điền\s*\]|\{\{[^}]*\}\}/i, ten: 'chỗ trống chưa điền' },
   { mau: /0123456789|0000000000/, ten: 'số điện thoại mẫu' },
+  {
+    mau: /\[\s*CẦN\s+SỐ\s+THẬT[^\]]*\]/i,
+    ten: 'dấu [CẦN SỐ THẬT] — con số chưa được thay bằng số thật',
+  },
+  // Chỗ trống dạng [SỐ], [CHỨNG CHỈ GIẢNG DẠY]: mở ngoặc, chữ hoa, không có chữ
+  // thường nào tới khi đóng ngoặc. Không bắt [2026] hay [xem hình 3].
+  { mau: /\[[A-ZĐ][^a-z\]\n]{1,60}\]/, ten: 'chỗ trống trong ngoặc vuông chưa điền' },
 ]
 
 luat('noi-dung-cho-trong', NHOM.NOI_DUNG, ({ html, chu }) => {

@@ -39,6 +39,7 @@ const TAI_LIEU = [
   'UY-TIN',
   'DANH-MUC-KIEM-TRA',
   'CAI-DAT-TREN-MAY',
+  'khoi-founder',
 ].map((t) => `docs/website/${t}.md`)
 
 // ---------------------------------------------------------------------------
