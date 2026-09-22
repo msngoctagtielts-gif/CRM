@@ -30,8 +30,8 @@ Xem bản dựng: kết quả nằm trong khung "B — cho chỗ đó làm việ
   <p class="mnee-founder__motto">Thấu hiểu để dẫn lối.</p>
   <div class="mnee-founder__rule" aria-hidden="true"></div>
   <p class="mnee-founder__proof">
-    [CHỨNG CHỈ GIẢNG DẠY] · [SỐ] năm đứng lớp<br>
-    [SỐ] học viên đã đồng hành
+    Chứng chỉ TESOL · 8 năm giảng dạy<br>
+    Dạy kèm cá nhân hoá theo từng học viên
   </p>
 </section>
 ```
@@ -122,19 +122,50 @@ nhận diện.
 
 ---
 
-## Ba con số cần có trước khi phát hành
+## Số thật — cô Ngọc đã xác nhận 22/09/2026
 
-Dòng bằng chứng chỉ có giá trị khi số là thật. Cần:
-
-| Cần | Lấy ở đâu |
+| Nội dung | Trạng thái |
 |---|---|
-| Tên chứng chỉ giảng dạy, nơi cấp | Cô Ngọc |
-| Số năm đứng lớp | Cô Ngọc |
-| Số học viên đã đồng hành | Hệ thống quản lý MNEE |
+| Chứng chỉ TESOL | có |
+| 8 năm giảng dạy | có |
+| Dạy kèm cá nhân hoá | có |
+| Số học viên đã đồng hành | **chưa có** — không đưa lên trang |
 
-**Chưa có thì để nguyên dấu ngoặc vuông.** `web-qa` chặn phát hành khi còn ngoặc —
-đó là chủ ý. Điền số ước lượng cho đủ câu là cách nhanh nhất để mất uy tín khi một
-phụ huynh hỏi lại.
+Số học viên chưa có nên đã bỏ hẳn dòng đó, không để ngoặc treo trên trang chạy
+thật. Một dòng thật hơn hai dòng có một nửa là đoán. Khi nào lấy được số từ hệ
+thống quản lý thì thêm vào sau, dễ hơn là gỡ một con số sai xuống.
 
-Nếu không muốn công bố số học viên, bỏ dòng thứ hai và giữ một dòng:
-`[CHỨNG CHỈ] · [SỐ] năm đứng lớp`. Một dòng thật tốt hơn hai dòng có một nửa là đoán.
+---
+
+## Kinh nghiệm 1–20 năm thuộc khối khác
+
+Con số "giáo viên 1 đến 20 năm kinh nghiệm, trung tâm trao đổi trước khi ghép lớp"
+là của **đội ngũ**, không phải của người sáng lập. Đặt nhầm vào khối Founder thì
+người đọc tưởng đang nói về cô Ngọc, và con số 8 năm ngay bên cạnh thành mâu thuẫn.
+
+Nó thuộc khối **Đội ngũ giáo viên**, một khối riêng.
+
+### Và đừng đăng nguyên khoảng "1–20 năm"
+
+Phụ huynh đọc "1 đến 20 năm" thì chỉ nhớ đúng một đầu: **1**. Khoảng số này khiến
+người ta lo mình rơi vào nhóm giáo viên mới, chứ không yên tâm hơn.
+
+Thứ thật sự mạnh ở đây không phải khoảng kinh nghiệm — mà là **cơ chế ghép**:
+
+```html
+<section class="mnee-team">
+  <h2>Ghép giáo viên trước khi vào học</h2>
+  <p>
+    Trung tâm trao đổi với học viên về mục tiêu, trình độ và lịch học,
+    rồi mới chọn giáo viên phù hợp — không xếp lớp trước rồi mới báo.
+  </p>
+  <p>Toàn bộ giáo viên có chứng chỉ giảng dạy.</p>
+</section>
+```
+
+Đây là một quy trình kiểm chứng được: học viên nào cũng xác nhận được là có buổi
+trao đổi trước hay không. Nó trả lời đúng câu hỏi mà khoảng "1–20 năm" đang làm
+người ta lo.
+
+**Cần cô xác nhận thêm:** có phải **toàn bộ** giáo viên đều có chứng chỉ giảng dạy
+không? Nếu chỉ một phần thì phải viết đúng phần đó, đừng viết "toàn bộ".
