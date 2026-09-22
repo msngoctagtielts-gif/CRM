@@ -1,5 +1,12 @@
 import 'server-only'
 import {
+  buildXacMinhPrompt,
+  locKetQuaVoLy,
+  parseXacMinhJSON,
+  type KetQuaXacMinh,
+  type XacMinhInput,
+} from './xac-minh'
+import {
   buildFeedbackPrompt,
   enforceNoFabrication,
   extractModelText,
@@ -82,7 +89,10 @@ export async function draftLessonFeedback(input: FeedbackInput): Promise<AIResul
 
   // Thử lại MỘT lần khi model quá tải (429/503). Đã gặp 503 "high demand" thật
   // trong lúc kiểm; bắt giáo viên tự bấm lại là bắt họ gõ lại từ đầu.
-  let last: Attempt = { result: { ok: false, error: 'Không gọi được dịch vụ AI.' }, retryable: false }
+  let last: Attempt = {
+    result: { ok: false, error: 'Không gọi được dịch vụ AI.' },
+    retryable: false,
+  }
   for (let attempt = 0; attempt < 2; attempt += 1) {
     if (attempt > 0) await sleep(RETRY_DELAY_MS)
     last = await callOnce(model, key, requestBody, input)
@@ -211,5 +221,142 @@ async function safeText(response: Response): Promise<string> {
     return await response.text()
   } catch {
     return ''
+  }
+}
+
+/* ===========================================================================
+ * XÁC MINH BUỔI HỌC TỪ VIDEO
+ *
+ * Dùng LẠI đúng khoá và đúng model của phần soạn nhận xét ở trên. Trước đây
+ * việc này nằm ở một script chạy tay riêng (scripts/phan-tich-video) với biến
+ * môi trường khác và model khác — Founder phải cấu hình hai nơi và phải mở máy
+ * chạy lệnh. Gộp về một đường ngày 22/09/2026.
+ *
+ * Điểm mấu chốt khiến cách này chạy được: Gemini TỰ TẢI video từ phía Google.
+ * Máy chủ của trung tâm không cần mở được youtube.com.
+ * ======================================================================== */
+
+export type XacMinhResult =
+  | { ok: true; ketQua: KetQuaXacMinh; daBo: string[]; model: string }
+  | { ok: false; error: string }
+
+export async function xacMinhBuoiHocTuVideo(input: XacMinhInput): Promise<XacMinhResult> {
+  const key = (process.env.GOOGLE_AI_API_KEY ?? '').trim()
+  if (key === '') {
+    return {
+      ok: false,
+      error:
+        'Chưa cấu hình khoá AI. Đặt GOOGLE_AI_API_KEY trong biến môi trường (lấy miễn phí ở Google AI Studio).',
+    }
+  }
+  if (input.videoUrls.length === 0) {
+    return { ok: false, error: 'Buổi này chưa có link video YouTube nào để xem.' }
+  }
+
+  const model = aiModelName()
+  const parts: unknown[] = [{ text: buildXacMinhPrompt(input) }]
+  for (const url of input.videoUrls) parts.push({ fileData: { fileUri: url } })
+
+  const requestBody = JSON.stringify({
+    contents: [{ role: 'user', parts }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      // Đo thì không được sáng tạo. Nhiệt độ 0 để hai lần chạy trên cùng một
+      // video ra cùng con số — nếu không, Founder không biết tin lần nào.
+      temperature: 0,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+    },
+  })
+
+  let last: XacMinhResult = { ok: false, error: 'Không gọi được dịch vụ AI.' }
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (attempt > 0) await sleep(RETRY_DELAY_MS)
+    const goi = await goiGemini(model, key, requestBody)
+    if (!goi.ok) {
+      last = { ok: false, error: goi.error }
+      if (!goi.retryable) break
+      continue
+    }
+    const doc = parseXacMinhJSON(goi.text)
+    if (!doc) {
+      last = { ok: false, error: 'AI trả về định dạng không đọc được. Thử lại sau.' }
+      continue
+    }
+    const { ketQua, daBo } = locKetQuaVoLy(doc)
+    return { ok: true, ketQua, daBo, model }
+  }
+  return last
+}
+
+/**
+ * Phần chung của mọi lần gọi Gemini: timeout, đọc lỗi, phát hiện bị cắt.
+ *
+ * Tách ra ngày 22/09/2026 khi thêm chức năng xác minh — trước đó logic này nằm
+ * lẫn trong `callOnce` cùng với việc đọc JSON nhận xét, nên không dùng lại được
+ * mà không chép.
+ */
+type GoiKetQua = { ok: true; text: string } | { ok: false; error: string; retryable: boolean }
+
+async function goiGemini(model: string, key: string, requestBody: string): Promise<GoiKetQua> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  try {
+    const response = await fetch(`${ENDPOINT}/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+      body: requestBody,
+    })
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: describeHttpError(response.status, await safeText(response)),
+        retryable: response.status === 429 || response.status >= 500,
+      }
+    }
+
+    const body = (await response.json()) as {
+      candidates?: {
+        content?: { parts?: { text?: string; thought?: boolean }[] }
+        finishReason?: string
+      }[]
+      promptFeedback?: { blockReason?: string }
+    }
+
+    if (body.promptFeedback?.blockReason) {
+      return { ok: false, error: 'Dịch vụ AI từ chối nội dung này.', retryable: false }
+    }
+
+    const candidate = body.candidates?.[0]
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      return {
+        ok: false,
+        error: 'AI trả lời dài quá mức cho phép nên bị cắt giữa chừng. Thử lại.',
+        retryable: true,
+      }
+    }
+
+    const text = extractModelText(candidate?.content?.parts)
+    if (text === '') {
+      return { ok: false, error: 'AI không trả về nội dung nào. Thử lại sau.', retryable: true }
+    }
+    return { ok: true, text }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return {
+        ok: false,
+        error: 'AI phản hồi quá lâu. Video dài thì thử lại, hoặc chia nhỏ bản ghi.',
+        retryable: false,
+      }
+    }
+    return {
+      ok: false,
+      error: 'Không gọi được dịch vụ AI. Kiểm tra kết nối mạng của máy chủ.',
+      retryable: true,
+    }
+  } finally {
+    clearTimeout(timer)
   }
 }

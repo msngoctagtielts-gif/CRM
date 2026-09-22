@@ -76,7 +76,9 @@ test('prompt chỉ cho phép trích từ transcript khi có transcript', () => {
 })
 
 test('đọc được JSON dù model bọc trong code fence', () => {
-  const draft = parseFeedbackJSON('```json\n{"strengths":"Phát âm rõ","improvements":"Luyện -s"}\n```')
+  const draft = parseFeedbackJSON(
+    '```json\n{"strengths":"Phát âm rõ","improvements":"Luyện -s"}\n```',
+  )
   assert.ok(draft)
   assert.equal(draft.strengths, 'Phát âm rõ')
   assert.equal(draft.improvements, 'Luyện -s')
@@ -162,7 +164,6 @@ test('JSON bị cắt giữa dòng thì trả null thay vì nội dung nửa v�
   const truncated = '{"student_quote":"She go to school at seven.","strengths":"Tân trả lời rõ ràn'
   assert.equal(parseFeedbackJSON(truncated), null)
 })
-
 
 /**
  * Đối chiếu giờ dạy với video (Founder chốt 15/09/2026).

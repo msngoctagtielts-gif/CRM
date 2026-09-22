@@ -8,11 +8,13 @@ import { formatDate, formatDeadline, formatDuration, formatTime, toDateTimeLocal
 import { CLASS_TYPE, REPORT_AUTHOR, REPORT_STATUS, missingFieldLabels, qcTone } from '@/lib/labels'
 import { getOperatingSettings } from '@/lib/settings'
 import { isAIConfigured } from '@/lib/ai/provider'
+import { classifyVideoSource } from '@/lib/ai/feedback'
 import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { ReportForm } from './ReportForm'
 import { ReportActions } from './ReportActions'
 import { SuaXoaBuoiHoc } from './SuaXoaBuoiHoc'
+import { XacMinhVideo } from './XacMinhVideo'
 
 export const metadata: Metadata = { title: 'Báo cáo giảng dạy' }
 
@@ -95,6 +97,16 @@ export default async function ReportFormPage({
           .eq('lesson_id', lessonId),
       ])
     : [{ data: null }, { data: [] }, { data: [] }]
+
+  // Gemini chỉ đọc được YouTube (Google tự tải từ phía họ). Zoom Clips là link
+  // riêng tư nên không dịch vụ nào lấy được — kiểm ở đây để nút hiện đúng
+  // trạng thái thay vì để Founder bấm rồi mới nhận lỗi.
+  const { data: banGhi } = isFounder
+    ? await supabase.from('recordings').select('url').eq('lesson_id', lessonId).eq('status', 'active')
+    : { data: [] }
+  const coYoutube = (banGhi ?? []).some(
+    (r) => classifyVideoSource(r.url) === 'youtube',
+  )
 
   // Buổi coi là miễn phí khi MỌI dòng điểm danh đều không thu phí. Lớp nhóm có
   // thể một em chịu phí, các em còn lại đi kèm — trường hợp đó không phải buổi
@@ -230,6 +242,16 @@ export default async function ReportFormPage({
           ]),
         )}
       />
+
+      {isFounder && lesson.lesson_id ? (
+        <XacMinhVideo
+          lessonId={lesson.lesson_id}
+          coYoutube={coYoutube}
+          daXacMinh={report?.phut_thuc_te != null}
+          phutKhai={lesson.duration_minutes}
+          phutThucTe={report?.phut_thuc_te ?? null}
+        />
+      ) : null}
 
       {isFounder && lesson.lesson_id ? (
         <SuaXoaBuoiHoc

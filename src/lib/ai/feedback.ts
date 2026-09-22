@@ -101,7 +101,9 @@ export function buildFeedbackPrompt(input: FeedbackInput): string {
     `- Ngày học: ${input.lessonDate}`,
     input.durationMinutes ? `- Thời lượng: ${input.durationMinutes} phút` : null,
     input.lessonContent.trim() !== '' ? `- Nội dung đã dạy: ${input.lessonContent.trim()}` : null,
-    input.teacherNotes.trim() !== '' ? `- Ghi chú của giáo viên: ${input.teacherNotes.trim()}` : null,
+    input.teacherNotes.trim() !== ''
+      ? `- Ghi chú của giáo viên: ${input.teacherNotes.trim()}`
+      : null,
   ]
     .filter((line): line is string => line !== null)
     .join('\n')

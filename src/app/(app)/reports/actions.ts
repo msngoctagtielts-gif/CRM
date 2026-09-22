@@ -3,12 +3,17 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { requireUser } from '@/lib/auth'
-import { friendlyDbError, type ActionResult } from '@/lib/actions'
+import { requireFounder, requireUser } from '@/lib/auth'
+import { friendlyDbError, loiTuHam, type ActionResult } from '@/lib/actions'
 import { localInputToISO, minutesBetween } from '@/lib/time'
 import { MISSING_FIELD } from '@/lib/labels'
-import { classifyVideoSource, studentLabelFor, type FeedbackDraft, giayTuChuoi } from '@/lib/ai/feedback'
-import { draftLessonFeedback, isAIConfigured } from '@/lib/ai/provider'
+import {
+  classifyVideoSource,
+  studentLabelFor,
+  type FeedbackDraft,
+  giayTuChuoi,
+} from '@/lib/ai/feedback'
+import { draftLessonFeedback, isAIConfigured, xacMinhBuoiHocTuVideo } from '@/lib/ai/provider'
 import type { TablesInsert, TablesUpdate } from '@/types/database.types'
 
 const ATTENDANCE_VALUES = [
@@ -29,7 +34,10 @@ const reportSchema = z.object({
   homework_title: z.string().max(200).optional(),
   homework_description: z.string().max(4000).optional(),
   homework_sentence_patterns: z.string().max(2000).optional(),
-  homework_due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  homework_due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   recording_url: z.string().url('Link video phải bắt đầu bằng http:// hoặc https://').optional(),
   video_timestamp: z.string().max(100).optional(),
   student_quote: z.string().max(2000).optional(),
@@ -470,7 +478,14 @@ export async function draftFeedbackWithAI(
   ])
 
   const students = (roster ?? [])
-    .map((r) => r.students as { full_name: string; nickname: string | null; date_of_birth: string | null } | null)
+    .map(
+      (r) =>
+        r.students as {
+          full_name: string
+          nickname: string | null
+          date_of_birth: string | null
+        } | null,
+    )
     .filter((s): s is NonNullable<typeof s> => s !== null)
 
   const label =
@@ -582,4 +597,108 @@ function ageFromBirthDate(value: string | null): number | null {
   const monthDiff = now.getUTCMonth() - born.getUTCMonth()
   if (monthDiff < 0 || (monthDiff === 0 && now.getUTCDate() < born.getUTCDate())) age -= 1
   return age >= 0 && age < 120 ? age : null
+}
+
+/* -------------------------------------------------------------------------
+ * XÁC MINH BUỔI HỌC TỪ VIDEO — thay cho script chạy tay.
+ *
+ * Cô Ngọc, 22/09/2026: gộp về một đường AI duy nhất.
+ *
+ * Trước đây việc này nằm ở scripts/phan-tich-video/phan-tich.mjs: biến môi
+ * trường riêng, model riêng, và phải mở máy chạy lệnh. Giờ là một nút bấm,
+ * dùng đúng khoá GOOGLE_AI_API_KEY đã có sẵn cho chức năng soạn nháp nhận xét.
+ *
+ * HAI ĐIỀU CỐ Ý GIỮ CHẶT
+ *   · Kết quả KHÔNG ghi đè duration_minutes. Lương giáo viên và học phí phụ
+ *     huynh vẫn tính theo số giáo viên khai. Máy chỉ cho thấy độ lệch; đổi tiền
+ *     là quyết định của người.
+ *   · Chỉ điền vào ô còn trống. Giáo viên đã mô tả không khí lớp rồi thì máy
+ *     không được xoá đi (thực hiện bằng coalesce trong fn_ghi_xac_minh).
+ * ---------------------------------------------------------------------- */
+
+export type XacMinhActionResult =
+  | { ok: true; message: string; canhBao: string[] }
+  | { ok: false; error: string }
+
+export async function xacMinhBuoiHoc(lessonId: string): Promise<XacMinhActionResult> {
+  await requireFounder()
+
+  if (!isAIConfigured()) {
+    return {
+      ok: false,
+      error:
+        'Chưa bật tính năng AI. Tạo khoá miễn phí ở Google AI Studio rồi đặt vào biến môi trường GOOGLE_AI_API_KEY.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('id, lesson_date, duration_minutes, classes(name)')
+    .eq('id', lessonId)
+    .maybeSingle()
+
+  if (!lesson) return { ok: false, error: 'Không tìm thấy buổi học.' }
+
+  const { data: recordings } = await supabase
+    .from('recordings')
+    .select('url')
+    .eq('lesson_id', lessonId)
+    .eq('status', 'active')
+
+  // Gemini đọc được YouTube vì Google tự tải từ phía họ. Zoom Clips là link
+  // riêng tư nên không dịch vụ nào lấy được — lọc ra trước để báo cho đúng
+  // thay vì gọi rồi nhận lỗi khó hiểu.
+  const youtube = (recordings ?? [])
+    .map((r) => r.url)
+    .filter((url): url is string => classifyVideoSource(url) === 'youtube')
+
+  if (youtube.length === 0) {
+    return {
+      ok: false,
+      error:
+        'Buổi này chưa có video YouTube. Zoom Clips là link riêng tư nên không dịch vụ nào tải về được — nhờ giáo viên tải bản ghi lên YouTube, để chế độ Unlisted là đủ.',
+    }
+  }
+
+  const cls = lesson.classes as { name: string } | null
+
+  const ketQua = await xacMinhBuoiHocTuVideo({
+    className: cls?.name ?? '',
+    lessonDate: lesson.lesson_date,
+    phutKhai: lesson.duration_minutes,
+    videoUrls: youtube,
+  })
+
+  if (!ketQua.ok) return { ok: false, error: ketQua.error }
+
+  const { error } = await supabase.rpc('fn_ghi_xac_minh', {
+    p_lesson_id: lessonId,
+    p_phut_thuc_te: ketQua.ketQua.phut_thuc_te,
+    p_thoi_gian_hv_noi: ketQua.ketQua.thoi_gian_hv_noi,
+    p_khong_khi_lop: ketQua.ketQua.khong_khi_lop || null,
+    p_gian_doan: ketQua.ketQua.gian_doan.length > 0 ? ketQua.ketQua.gian_doan : null,
+    p_nguon: 'gemini',
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  const khai = lesson.duration_minutes
+  const that = ketQua.ketQua.phut_thuc_te
+  const lech = khai !== null && that !== null ? that - khai : null
+
+  revalidatePath(`/reports/${lessonId}`)
+  revalidatePath('/xac-minh')
+  revalidatePath('/mat-xich')
+
+  return {
+    ok: true,
+    canhBao: ketQua.daBo,
+    message:
+      that === null
+        ? 'Máy đã xem video nhưng không đo được số phút. Kết quả khác đã ghi lại.'
+        : `Giáo viên khai ${khai ?? '?'} phút, máy đo được ${that} phút` +
+          (lech === null ? '.' : ` (lệch ${lech > 0 ? '+' : ''}${lech} phút).`) +
+          ' Lương và học phí KHÔNG bị đổi — cô xem độ lệch rồi quyết.',
+  }
 }

@@ -3345,6 +3345,12 @@ export type Database = {
       }
       teaching_reports: {
         Row: {
+          gian_doan: Json | null
+          khong_khi_lop: string | null
+          nguon_xac_minh: string | null
+          phut_thuc_te: number | null
+          thoi_gian_hv_noi: number | null
+          xac_minh_luc: string | null
           authored_by: Database['public']['Enums']['report_author']
           class_id: string
           completed_at: string | null
@@ -3386,6 +3392,12 @@ export type Database = {
           video_timestamp: string | null
         }
         Insert: {
+          gian_doan?: Json | null
+          khong_khi_lop?: string | null
+          nguon_xac_minh?: string | null
+          phut_thuc_te?: number | null
+          thoi_gian_hv_noi?: number | null
+          xac_minh_luc?: string | null
           authored_by?: Database['public']['Enums']['report_author']
           class_id: string
           completed_at?: string | null
@@ -3427,6 +3439,12 @@ export type Database = {
           video_timestamp?: string | null
         }
         Update: {
+          gian_doan?: Json | null
+          khong_khi_lop?: string | null
+          nguon_xac_minh?: string | null
+          phut_thuc_te?: number | null
+          thoi_gian_hv_noi?: number | null
+          xac_minh_luc?: string | null
           authored_by?: Database['public']['Enums']['report_author']
           class_id?: string
           completed_at?: string | null
@@ -5445,6 +5463,17 @@ export type Database = {
       fn_alert_lesson_balance: { Args: never; Returns: number }
       fn_alert_missing_lesson_time: { Args: never; Returns: number }
       fn_alert_not_sent_to_parent: { Args: never; Returns: number }
+      fn_ghi_xac_minh: {
+        Args: {
+          p_gian_doan: Json | null
+          p_khong_khi_lop: string | null
+          p_lesson_id: string
+          p_nguon: string | null
+          p_phut_thuc_te: number | null
+          p_thoi_gian_hv_noi: number | null
+        }
+        Returns: Json
+      }
       fn_danh_dau_mien_phi: {
         Args: { p_lesson_id: string; p_ly_do: string; p_mien_phi: boolean }
         Returns: Json
