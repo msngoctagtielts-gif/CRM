@@ -18,6 +18,7 @@ chi phí và tình hình tài chính của trung tâm.
 | [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) | Cái gì đã xong, đã kiểm thử, còn thiếu |
 | [`TODO.md`](TODO.md) | Việc tiếp theo theo thứ tự ưu tiên |
 | [`supabase/README.md`](supabase/README.md) | Quy trình migration và sao lưu |
+| [`docs/website/README.md`](docs/website/README.md) | Sáu nhân sự AI làm website — ai làm gì, nối với nhau thế nào |
 
 ---
 
@@ -65,6 +66,7 @@ npm run dev
 | `npm run lint` | kiểm tra ESLint |
 | `npm run test:unit` | kiểm thử phần logic AI (không cần mạng, không cần khoá) |
 | `./supabase/tests/run-local.sh` | kiểm thử nghiệp vụ trên PostgreSQL tạm (không cần Docker) |
+| `npm run audit:web <url>` | soi lỗi website (xem `scripts/web-audit/README.md`) |
 | `./scripts/backup/dump.sh` | sao lưu CSDL ra tệp đã mã hoá (xem `docs/FREE_TIER.md`) |
 | `./scripts/backup/restore.sh` | phục hồi từ bản sao lưu |
 
