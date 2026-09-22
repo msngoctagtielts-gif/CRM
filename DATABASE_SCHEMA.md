@@ -306,6 +306,19 @@ Trigger `tg_payroll_guard()` bảo vệ quy trình duyệt:
 | `lead_activities` | nhật ký liên hệ |
 | `placement_tests` | điểm 4 kỹ năng + `result_level_id` |
 | `trial_classes` | `outcome` ∈ `enrolled`/`follow_up`/`lost`/`undecided` |
+| `ho_so_thau_hieu` | bài tự đánh giá trên web công khai — `ma_chan_dung`, `cau_tra_loi` (jsonb). **Thông tin tự khai, không dùng để xếp lớp** |
+| `dang_ky_nhat_ky` | đếm số lượt gửi biểu mẫu theo IP **đã băm có muối**; không lưu IP thô, không nối được với lead |
+
+**Điểm ghi công khai duy nhất — `dang_ky_tu_van()`** (migration `0052`).
+
+Vai `anon` không có quyền trên bất cứ bảng nào (`0011`). Website công khai ghi
+được vào `leads` chỉ qua hàm `security definer` này, và hàm tự quyết `status`,
+`source`, `lead_code` — người gọi không đặt được ba cột đó. Hàm còn chặn spam
+(tối đa 5 lượt/giờ mỗi IP đã băm) và gộp trùng (cùng số điện thoại trong 24 giờ
+thì ghi thêm một `lead_activities`, không đẻ lead mới).
+
+`v_tuyen_sinh` (`security_invoker = on`) ghép `leads` với hồ sơ tự đánh giá mới
+nhất, phục vụ màn hình `/tuyen-sinh`.
 
 ### 3.8 Cảnh báo
 
@@ -391,8 +404,9 @@ của trung tâm không thể rò rỉ qua API, kể cả khi code frontend có 
 
 ## 6. Kiểm thử
 
-`supabase/tests/smoke.sql` — **146 assertion** chạy trên cluster PostgreSQL sạch,
-bao gồm:
+`supabase/tests/smoke.sql` — chạy trên cluster PostgreSQL sạch bằng
+`./supabase/tests/run-local.sh` (không cần Docker). Hiện có **13 mục, hơn 240
+assertion**, bao gồm:
 
 - hồ sơ người dùng tự tạo, vai trò mặc định là `teacher`
 - hai học viên với hai đơn giá khác nhau (250.000 và 280.000)
@@ -419,6 +433,23 @@ Và các ca nghiệp vụ thật lấy từ Google Sheets (mục 11 của `smoke
   thì vào lương ngay
 - **Chưa gửi phụ huynh quá 3 ngày** — có cảnh báo; buổi mới học hôm nay thì chưa
 - **Kỳ lương đã trả** — không bị ghi đè khi báo cáo thay đổi về sau
+
+Và mục 13 — **đăng ký từ website công khai** (migration `0052`):
+
+- chuẩn hoá số điện thoại Việt Nam (`+84`, `84`, dấu chấm, khoảng trắng)
+- từ chối tên rỗng và số điện thoại sai; email sai định dạng thì bỏ chứ không
+  chặn cả lượt đăng ký
+- nguồn do máy chủ quyết định — chuỗi client bịa ra bị ép về `website`
+- bấm gửi hai lần cùng một số trong 24 giờ ⇒ gộp vào lead cũ, ghi một dòng
+  `lead_activities`, **không đẻ lead trùng**
+- chặn spam 5 lượt/giờ mỗi IP đã băm; chưa đặt muối thì bỏ qua chặn chứ không
+  chặn nhầm người thật
+- RLS: `anon` **không** đọc được `leads`, `ho_so_thau_hieu`, `dang_ky_nhat_ky`
+  hay `v_tuyen_sinh` — nhưng **gọi được** `dang_ky_tu_van`
+
+> ⚠ **Mục 5 hiện đang hỏng** và đó là lỗi có sẵn, không phải lỗi mới: migration
+> `0032` siết cảnh báo chất lượng chỉ áp từ `2026-09-01`, còn buổi học trong mục
+> 5 có ngày trước mốc đó. Xem `TODO.md` mục "Nợ kỹ thuật đã biết" số 8.
 - **Điểm QC** — 2/6 tiêu chí = 33 điểm (chưa đạt), 6/6 = 100 điểm (đạt)
 - **RLS** — giáo viên không đọc được `tuition_rates` và `tuition_statements`
 

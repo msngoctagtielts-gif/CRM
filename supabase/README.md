@@ -28,6 +28,8 @@ File migration đã push thì **không sửa nội dung nữa** — sai thì vi�
 | `0015_lock_down_function_execute.sql` | **vá bảo mật**: thu hồi quyền gọi hàm của `anon` |
 | `0016_tuition_functions_security_invoker.sql` | **vá bảo mật**: hai hàm học phí chịu RLS |
 | `0017_guard_qc_verdict.sql` | **vá bảo mật**: giáo viên không tự chấm được chất lượng cho báo cáo của mình |
+| … | … |
+| `0052_dang_ky_cong_khai.sql` | `ho_so_thau_hieu`, `dang_ky_nhat_ky`, hàm `dang_ky_tu_van` (điểm ghi công khai duy nhất), view `v_tuyen_sinh` |
 
 ## Chạy lần đầu
 

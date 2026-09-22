@@ -23,6 +23,7 @@ import {
   DatabaseBackup,
   ShieldCheck,
   UserMinus,
+  UserPlus,
   TrendingUp,
   Users,
   Wallet,
@@ -43,8 +44,9 @@ type Item = { href: string; label: string; icon: React.ElementType }
  * "Chất lượng giảng dạy" và "Hiệu suất giảng dạy" — cả ba đọc cùng một nguồn là
  * teaching_reports, chỉ khác CHỦ THỂ. Đặt tên theo chủ thể để không phải đoán.
  *
- * MỤC CHƯA CÓ MÀN HÌNH THÌ KHÔNG ĐƯA VÀO. Sơ đồ có 24 mục, hiện 13 mục có màn
- * hình. Mười một mục còn lại (Khách hàng tiềm năng, Placement, Lịch học, Chương
+ * MỤC CHƯA CÓ MÀN HÌNH THÌ KHÔNG ĐƯA VÀO. Sơ đồ có 24 mục, hiện 14 mục có màn
+ * hình — "Khách hàng tiềm năng" vừa có màn hình đọc, nhận người đăng ký từ
+ * website công khai. Mười mục còn lại (Placement, Lịch học, Chương
  * trình học, Teaching Library, Assessment, Tài liệu, Danh mục, Phân quyền, Cài
  * đặt, Báo cáo tài chính) đã có bảng dữ liệu nhưng chưa có giao diện. Bấm vào ra
  * trang trống còn tệ hơn là không có mục đó. Thêm dần khi màn hình xong.
@@ -63,6 +65,7 @@ const FOUNDER_NAV: { section: string; items: Item[] }[] = [
   {
     section: 'Học viên',
     items: [
+      { href: '/tuyen-sinh', label: 'Khách hàng tiềm năng', icon: UserPlus },
       { href: '/students', label: 'Hồ sơ học viên', icon: Users },
       { href: '/tam-ngung', label: 'Học viên tạm ngưng', icon: UserMinus },
     ],

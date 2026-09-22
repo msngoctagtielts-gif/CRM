@@ -41,9 +41,17 @@ echo "> Dựng lớp giả lập Supabase (auth schema, auth.uid)"
 "${PSQL[@]}" -d "$DB" -f "$ROOT/supabase/tests/00_supabase_shim.sql" >/dev/null
 
 echo "> Áp migration"
+# `create extension pg_cron` chỉ chạy được trên Supabase. Trên cluster tạm thì
+# vô hiệu hoá đúng dòng đó; 00_supabase_shim.sql đã dựng sẵn cron.schedule() giả
+# lập nên phần còn lại của migration chạy y như thật. KHÔNG sửa file migration —
+# chỉ lọc lúc nạp.
+mkdir -p "$WORKDIR/migrations"
 for file in "$ROOT"/supabase/migrations/*.sql; do
-  printf '    %s\n' "$(basename "$file")"
-  "${PSQL[@]}" -d "$DB" -f "$file" >/dev/null
+  name="$(basename "$file")"
+  printf '    %s\n' "$name"
+  sed 's/^\([[:space:]]*\)create extension if not exists pg_cron/\1-- [kiem thu] /I' \
+    "$file" > "$WORKDIR/migrations/$name"
+  "${PSQL[@]}" -d "$DB" -f "$WORKDIR/migrations/$name" >/dev/null
 done
 
 echo "> Chạy kiểm thử nghiệp vụ"

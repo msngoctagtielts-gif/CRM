@@ -18,6 +18,22 @@ chi phí và tình hình tài chính của trung tâm.
 | [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) | Cái gì đã xong, đã kiểm thử, còn thiếu |
 | [`TODO.md`](TODO.md) | Việc tiếp theo theo thứ tự ưu tiên |
 | [`supabase/README.md`](supabase/README.md) | Quy trình migration và sao lưu |
+| [`docs/KENH_THU_HUT_HOC_VIEN.md`](docs/KENH_THU_HUT_HOC_VIEN.md) | Phân tích thị trường, chiến lược kênh nội dung, lịch 12 tuần, luật kiểm duyệt |
+| [`docs/AI_AGENT_MARKETING.md`](docs/AI_AGENT_MARKETING.md) | Kiến trúc hệ trợ lý AI cho marketing — ô nào là agent, ô nào không |
+| [`web/README.md`](web/README.md) | Website công khai: các trang, cách sửa nội dung, cách triển khai |
+
+---
+
+## Ba website, ba bản build
+
+| Website | Thư mục | Ai dùng | Cổng khi chạy máy |
+|---|---|---|---|
+| Hệ quản trị | `src/` | Founder, giáo viên | 3000 |
+| Cổng thông tin học viên | `portal/` | Phụ huynh, học viên | 3001 |
+| Website công khai | `web/` | Người chưa biết trung tâm | 3002 |
+
+Không bên nào import mã của bên nào. Chung duy nhất cơ sở dữ liệu Supabase — và
+ở đó website công khai chỉ gọi được đúng một hàm, không đọc được bảng nào.
 
 ---
 

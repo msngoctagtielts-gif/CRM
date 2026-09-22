@@ -1608,6 +1608,164 @@ rollback;
 
 reset "test.user_id";
 
+-- =============================================================================
+-- 13. ĐĂNG KÝ TỪ WEBSITE CÔNG KHAI (migration 0052)
+--
+-- Đây là điểm ghi CÔNG KHAI đầu tiên của hệ thống: người không có tài khoản
+-- ghi được vào cơ sở dữ liệu. Nên phần này quan tâm hai thứ ngang nhau —
+-- nghiệp vụ có đúng không, và hàng rào có thủng không.
+-- =============================================================================
+\echo '--- Đăng ký từ website công khai ---'
+
+begin;
+  do $$
+  declare v_ma text; v_l public.leads%rowtype; v_h public.ho_so_thau_hieu%rowtype;
+  begin
+    v_ma := public.dang_ky_tu_van('Nguyễn Thị Lan', '0901 234 567', 'lan@vidu.com',
+            null, 'Nói được trong cuộc họp', 'ngai_noi',
+            '{"cam_giac":"nghen"}'::jsonb, 'thau_hieu', 'ip_a');
+    select * into v_l from public.leads where lead_code = v_ma;
+    select * into v_h from public.ho_so_thau_hieu where lead_id = v_l.id;
+
+    perform public.t_assert(v_ma like 'LD%',                  'đăng ký web sinh mã lead LDxxxxx');
+    perform public.t_assert(v_l.phone = '0901234567',         'số điện thoại được chuẩn hoá');
+    perform public.t_assert(v_l.status = 'new',               'lead từ web luôn ở trạng thái new');
+    perform public.t_assert(v_l.source = 'website:thau-hieu', 'nguồn do máy chủ đặt, không tin client');
+    perform public.t_assert(v_h.ma_chan_dung = 'ngai_noi',    'lưu chân dung người học kèm câu trả lời');
+  end $$;
+
+  do $$ begin
+    perform public.t_assert(public.chuan_hoa_dien_thoai('+84 90 123 45 68') = '0901234568',
+      '+84 quy về dạng 0');
+    perform public.t_assert(public.chuan_hoa_dien_thoai('84901234569') = '0901234569',
+      '84 không dấu cộng quy về dạng 0');
+    perform public.t_assert(public.chuan_hoa_dien_thoai('090.123.4570') = '0901234570',
+      'bỏ dấu chấm trong số điện thoại');
+    perform public.t_assert(public.chuan_hoa_dien_thoai('12345') is null,
+      'số quá ngắn bị loại');
+    perform public.t_assert(public.chuan_hoa_dien_thoai('khong phai so') is null,
+      'chuỗi không phải số bị loại');
+  end $$;
+
+  do $$
+  declare v_loi text;
+  begin
+    begin
+      perform public.dang_ky_tu_van('Tên Hợp Lệ', '123', null, null, null, null,
+              '{}'::jsonb, 'dang_ky', 'ip_b');
+      v_loi := 'KHONG_NEM';
+    exception when others then v_loi := SQLERRM; end;
+    perform public.t_assert(v_loi = 'SAI_DIEN_THOAI', 'số điện thoại sai thì từ chối');
+
+    begin
+      perform public.dang_ky_tu_van('', '0902000001', null, null, null, null,
+              '{}'::jsonb, 'dang_ky', 'ip_b');
+      v_loi := 'KHONG_NEM';
+    exception when others then v_loi := SQLERRM; end;
+    perform public.t_assert(v_loi = 'THIEU_HO_TEN', 'thiếu tên thì từ chối');
+  end $$;
+
+  do $$
+  declare v_ma text; v_email text;
+  begin
+    v_ma := public.dang_ky_tu_van('Trần Văn Bình', '0902000002', 'khong-phai-email',
+            null, null, null, '{}'::jsonb, 'dang_ky', 'ip_c');
+    select email into v_email from public.leads where lead_code = v_ma;
+    perform public.t_assert(v_ma is not null and v_email is null,
+      'email sai định dạng thì bỏ, vẫn nhận đăng ký');
+  end $$;
+
+  do $$
+  declare v_ma text; v_nguon text;
+  begin
+    v_ma := public.dang_ky_tu_van('Lê Thị Mai', '0902000003', null, null, null, null,
+            '{}'::jsonb, 'nguon_bia_dat_tuy_y', 'ip_d');
+    select source into v_nguon from public.leads where lead_code = v_ma;
+    perform public.t_assert(v_nguon = 'website', 'nguồn client bịa ra bị ép về "website"');
+  end $$;
+
+  do $$
+  declare v1 text; v2 text; v_dem int; v_hd int;
+  begin
+    v1 := public.dang_ky_tu_van('Phạm Văn Cường', '0903111222', null, null, null,
+          'ban_ron', '{}'::jsonb, 'dang_ky', 'ip_e');
+    v2 := public.dang_ky_tu_van('Phạm Văn Cường', '0903 111 222', null, null, null,
+          'ban_ron', '{}'::jsonb, 'thau_hieu', 'ip_e');
+    select count(*) into v_dem from public.leads where phone = '0903111222';
+    select count(*) into v_hd from public.lead_activities a
+      join public.leads l on l.id = a.lead_id where l.phone = '0903111222';
+
+    perform public.t_assert(v1 = v2,   'gửi lại cùng số trong 24 giờ trả về mã lead cũ');
+    perform public.t_assert(v_dem = 1, 'không đẻ lead trùng — cô Ngọc không gọi hai lần');
+    perform public.t_assert(v_hd >= 1, 'lần gửi lại được ghi vào nhật ký liên hệ');
+  end $$;
+
+  do $$
+  declare i int; v_loi text;
+  begin
+    for i in 1..5 loop
+      perform public.dang_ky_tu_van('Người Thứ ' || i, '09040000' || lpad(i::text, 2, '0'),
+              null, null, null, null, '{}'::jsonb, 'dang_ky', 'ip_spam');
+    end loop;
+    begin
+      perform public.dang_ky_tu_van('Người Thứ 6', '0904000099', null, null, null, null,
+              '{}'::jsonb, 'dang_ky', 'ip_spam');
+      v_loi := 'KHONG_NEM';
+    exception when others then v_loi := SQLERRM; end;
+    perform public.t_assert(v_loi = 'QUA_NHIEU_LUOT', 'lượt thứ 6 trong một giờ bị chặn');
+  end $$;
+
+  do $$
+  declare i int; v_ma text;
+  begin
+    for i in 1..8 loop
+      v_ma := public.dang_ky_tu_van('Khong Muoi ' || i, '09050000' || lpad(i::text, 2, '0'),
+              null, null, null, null, '{}'::jsonb, 'dang_ky', '');
+    end loop;
+    perform public.t_assert(v_ma is not null,
+      'ip_bam rỗng (chưa đặt DANG_KY_SALT) thì không chặn, đăng ký vẫn nhận');
+  end $$;
+rollback;
+
+\echo '--- RLS: người lạ (anon) trên website công khai ---'
+begin;
+  set local role anon;
+
+  do $$
+  declare v_dem int; v_ket text;
+  begin
+    begin select count(*) into v_dem from public.leads;           v_ket := 'DOC_DUOC';
+    exception when others then v_ket := 'BI_CHAN'; end;
+    perform public.t_assert(v_ket = 'BI_CHAN', 'anon KHÔNG đọc được bảng leads');
+
+    begin select count(*) into v_dem from public.ho_so_thau_hieu; v_ket := 'DOC_DUOC';
+    exception when others then v_ket := 'BI_CHAN'; end;
+    perform public.t_assert(v_ket = 'BI_CHAN', 'anon KHÔNG đọc được ho_so_thau_hieu');
+
+    begin select count(*) into v_dem from public.dang_ky_nhat_ky; v_ket := 'DOC_DUOC';
+    exception when others then v_ket := 'BI_CHAN'; end;
+    perform public.t_assert(v_ket = 'BI_CHAN', 'anon KHÔNG đọc được nhật ký IP');
+
+    begin select count(*) into v_dem from public.v_tuyen_sinh;    v_ket := 'DOC_DUOC';
+    exception when others then v_ket := 'BI_CHAN'; end;
+    perform public.t_assert(v_ket = 'BI_CHAN', 'anon KHÔNG đọc được view v_tuyen_sinh');
+  end $$;
+
+  do $$
+  declare v_ma text;
+  begin
+    v_ma := public.dang_ky_tu_van('Khách Lạ', '0906000001', null, null, null,
+            'so_sai', '{}'::jsonb, 'thau_hieu', 'ip_anon');
+    perform public.t_assert(v_ma like 'LD%',
+      'anon gọi được dang_ky_tu_van — đây là cánh cửa duy nhất của họ');
+  end $$;
+rollback;
+
+do $$ begin
+  perform public.t_assert((select count(*) from cron.job) >= 1,
+    'migration có hẹn ít nhất một lịch chạy định kỳ (0035 sao lưu, 0048 quét cảnh báo)');
+end $$;
+
 \echo ''
 \echo '======================================================'
 \echo '  TOÀN BỘ KIỂM THỬ NGHIỆP VỤ: ĐẠT'

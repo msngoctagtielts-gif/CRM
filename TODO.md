@@ -1,6 +1,6 @@
 # TODO.md — việc tiếp theo, theo thứ tự ưu tiên
 
-**Cập nhật:** 10/09/2026
+**Cập nhật:** 22/09/2026
 
 ---
 
@@ -147,6 +147,21 @@ xem tình hình trung tâm.
 
 ## P3 — Giai đoạn 3 (Lead CRM)
 
+- [x] ~~Website công khai nhận đăng ký~~ → `web/` đã dựng xong: trang chủ, bài tự
+      đánh giá 8 câu (6 chân dung người học), thư viện 5 bài viết, biểu mẫu đăng ký.
+      Người đăng ký rơi thẳng vào `leads`. Chiến lược ở `docs/KENH_THU_HUT_HOC_VIEN.md`
+- [x] ~~Màn hình xem khách hàng tiềm năng~~ → `/tuyen-sinh`, **mới chỉ đọc**
+- [ ] ⛔ **Việc của cô Ngọc trước khi mở website ra công chúng** — xem
+      `docs/KENH_THU_HUT_HOC_VIEN.md` mục 10:
+      - áp migration `0052` rồi chạy `npm run db:types`
+      - tạo Netlify site thứ ba, Base directory = `web`, đặt tên miền
+      - đặt `DANG_KY_SALT` (nếu không đặt thì chặn spam theo IP tự tắt)
+      - điền số điện thoại vào chân trang website
+      - chốt **ai gọi lại và trong bao lâu** — không có người nhận việc này thì
+        cả cái kênh không có ý nghĩa
+      - văn bản đồng ý dùng hình ảnh học viên, trước khi quay video nào
+- [ ] Thêm `ho_so_thau_hieu` vào danh sách bảng của `fn_tao_ban_sao_luu()` (0035).
+      Hiện `leads` đã được sao lưu nhưng hồ sơ chân dung thì chưa
 - [ ] Bảng pipeline lead dạng kéo-thả theo 8 trạng thái
 - [ ] Biểu mẫu lead + nhật ký liên hệ
 - [ ] Nhập kết quả kiểm tra đầu vào, tự gợi ý cấp độ CEFR
@@ -183,6 +198,7 @@ xem tình hình trung tâm.
 | 5 | Chưa có quốc tế hoá thật, chỉ có từ điển nhãn `src/lib/labels.ts` | Thấp | Mọi chuỗi hiển thị đã tập trung một chỗ, thêm tiếng Anh là thêm một từ điển song song |
 | 6 | Không có giới hạn tần suất cho `/api/cron/*` | Thấp | Đã bảo vệ bằng secret; thêm rate limit nếu endpoint bị dò |
 | 7 | `npm audit` còn báo lỗ hổng `postcss` (transitive trong Next) | Thấp | Chưa có bản vá từ thượng nguồn. Chỉ ảnh hưởng lúc build trên CSS của chính dự án, không xử lý dữ liệu người dùng. Theo dõi bản Next mới |
+| 8 | **`smoke.sql` mục 5 đang HỎNG** — assertion `cảnh báo chất lượng được tạo` không đạt | Trung bình | Không phải lỗi mới. Migration `0032` siết cảnh báo chỉ áp từ `2026-09-01` (`settings.require_evidence_from`), còn buổi học trong mục 5 của bài kiểm thử có ngày trước mốc đó ⇒ đúng luật mới thì KHÔNG sinh cảnh báo, nhưng bài kiểm thử chưa được cập nhật theo. Không ai phát hiện ra vì `run-local.sh` đã dừng từ trước đó ở `0035` (thiếu `pg_cron`, nay đã vá). **Cần Founder quyết**: dời ngày buổi học trong mục 5 sang sau mốc, hay đổi assertion thành "không sinh cảnh báo cho buổi trước mốc". Dời ngày có thể kéo theo mục 11 vốn gắn với tháng 7/8/9 thật |
 
 ---
 

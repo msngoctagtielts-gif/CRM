@@ -1,0 +1,34 @@
+# Website công khai — RIÊNG BIỆT với hệ quản trị và với cổng học viên.
+#
+# Netlify site này đặt Base directory = web, nên nó chỉ build thư mục này.
+#
+# LƯU Ý CHI PHÍ: giờ là BA site dùng chung hạn mức 300 credit/tháng của gói
+# Free. Mỗi deploy production tốn 15 credit. Sửa cả ba bên trong một ngày là
+# 45 credit. Vì vậy cơ chế bỏ qua build khi không có gì đổi càng quan trọng.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+  ignore = "bash ./should-skip-build.sh"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[context.deploy-preview]
+  command = "echo 'Bỏ qua deploy xem trước để tiết kiệm credit gói Free'"
+
+[context.branch-deploy]
+  command = "echo 'Bỏ qua deploy nhánh để tiết kiệm credit gói Free'"
+
+# Khác hai site kia ở đúng một chỗ: site này CẦN được Google lập chỉ mục.
+# Đó là toàn bộ lý do nó tồn tại.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
