@@ -45,6 +45,10 @@ Nếu bước nào hỏng, nó dừng lại và nói rõ hỏng ở đâu, khôn
 Chạy lại lệnh trên bất cứ lúc nào để lấy bản mới nhất. Tệp cũ bị ghi đè; tệp khác
 trong thư mục không bị đụng tới.
 
+> **Một lưu ý nhỏ:** GitHub giữ đệm tệp khoảng 5 phút. Nếu vừa có thay đổi mới đẩy
+> lên mà chạy ngay thì có thể còn nhận bản cũ — chờ 5 phút rồi chạy lại là có bản
+> mới. Không ảnh hưởng gì tới lần cài đầu tiên.
+
 | Tuỳ chọn | Tác dụng |
 |---|---|
 | `node cai-dat.mjs --nhanh` | Bỏ bước tự kiểm |
