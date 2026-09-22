@@ -83,6 +83,7 @@ qua được bước máy.
 
 | Tệp | Nội dung |
 |---|---|
+| [`CAI-DAT-TREN-MAY.md`](CAI-DAT-TREN-MAY.md) | Chép sáu nhân sự và công cụ soi sang máy làm website (`C:\Users\User\MNEE-OS`) |
 | [`KE-HOACH-XAY-DUNG.md`](KE-HOACH-XAY-DUNG.md) | Sơ đồ trang, bốn giai đoạn, tiêu chí xong |
 | [`UY-TIN.md`](UY-TIN.md) | Bằng chứng uy tín cần thu thập, và lời hứa bị cấm |
 | [`DANH-MUC-KIEM-TRA.md`](DANH-MUC-KIEM-TRA.md) | Danh mục `web-qa` đi qua trước mỗi lần phát hành |
