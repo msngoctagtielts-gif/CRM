@@ -4886,6 +4886,34 @@ export type Database = {
           },
         ]
       }
+      v_mat_xich_buoi_hoc: {
+        Row: {
+          class_code: string | null
+          class_id: string | null
+          diem_dut: string | null
+          duration_minutes: number | null
+          giao_vien: string | null
+          lesson_date: string | null
+          lesson_id: string | null
+          muc_do: string | null
+          report_id: string | null
+          so_hoc_vien_bi_tru: number | null
+          so_mat_xich_dat: number | null
+          ten_lop: string | null
+          tien_hoc_phi: number | null
+          tien_tra_giao_vien: number | null
+          trang_thai_bao_cao: string | null
+          x1_co_buoi: boolean | null
+          x2_co_bao_cao: boolean | null
+          x3_co_noi_dung: boolean | null
+          x4_da_cham_qc: boolean | null
+          x5_da_xac_minh: boolean | null
+          x6_da_tru_hoc_phi: boolean | null
+          x7_da_vao_luong: boolean | null
+          x8_da_gui_ph: boolean | null
+        }
+        Relationships: []
+      }
       v_xac_minh_buoi_hoc: {
         Row: {
           class_code: string | null
