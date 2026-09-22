@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { requireFounder } from '@/lib/auth'
-import { friendlyDbError, parseForm, type ActionResult } from '@/lib/actions'
+import { friendlyDbError, loiTuHam, parseForm, type ActionResult } from '@/lib/actions'
 
 const paymentSchema = z.object({
   student_id: z.string().uuid('Chưa chọn học viên'),
@@ -356,4 +356,86 @@ export async function addTuitionRate(
   revalidatePath('/payments')
   revalidatePath(`/students/${enrollment.student_id}`)
   return { ok: true, message: `Đã thêm mốc đơn giá áp dụng từ ${effective_from}.` }
+}
+
+/* -------------------------------------------------------------------------
+ * SỬA và HUỶ phiếu thu.
+ *
+ * KHÔNG CÓ XOÁ, và đó là cố ý. Một bản ghi tiền đã tồn tại là bằng chứng có
+ * người đã gõ nó vào; nếu gõ sai thì phải thấy được là đã sai, ai sửa và vì
+ * sao. Xoá cứng làm sổ sách khớp một cách giả tạo — nhìn vào không ai biết
+ * từng có một phiếu 7.227.000₫ nhập nhầm.
+ *
+ * Huỷ đổi trạng thái sang `cancelled`. Các view công nợ đã lọc theo
+ * status = 'confirmed' nên phiếu huỷ tự động rơi khỏi mọi con số, mà vẫn còn
+ * trong sổ để đối chiếu.
+ * ---------------------------------------------------------------------- */
+
+const suaPhieuThuSchema = z.object({
+  payment_id: z.string().uuid(),
+  payment_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày thanh toán không hợp lệ')
+    .optional(),
+  amount: z.coerce.number().positive('Số tiền phải lớn hơn 0').optional(),
+  reference: z.string().max(120).optional(),
+  notes: z.string().max(1000).optional(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+})
+
+export async function suaPhieuThu(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(suaPhieuThuSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_sua_phieu_thu', {
+    p_payment_id: d.payment_id,
+    p_payment_date: d.payment_date ?? null,
+    p_amount: d.amount ?? null,
+    p_reference: d.reference ?? null,
+    p_notes: d.notes ?? null,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/payments')
+  revalidatePath('/doi-soat')
+  return { ok: true, message: 'Đã sửa phiếu thu và ghi vào nhật ký.' }
+}
+
+const huyPhieuThuSchema = z.object({
+  payment_id: z.string().uuid(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+  xac_nhan: z.literal('HUY', { message: 'Gõ đúng chữ HUY để xác nhận' }),
+})
+
+export async function huyPhieuThu(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(huyPhieuThuSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_huy_phieu_thu', {
+    p_payment_id: d.payment_id,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/payments')
+  revalidatePath('/doi-soat')
+  return {
+    ok: true,
+    message: 'Đã huỷ phiếu thu. Phiếu vẫn còn trong sổ nhưng không còn tính vào công nợ.',
+  }
 }

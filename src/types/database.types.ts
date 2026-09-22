@@ -4886,6 +4886,20 @@ export type Database = {
           },
         ]
       }
+      v_nhat_ky_thay_doi: {
+        Row: {
+          action: string | null
+          created_at: string | null
+          id: string | null
+          ly_do: string | null
+          new_data: Json | null
+          nguoi_sua: string | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string | null
+        }
+        Relationships: []
+      }
       v_mat_xich_buoi_hoc: {
         Row: {
           class_code: string | null
@@ -5426,6 +5440,62 @@ export type Database = {
       fn_alert_lesson_balance: { Args: never; Returns: number }
       fn_alert_missing_lesson_time: { Args: never; Returns: number }
       fn_alert_not_sent_to_parent: { Args: never; Returns: number }
+      fn_sua_buoi_hoc: {
+        Args: {
+          p_duration_minutes: number | null
+          p_lesson_date: string | null
+          p_lesson_id: string
+          p_ly_do: string
+          p_status: string | null
+          p_teacher_id: string | null
+        }
+        Returns: Json
+      }
+      fn_xoa_buoi_hoc: {
+        Args: { p_lesson_id: string; p_ly_do: string }
+        Returns: Json
+      }
+      fn_sua_phieu_thu: {
+        Args: {
+          p_amount: number | null
+          p_ly_do: string
+          p_notes: string | null
+          p_payment_date: string | null
+          p_payment_id: string
+          p_reference: string | null
+        }
+        Returns: Json
+      }
+      fn_huy_phieu_thu: {
+        Args: { p_ly_do: string; p_payment_id: string }
+        Returns: Json
+      }
+      fn_sua_lop: {
+        Args: {
+          p_class_code: string | null
+          p_class_id: string
+          p_ly_do: string
+          p_meeting_url: string | null
+          p_name: string | null
+          p_notes: string | null
+          p_status: string | null
+          p_teacher_id: string | null
+        }
+        Returns: Json
+      }
+      fn_sua_giao_vien: {
+        Args: {
+          p_display_name: string | null
+          p_email: string | null
+          p_full_name: string | null
+          p_ly_do: string
+          p_notes: string | null
+          p_phone: string | null
+          p_status: string | null
+          p_teacher_id: string
+        }
+        Returns: Json
+      }
       fn_build_payroll: {
         Args: {
           p_period_end: string

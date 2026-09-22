@@ -50,3 +50,24 @@ export function friendlyDbError(message: string): string {
   }
   return 'Không lưu được. Vui lòng kiểm tra lại dữ liệu.'
 }
+
+/**
+ * Lỗi do CHÍNH hàm của mình chủ động báo, khác với lỗi Postgres rò ra.
+ *
+ * Các hàm fn_sua_* / fn_xoa_* trong migration 0052–0053 đều `raise exception`
+ * bằng câu tiếng Việt viết sẵn cho Founder đọc — ví dụ "Buoi nay da tra luong
+ * cho giao vien." Nuốt những câu đó rồi thay bằng "Không lưu được" là lấy mất
+ * đúng thông tin Founder cần để biết phải làm gì tiếp.
+ *
+ * Ngược lại, thông báo gốc của Postgres KHÔNG được hiện ra: nó lộ tên bảng, tên
+ * ràng buộc, đôi khi cả nội dung dòng dữ liệu. Nên lọc theo dấu hiệu kỹ thuật.
+ */
+const DAU_HIEU_LOI_KY_THUAT =
+  /violates|constraint|relation |column |permission denied for|syntax|null value|invalid input|duplicate key|row-level security/i
+
+export function loiTuHam(message: string | null | undefined): string {
+  const m = (message ?? '').trim()
+  if (m === '') return 'Không thực hiện được. Vui lòng thử lại.'
+  if (m.length > 300 || DAU_HIEU_LOI_KY_THUAT.test(m)) return friendlyDbError(m)
+  return m
+}

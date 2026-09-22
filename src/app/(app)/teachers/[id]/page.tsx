@@ -5,6 +5,7 @@ import { requireFounder } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SuaGiaoVien } from './SuaGiaoVien'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { StatCard } from '@/components/ui/StatCard'
 import { Badge } from '@/components/ui/Badge'
@@ -104,6 +105,14 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
   // Học viên nào lâu chưa học thì đẩy lên đầu trong phần cảnh báo.
   const lauChuaHoc = hvRows.filter((h) => Number(h.ngay_ke_tu_buoi_cuoi ?? 0) > 21)
 
+  // View v_ho_so_giao_vien khong tra cot notes, ma o Ghi chu trong form sua thi
+  // can gia tri that — de trong se lam cô tuong la chua co ghi chu nao.
+  const { data: hoSoGoc } = await supabase
+    .from('teachers')
+    .select('notes')
+    .eq('id', id)
+    .maybeSingle()
+
   return (
     <>
       <PageHeader
@@ -115,6 +124,18 @@ export default async function HoSoGiaoVienPage({ params }: { params: Promise<{ i
           </Link>
         }
       />
+
+      <div className="mb-5">
+        <SuaGiaoVien
+          teacherId={id}
+          fullName={gv.full_name ?? ''}
+          displayName={gv.display_name ?? null}
+          email={gv.email ?? null}
+          phone={gv.phone ?? null}
+          status={dangDay ? 'active' : 'archived'}
+          notes={hoSoGoc?.notes ?? null}
+        />
+      </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <Badge tone={dangDay ? 'success' : 'neutral'}>{dangDay ? 'Đang dạy' : 'Đã nghỉ'}</Badge>

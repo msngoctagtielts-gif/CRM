@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { requireFounder } from '@/lib/auth'
-import { friendlyDbError, parseForm, type ActionResult } from '@/lib/actions'
+import { friendlyDbError, loiTuHam, parseForm, type ActionResult } from '@/lib/actions'
 
 const DURATIONS = [30, 60, 90] as const
 
@@ -220,4 +220,53 @@ export async function generateLessons(
     ok: true,
     message: `Đã tạo ${count ?? 0} buổi học mới (bỏ qua các buổi đã có).`,
   }
+}
+
+/* -------------------------------------------------------------------------
+ * SỬA lớp. KHÔNG CÓ XOÁ.
+ *
+ * Một lớp gắn với toàn bộ lịch sử buổi học, học phí đã trừ và lương đã trả.
+ * Xoá lớp là mất lịch sử đó. Lớp không còn dạy nữa thì đổi trạng thái — số liệu
+ * cũ vẫn tra cứu được, báo cáo tài chính các tháng trước vẫn đúng.
+ * ---------------------------------------------------------------------- */
+
+const suaLopSchema = z.object({
+  class_id: z.string().uuid(),
+  name: z.string().trim().min(2, 'Tên lớp quá ngắn').max(120).optional(),
+  class_code: z.string().trim().max(40).optional(),
+  teacher_id: z.string().uuid().optional(),
+  // Đúng theo enum class_status trong cơ sở dữ liệu: draft, active, paused,
+  // completed, cancelled. (Đã kiểm ngày 22/09/2026 — không có 'planned'.)
+  status: z.enum(['draft', 'active', 'paused', 'completed', 'cancelled']).optional(),
+  meeting_url: z.string().trim().url('Link phòng học không hợp lệ').optional(),
+  notes: z.string().max(2000).optional(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+})
+
+export async function suaLop(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(suaLopSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_sua_lop', {
+    p_class_id: d.class_id,
+    p_name: d.name ?? null,
+    p_class_code: d.class_code ?? null,
+    p_teacher_id: d.teacher_id ?? null,
+    p_status: d.status ?? null,
+    p_meeting_url: d.meeting_url ?? null,
+    p_notes: d.notes ?? null,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/classes')
+  revalidatePath(`/classes/${d.class_id}`)
+  return { ok: true, message: 'Đã sửa thông tin lớp và ghi vào nhật ký.' }
 }

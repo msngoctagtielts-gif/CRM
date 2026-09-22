@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { requireFounder } from '@/lib/auth'
-import { friendlyDbError, parseForm, type ActionResult } from '@/lib/actions'
+import { friendlyDbError, loiTuHam, parseForm, type ActionResult } from '@/lib/actions'
 
 const teacherSchema = z.object({
   full_name: z.string().min(2, 'Tên giáo viên quá ngắn').max(120),
@@ -372,4 +372,54 @@ export async function xoaKhungGioRanh(
 
   revalidatePath(`/teachers/${parsed.data.teacher_id}`)
   return { ok: true, message: 'Đã xoá khung giờ.' }
+}
+
+/* -------------------------------------------------------------------------
+ * SỬA hồ sơ giáo viên. KHÔNG CÓ XOÁ.
+ *
+ * Giáo viên gắn với lịch sử dạy và lịch sử lương của nhiều tháng. Xoá là mất
+ * cả hai. Nghỉ dạy thì đổi trạng thái sang `archived` — đã có sẵn
+ * revokeTeacherAccount để thu hồi quyền đăng nhập, hai việc đó khác nhau và
+ * không nên gộp: có giáo viên nghỉ nhưng vẫn cần tra lương cũ.
+ * ---------------------------------------------------------------------- */
+
+const suaGiaoVienSchema = z.object({
+  teacher_id: z.string().uuid(),
+  full_name: z.string().trim().min(2, 'Tên giáo viên quá ngắn').max(120).optional(),
+  display_name: z.string().trim().max(80).optional(),
+  email: z.string().trim().email('Email không hợp lệ').optional(),
+  phone: z.string().trim().max(30).optional(),
+  // enum record_status chỉ có hai giá trị: active, archived. Không có
+  // 'inactive'. Giáo viên nghỉ dạy thì chuyển sang archived.
+  status: z.enum(['active', 'archived']).optional(),
+  notes: z.string().max(2000).optional(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+})
+
+export async function suaGiaoVien(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireFounder()
+  const parsed = parseForm(suaGiaoVienSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_sua_giao_vien', {
+    p_teacher_id: d.teacher_id,
+    p_full_name: d.full_name ?? null,
+    p_display_name: d.display_name ?? null,
+    p_email: d.email ?? null,
+    p_phone: d.phone ?? null,
+    p_status: d.status ?? null,
+    p_notes: d.notes ?? null,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/teachers')
+  revalidatePath(`/teachers/${d.teacher_id}`)
+  return { ok: true, message: 'Đã sửa hồ sơ giáo viên và ghi vào nhật ký.' }
 }

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Alert } from '@/components/ui/Alert'
 import { ReportForm } from './ReportForm'
 import { ReportActions } from './ReportActions'
+import { SuaXoaBuoiHoc } from './SuaXoaBuoiHoc'
 
 export const metadata: Metadata = { title: 'Báo cáo giảng dạy' }
 
@@ -72,11 +73,31 @@ export default async function ReportFormPage({
     .map((r) => r.students as { id: string; full_name: string; nickname: string | null; student_code: string | null } | null)
     .filter((s): s is NonNullable<typeof s> => s !== null)
 
+  const isFounder = user.role_code === 'founder'
+
+  // Chỉ Founder mới thấy khu vực sửa/xoá, nên chỉ Founder mới cần hai truy vấn
+  // này. Giáo viên không phải trả giá cho một khu vực họ không nhìn thấy.
+  const [{ data: payable }, { data: giaoVienList }] = isFounder
+    ? await Promise.all([
+        supabase
+          .from('teacher_payable_lessons')
+          .select('status')
+          .eq('lesson_id', lessonId)
+          .maybeSingle(),
+        supabase
+          .from('teachers')
+          .select('id, full_name')
+          .eq('status', 'active')
+          .order('full_name'),
+      ])
+    : [{ data: null }, { data: [] }]
+
+  const daKhoaLuong = payable?.status === 'included' || payable?.status === 'paid'
+
   const deadline = formatDeadline(lesson.report_due_at)
   const reportMeta = lesson.report_status ? REPORT_STATUS[lesson.report_status] : null
   const missing = missingFieldLabels(lesson.missing_fields)
   const isApproved = lesson.report_status === 'approved'
-  const isFounder = user.role_code === 'founder'
   const canEdit = isFounder || !isApproved
 
   return (
@@ -198,6 +219,18 @@ export default async function ReportFormPage({
           ]),
         )}
       />
+
+      {isFounder && lesson.lesson_id ? (
+        <SuaXoaBuoiHoc
+          lessonId={lesson.lesson_id}
+          lessonDate={lesson.lesson_date ?? ''}
+          durationMinutes={lesson.duration_minutes}
+          status={lesson.lesson_status ?? 'completed'}
+          daKhoaLuong={daKhoaLuong}
+          teacherId={lesson.teacher_id ?? null}
+          giaoVienList={giaoVienList ?? []}
+        />
+      ) : null}
     </div>
   )
 }

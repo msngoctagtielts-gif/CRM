@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatDate, formatDuration, formatTime } from '@/lib/format'
 import { CLASS_STATUS, CLASS_TYPE, LESSON_STATUS, REPORT_STATUS, WEEKDAYS } from '@/lib/labels'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { SuaLop } from './SuaLop'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState, Table, Td, Th } from '@/components/ui/Table'
@@ -62,6 +63,12 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
   const level = cls.levels as { code: string; name_vi: string } | null
   const enrolledIds = new Set((roster ?? []).map((r) => r.student_id))
 
+  // Danh sách giáo viên để đổi người phụ trách. Chỉ Founder được sửa nên chỉ
+  // Founder mới phải trả giá cho truy vấn này.
+  const { data: giaoVienList } = isFounder
+    ? await supabase.from('teachers').select('id, full_name').eq('status', 'active').order('full_name')
+    : { data: [] }
+
   return (
     <>
       <PageHeader
@@ -77,6 +84,21 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
           .join(' · ')}
         action={<Badge tone={statusMeta.tone}>{statusMeta.label}</Badge>}
       />
+
+      {isFounder ? (
+        <div className="mb-5">
+          <SuaLop
+            classId={cls.id}
+            name={cls.name}
+            classCode={cls.class_code}
+            teacherId={cls.teacher_id}
+            status={cls.status}
+            meetingUrl={cls.meeting_url}
+            notes={cls.notes}
+            giaoVienList={giaoVienList ?? []}
+          />
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <div className="space-y-5 xl:col-span-2">

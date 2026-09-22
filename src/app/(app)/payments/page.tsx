@@ -16,6 +16,8 @@ import { PaymentForms } from './PaymentForms'
 
 export const metadata: Metadata = { title: 'Thu học phí' }
 
+import { SuaPhieuThu } from './SuaPhieuThu'
+
 export default async function PaymentsPage({
   searchParams,
 }: {
@@ -220,6 +222,7 @@ export default async function PaymentsPage({
                     <Th>Hình thức</Th>
                     <Th align="right">Số tiền</Th>
                     <Th>Trạng thái</Th>
+                    <Th>Sửa</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,6 +242,20 @@ export default async function PaymentsPage({
                         </Td>
                         <Td>
                           <Badge tone={meta.tone}>{meta.label}</Badge>
+                        </Td>
+                        <Td>
+                          {p.status === 'cancelled' ? (
+                            <span className="text-xs text-navy-400">đã huỷ</span>
+                          ) : (
+                            <SuaPhieuThu
+                              paymentId={p.id}
+                              paymentCode={p.payment_code}
+                              paymentDate={p.payment_date}
+                              amount={Number(p.amount)}
+                              reference={p.reference}
+                              daVaoPhieuThang={p.statement_id != null}
+                            />
+                          )}
                         </Td>
                       </tr>
                     )

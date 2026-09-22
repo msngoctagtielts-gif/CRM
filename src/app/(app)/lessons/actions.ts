@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentTeacherId, requireRole } from '@/lib/auth'
-import { friendlyDbError, parseForm, type ActionResult } from '@/lib/actions'
+import { friendlyDbError, loiTuHam, parseForm, type ActionResult } from '@/lib/actions'
 
 /**
  * Biểu mẫu sau buổi học.
@@ -237,5 +237,106 @@ export async function logLesson(
       d.is_free === '1'
         ? 'Đã ghi buổi học. Buổi này miễn phí nên không tính học phí, nhưng vẫn tính lương giáo viên.'
         : 'Đã ghi buổi học. Học phí và lương giáo viên đã được tính.',
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * SỬA và XOÁ buổi học — cô Ngọc, 22/09/2026: "làm sao cô có thể chỉnh sửa
+ * trực tiếp được trên hệ thống".
+ *
+ * Trước đây hệ thống chỉ biết thêm. Ghi sai một buổi là phải nhắn trợ lý chạy
+ * SQL. Đó là phụ thuộc không chấp nhận được.
+ *
+ * CẢ HAI HÀM ĐỀU KHÔNG ĐỘNG THẲNG VÀO BẢNG. Chúng gọi fn_sua_buoi_hoc /
+ * fn_xoa_buoi_hoc trong cơ sở dữ liệu, vì ba việc phải xảy ra cùng lúc trong
+ * một giao dịch và không được phép bỏ sót cái nào:
+ *   1. chặn khi buổi đã khoá vào bảng lương
+ *   2. chụp lại bản cũ (cả báo cáo, dòng trừ học phí, dòng lương, link video)
+ *   3. ghi nhật ký kèm lý do
+ * Viết logic đó ở tầng web thì lần sau có ai gọi từ chỗ khác là mất hết chặn.
+ * ---------------------------------------------------------------------- */
+
+const suaBuoiSchema = z.object({
+  lesson_id: z.string().uuid(),
+  lesson_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày học không hợp lệ')
+    .optional(),
+  duration_minutes: z.enum(['30', '60', '75', '90']).optional(),
+  teacher_id: z.string().uuid().optional(),
+  status: z.enum(['scheduled', 'completed', 'cancelled', 'no_show', 'rescheduled']).optional(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+})
+
+export async function suaBuoiHoc(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireRole(['founder'])
+  const parsed = parseForm(suaBuoiSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_sua_buoi_hoc', {
+    p_lesson_id: d.lesson_id,
+    p_lesson_date: d.lesson_date ?? null,
+    p_duration_minutes: d.duration_minutes ? Number(d.duration_minutes) : null,
+    p_teacher_id: d.teacher_id ?? null,
+    p_status: d.status ?? null,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/lessons')
+  revalidatePath('/mat-xich')
+  revalidatePath(`/reports/${d.lesson_id}`)
+  return { ok: true, message: 'Đã sửa buổi học và ghi vào nhật ký.' }
+}
+
+const xoaBuoiSchema = z.object({
+  lesson_id: z.string().uuid(),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+  xac_nhan: z.literal('XOA', { message: 'Gõ đúng chữ XOA để xác nhận' }),
+})
+
+export async function xoaBuoiHoc(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireRole(['founder'])
+  const parsed = parseForm(xoaBuoiSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('fn_xoa_buoi_hoc', {
+    p_lesson_id: d.lesson_id,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  const kem =
+    ((data as unknown as { da_xoa_kem?: Record<string, unknown> } | null)?.da_xoa_kem ?? {}) as
+      Record<string, unknown>
+  const phan = [
+    kem.co_bao_cao ? 'báo cáo buổi học' : null,
+    Number(kem.so_dong_tru_hoc_phi ?? 0) > 0
+      ? `${kem.so_dong_tru_hoc_phi} dòng trừ học phí (đã hoàn lại cho học viên)`
+      : null,
+    kem.co_dong_luong ? 'dòng tính lương' : null,
+    Number(kem.so_video ?? 0) > 0 ? `${kem.so_video} link video` : null,
+  ].filter(Boolean)
+
+  revalidatePath('/lessons')
+  revalidatePath('/mat-xich')
+  return {
+    ok: true,
+    message:
+      phan.length > 0
+        ? `Đã xoá buổi học, kèm theo: ${phan.join(', ')}. Bản cũ đã lưu trong nhật ký.`
+        : 'Đã xoá buổi học. Bản cũ đã lưu trong nhật ký.',
   }
 }
