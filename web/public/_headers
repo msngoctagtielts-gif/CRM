@@ -1,0 +1,14 @@
+# Header bảo mật cho các tệp Cloudflare phục vụ thẳng từ tầng asset.
+#
+# Tầng asset KHÔNG chạy qua Worker, nên `headers()` trong next.config.ts không
+# với tới được các trang dựng sẵn. Vì vậy phải khai ở cả hai nơi: file này lo
+# phần tĩnh, next.config.ts lo phần Worker render. Trùng lặp là có chủ đích.
+#
+# Khác hệ quản trị và cổng học viên ở đúng một chỗ: KHÔNG đặt
+# `X-Robots-Tag: noindex`. Site này cần Google tìm thấy — đó là lý do nó tồn tại.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

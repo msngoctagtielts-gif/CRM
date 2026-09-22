@@ -6,12 +6,18 @@ dist/
 .env
 .env.local
 .env*.local
+# Biến môi trường cho `wrangler dev` — cùng vai trò với .env.local.
+.dev.vars
+.dev.vars.*
 *.log
 npm-debug.log*
 .DS_Store
 .vercel
 # Kết quả của `netlify build` — khoảng 119 MB mã sinh tự động.
 .netlify/
+# Kết quả của `opennextjs-cloudflare build` và bộ nhớ tạm của Wrangler.
+.open-next/
+.wrangler/
 netlify.toml.bak
 *.tsbuildinfo
 next-env.d.ts

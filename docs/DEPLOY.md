@@ -30,6 +30,81 @@ tháng. Trung tâm có vài người dùng nên còn rất xa.
 
 ---
 
+## 1b. Vì sao website công khai lại ở Cloudflare (22/09/2026)
+
+Mục 1 loại Cloudflare cho **cả ba** site. Kết luận đó vẫn đúng cho hệ quản trị
+và cổng học viên, nhưng **sai cho website công khai** — và đây là chỗ sửa.
+
+### Điều mục 1 chưa tính tới
+
+**Giới hạn 10ms là thời gian CPU, không phải thời gian chờ.** Chờ mạng — gọi
+Supabase, đợi cơ sở dữ liệu trả lời — không tính vào CPU. Thứ đốt CPU là render
+React phía máy chủ.
+
+Đã kiểm lại con số 10ms trên trang giá của Cloudflare ngày 22/09/2026: **vẫn
+nguyên**, không phải thông tin cũ.
+
+### Vì sao ba site khác nhau
+
+| Site | Bản chất | Kết luận |
+|---|---|---|
+| Hệ quản trị `src/` | Mọi route đều render động, middleware chạy mọi request, mỗi trang đều truy vấn và dựng bảng số liệu | Giữ Netlify |
+| Cổng học viên `portal/` | Có đăng nhập, render động | Giữ Netlify |
+| Website công khai `web/` | 12/13 route dựng sẵn lúc build; route động duy nhất render vài dòng chữ; biểu mẫu đăng ký gần như chỉ ngồi chờ Supabase | **Cloudflare** |
+
+### Một chỗ cần nói cho đúng
+
+Lúc đầu tôi nói "12/13 route sẽ được phục vụ thẳng từ tầng asset, không gọi
+Worker". **Kiểm lại thì không đúng.** Dựng thử bằng OpenNext rồi xem thư mục
+`.open-next/assets` thì thấy tầng asset chỉ chứa `_next/static/*` và các tệp
+trong `public/` — tức JavaScript, CSS và tệp tĩnh. **Mỗi trang HTML vẫn đi qua
+Worker.**
+
+Điều đó không lật ngược kết luận, nhưng làm nó yếu hơn một bậc:
+
+- Trang dựng sẵn thì Worker chỉ **đọc lại HTML có sẵn trong gói** rồi trả về,
+  không render lại React. Rẻ — nhưng là *rẻ*, không phải *bằng không*.
+- Còn hệ quản trị thì mỗi request đều là render thật cộng truy vấn, nên lý do
+  loại nó vẫn nguyên giá trị.
+
+**Chưa chứng minh được bằng số đo thật** là mỗi request nằm dưới 10ms CPU — chỉ
+đo được sau khi deploy, trong bảng Observability của Cloudflare (đã bật sẵn
+trong `wrangler.jsonc`). Nếu gặp lỗi 1102 thì có hai đường lui, theo thứ tự:
+
+1. Workers Paid ~5 USD/tháng, nâng lên 30 giây CPU.
+2. Chuyển `web/` sang xuất tĩnh hoàn toàn, để trình duyệt gọi thẳng hàm
+   `dang_ky_tu_van` bằng khoá anon — khoá đó vốn công khai và `anon` không đọc
+   được bảng nào. Khi ấy trang không còn gọi Worker nữa. Đổi lại phải bỏ phần
+   băm IP phía máy chủ, tức mất chặn spam theo IP; bù bằng Cloudflare Turnstile.
+
+### Cái được
+
+Vấn đề thật mà việc này giải quyết: **thêm site thứ ba làm 300 credit/tháng của
+Netlify căng hẳn lên.** Ba site chia nhau, mỗi deploy 15 credit, mà website công
+khai lại là site sẽ sửa nhiều nhất — mỗi bài viết mới là một lần deploy — và là
+site duy nhất có lưu lượng từ người lạ.
+
+Tách nó ra trả lại gần như toàn bộ hạn mức cho hai site vận hành thật, và băng
+thông của người lạ không còn ăn vào credit của hệ quản trị nữa.
+
+### Đã kiểm được đến đâu
+
+Chạy thật tại máy bằng `npm run preview`, tức chạy trên **workerd** — đúng
+runtime của Cloudflare, không phải Node:
+
+| Kiểm | Kết quả |
+|---|---|
+| Sáu route trả về nội dung thật | ✅ tất cả 200, tiếng Việt hiển thị đúng |
+| Header bảo mật trên trang Worker render | ✅ đủ bốn header |
+| Header bảo mật trên tệp tĩnh | ✅ `_headers` được nạp |
+| `wrangler deploy --dry-run` | ✅ cấu hình hợp lệ |
+| Kích thước Worker sau nén | ✅ 961 KB / giới hạn 3 MB |
+
+Chưa kiểm được: CPU mỗi request, và luồng gửi biểu mẫu tới Supabase thật (lúc
+chạy thử dùng khoá giả).
+
+---
+
 ## 2. Cạm bẫy của gói Free Netlify — và cách đã xử lý
 
 Gói Free có **hạn mức cứng 300 credit/tháng**. Hết credit thì **site tạm dừng tới
@@ -186,7 +261,8 @@ Không phải bây giờ. Cân nhắc khi có **một** trong các dấu hiệu:
 
 | Dấu hiệu | Chuyển sang | Giá |
 |---|---|---|
-| Hết credit Netlify giữa tháng nhiều lần | Cloudflare Workers Paid | ~5 USD/th |
+| Hết credit Netlify giữa tháng nhiều lần | Cloudflare Workers Paid cho hệ quản trị | ~5 USD/th |
+| Website công khai đổ lỗi 1102 (quá 10ms CPU) | Workers Paid, hoặc xuất tĩnh — xem mục 1b | ~5 USD/th hoặc 0 |
 | Cần khôi phục dữ liệu về một thời điểm bất kỳ | Supabase Pro + PITR | 25 USD/th |
 | AI vượt hạn mức miễn phí | Gemini trả phí | theo lượt dùng |
 

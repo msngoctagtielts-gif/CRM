@@ -1,0 +1,36 @@
+/**
+ * Website công khai Ms.Ngọc Elite English — chạy trên Cloudflare Workers.
+ *
+ * Vì sao Cloudflare cho RIÊNG site này, trong khi hệ quản trị và cổng học viên
+ * vẫn ở Netlify: 12 trong 13 route ở đây là tĩnh hoặc dựng sẵn lúc build.
+ * Cloudflare phục vụ chúng thẳng từ tầng asset, không gọi Worker, nên không
+ * đụng tới giới hạn 10ms CPU của gói Free — giới hạn đã khiến DEPLOY.md mục 1
+ * loại Cloudflare cho hệ quản trị, và lý do đó tới nay vẫn đúng.
+ *
+ * Route động duy nhất là /cam-on (render vài dòng chữ) và server action gửi
+ * biểu mẫu đăng ký. Cái sau gần như chỉ ngồi CHỜ Supabase trả lời, mà thời
+ * gian chờ mạng KHÔNG tính vào CPU. Nên cả hai đều nằm sâu dưới ngưỡng.
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mnee-web",
+  "main": ".open-next/worker.js",
+
+  // Sau mốc 2024-09-23 thì `nodejs_compat` chạy phiên bản v2, là phiên bản
+  // OpenNext cần. `global_fetch_strictly_public` bắt fetch() đi ra internet
+  // công cộng thay vì vòng ngược vào chính Worker — cần cho lời gọi Supabase.
+  "compatibility_date": "2025-09-23",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // KHÔNG khai báo r2_buckets, WORKER_SELF_REFERENCE hay images — xem lý do
+  // trong open-next.config.ts.
+}

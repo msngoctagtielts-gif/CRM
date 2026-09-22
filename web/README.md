@@ -3,11 +3,11 @@
 Nơi người chưa biết trung tâm tìm hiểu và để lại thông tin. Đây là website
 **thứ ba** của hệ thống, và là website duy nhất cho người chưa đăng nhập vào.
 
-| Website | Thư mục | Ai dùng | Lập chỉ mục |
-|---|---|---|---|
-| Hệ quản trị | `src/` | Founder, giáo viên | Không |
-| Cổng học viên | `portal/` | Phụ huynh, học viên (có đăng nhập) | Không |
-| **Công khai** | `web/` | **Người lạ** | **Có** |
+| Website | Thư mục | Ai dùng | Lập chỉ mục | Chạy ở đâu |
+|---|---|---|---|---|
+| Hệ quản trị | `src/` | Founder, giáo viên | Không | Netlify |
+| Cổng học viên | `portal/` | Phụ huynh, học viên (có đăng nhập) | Không | Netlify |
+| **Công khai** | `web/` | **Người lạ** | **Có** | **Cloudflare Workers** |
 
 Ba bản build riêng, ba tên miền riêng, không bên nào import mã của bên nào.
 Chung duy nhất cơ sở dữ liệu Supabase.
@@ -79,12 +79,57 @@ nằm ở `docs/KENH_THU_HUT_HOC_VIEN.md` mục 9.
 
 ---
 
-## Triển khai
+## Triển khai — Cloudflare Workers
 
-Netlify site riêng, **Base directory = `web`**. Cấu hình ở `netlify.toml`.
+Site này chạy trên **Cloudflare Workers** qua adapter OpenNext, trong khi hệ
+quản trị và cổng học viên vẫn ở Netlify. Lý do tách ra nằm ở
+`docs/DEPLOY.md` mục 1b.
 
-Ba site dùng chung hạn mức 300 credit/tháng của gói Free, mỗi deploy production
-tốn 15 credit. `should-skip-build.sh` bỏ qua build khi thư mục `web/` không đổi.
+| Lệnh | Tác dụng |
+|---|---|
+| `npm run cf-build` | Build rồi đóng gói thành Worker vào `.open-next/` |
+| `npm run preview` | Build rồi chạy thử bằng chính runtime của Cloudflare (cổng 8788) |
+| `npm run deploy` | Build rồi đẩy lên Cloudflare |
 
-Khác hai site kia ở một chỗ: site này **không** đặt `X-Robots-Tag: noindex`.
-Nó cần được tìm thấy — đó là toàn bộ lý do nó tồn tại.
+`npm run preview` đáng chạy trước mỗi lần deploy: nó chạy trên **workerd**, đúng
+runtime thật, chứ không phải Node. Có những thứ qua được `npm run build` nhưng
+hỏng ở workerd, và `preview` bắt được.
+
+### Ba việc phải làm một lần trên Cloudflare
+
+1. `npx wrangler login` để nối máy với tài khoản.
+2. Đặt biến trong **Workers & Pages → mnee-web → Settings → Variables and
+   Secrets**: hai biến `NEXT_PUBLIC_` kiểu Text, `DANG_KY_SALT` kiểu Secret.
+3. Nối tên miền trong **Settings → Domains & Routes**.
+
+### Thay cho `should-skip-build.sh`
+
+Netlify tính credit theo lượt deploy nên site này từng có một script chặn build
+khi không có gì đổi. Cloudflare không gộp deploy với băng thông vào một túi
+credit, nên script đó đã bỏ. Nếu nối Cloudflare thẳng với GitHub để tự động
+deploy, dùng **Build watch paths** trong cấu hình build và đặt `web/` — cùng
+tác dụng, không cần script.
+
+### Hai giới hạn cần biết của gói Free
+
+| Giới hạn | Mức | Chỗ đứng hiện tại |
+|---|---|---|
+| Kích thước Worker sau khi nén | 3 MB | **961 KB** — còn rất nhiều chỗ |
+| CPU mỗi request | 10 ms | Xem mục 1b của `docs/DEPLOY.md` |
+
+Request tới `/_next/static/*` và các tệp trong `public/` được phục vụ từ tầng
+asset, **miễn phí và không giới hạn**, không gọi Worker. Còn mỗi trang HTML
+thì vẫn đi qua Worker — trang dựng sẵn chỉ đọc lại HTML có sẵn trong gói, không
+render lại React, nên rẻ. Nhưng đó là *rẻ*, không phải *bằng không*.
+
+### File cấu hình
+
+| File | Làm gì |
+|---|---|
+| `wrangler.jsonc` | Tên Worker, compatibility flags, thư mục asset |
+| `open-next.config.ts` | Cố ý để trống — giải thích lý do ngay trong file |
+| `public/_headers` | Header bảo mật cho tệp tĩnh |
+| `next.config.ts` | Header bảo mật cho phần Worker render |
+
+Header phải khai ở cả hai nơi vì tầng asset không chạy qua Worker. Trùng lặp là
+có chủ đích, đã ghi chú trong cả hai file.

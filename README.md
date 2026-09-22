@@ -26,11 +26,15 @@ chi phí và tình hình tài chính của trung tâm.
 
 ## Ba website, ba bản build
 
-| Website | Thư mục | Ai dùng | Cổng khi chạy máy |
-|---|---|---|---|
-| Hệ quản trị | `src/` | Founder, giáo viên | 3000 |
-| Cổng thông tin học viên | `portal/` | Phụ huynh, học viên | 3001 |
-| Website công khai | `web/` | Người chưa biết trung tâm | 3002 |
+| Website | Thư mục | Ai dùng | Cổng khi chạy máy | Chạy ở đâu |
+|---|---|---|---|---|
+| Hệ quản trị | `src/` | Founder, giáo viên | 3000 | Netlify |
+| Cổng thông tin học viên | `portal/` | Phụ huynh, học viên | 3001 | Netlify |
+| Website công khai | `web/` | Người chưa biết trung tâm | 3002 | Cloudflare Workers |
+
+Website công khai nằm ở Cloudflare vì nó gần như toàn trang tĩnh và là site sẽ
+sửa nhiều nhất — để nó ở Netlify thì mỗi bài viết mới lại ăn vào hạn mức credit
+dùng chung của hai site vận hành thật. Lý do đầy đủ ở `docs/DEPLOY.md` mục 1b.
 
 Không bên nào import mã của bên nào. Chung duy nhất cơ sở dữ liệu Supabase — và
 ở đó website công khai chỉ gọi được đúng một hàm, không đọc được bảng nào.
