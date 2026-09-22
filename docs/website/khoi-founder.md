@@ -154,18 +154,97 @@ Thứ thật sự mạnh ở đây không phải khoảng kinh nghiệm — mà 
 
 ```html
 <section class="mnee-team">
-  <h2>Ghép giáo viên trước khi vào học</h2>
-  <p>
+  <p class="mnee-team__eyebrow">ĐỘI NGŨ GIÁO VIÊN</p>
+  <h2 class="mnee-team__heading">Ghép giáo viên trước khi vào học</h2>
+  <div class="mnee-team__rule" aria-hidden="true"></div>
+  <p class="mnee-team__body">
     Trung tâm trao đổi với học viên về mục tiêu, trình độ và lịch học,
     rồi mới chọn giáo viên phù hợp — không xếp lớp trước rồi mới báo.
   </p>
-  <p>Toàn bộ giáo viên có chứng chỉ giảng dạy.</p>
+  <p class="mnee-team__fact">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5"></path>
+    </svg>
+    <span>Toàn bộ giáo viên có chứng chỉ giảng dạy.</span>
+  </p>
 </section>
 ```
+
+```css
+.mnee-team {
+  --navy-900: #0f2040;
+  --navy-800: #13294b;
+  --navy-600: #2f4a72;
+  --navy-50:  #f2f5f9;
+  --gold-500: #c8a24a;
+  --gold-700: #856630;
+
+  background: var(--navy-50);
+  color: var(--navy-900);
+  padding: 56px 44px;
+}
+
+.mnee-team__eyebrow {
+  margin: 0 0 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--navy-600);
+}
+
+.mnee-team__heading {
+  margin: 0 0 20px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(26px, 7vw, 32px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mnee-team__rule {
+  width: 40px;
+  height: 2px;
+  margin-bottom: 20px;
+  background: var(--gold-500);
+}
+
+.mnee-team__body {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--navy-800);
+}
+
+.mnee-team__fact {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.mnee-team__fact svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--gold-700);
+}
+```
+
+**Nền sáng là có chủ ý** — sau hai khối navy liên tiếp, mắt cần một khoảng thở.
+
+**Vàng ở khối này chỉ được làm vạch, không được làm chữ.** Gold `#c8a24a` trên nền
+`#f2f5f9` chỉ đạt **2.20:1**. Dấu tích dùng gold đậm `#856630` (**4.87:1**), nhãn nhỏ
+dùng navy-600 (**8.20:1**), tiêu đề và thân bài navy-900 (**14.76:1**).
 
 Đây là một quy trình kiểm chứng được: học viên nào cũng xác nhận được là có buổi
 trao đổi trước hay không. Nó trả lời đúng câu hỏi mà khoảng "1–20 năm" đang làm
 người ta lo.
 
-**Cần cô xác nhận thêm:** có phải **toàn bộ** giáo viên đều có chứng chỉ giảng dạy
-không? Nếu chỉ một phần thì phải viết đúng phần đó, đừng viết "toàn bộ".
+Cô Ngọc đã xác nhận **toàn bộ** giáo viên có chứng chỉ giảng dạy (22/09/2026), nên
+câu đó được viết khẳng định. Nếu về sau tuyển thêm người chưa có chứng chỉ, phải sửa
+câu này trước khi người đó đứng lớp — đây là loại câu một phụ huynh hỏi lại là biết
+ngay.
