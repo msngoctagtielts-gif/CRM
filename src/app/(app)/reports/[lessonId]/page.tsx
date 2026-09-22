@@ -77,7 +77,7 @@ export default async function ReportFormPage({
 
   // Chỉ Founder mới thấy khu vực sửa/xoá, nên chỉ Founder mới cần hai truy vấn
   // này. Giáo viên không phải trả giá cho một khu vực họ không nhìn thấy.
-  const [{ data: payable }, { data: giaoVienList }] = isFounder
+  const [{ data: payable }, { data: giaoVienList }, { data: diemDanh }] = isFounder
     ? await Promise.all([
         supabase
           .from('teacher_payable_lessons')
@@ -89,8 +89,19 @@ export default async function ReportFormPage({
           .select('id, full_name')
           .eq('status', 'active')
           .order('full_name'),
+        supabase
+          .from('attendance')
+          .select('is_billable, ly_do_mien_phi')
+          .eq('lesson_id', lessonId),
       ])
-    : [{ data: null }, { data: [] }]
+    : [{ data: null }, { data: [] }, { data: [] }]
+
+  // Buổi coi là miễn phí khi MỌI dòng điểm danh đều không thu phí. Lớp nhóm có
+  // thể một em chịu phí, các em còn lại đi kèm — trường hợp đó không phải buổi
+  // miễn phí, nên không được hiện nút chuyển.
+  const dsDiemDanh = diemDanh ?? []
+  const mienPhi = dsDiemDanh.length > 0 && dsDiemDanh.every((d) => !d.is_billable)
+  const lyDoMienPhi = dsDiemDanh.find((d) => d.ly_do_mien_phi)?.ly_do_mien_phi ?? null
 
   const daKhoaLuong = payable?.status === 'included' || payable?.status === 'paid'
 
@@ -229,6 +240,8 @@ export default async function ReportFormPage({
           daKhoaLuong={daKhoaLuong}
           teacherId={lesson.teacher_id ?? null}
           giaoVienList={giaoVienList ?? []}
+          mienPhi={mienPhi}
+          lyDoMienPhi={lyDoMienPhi}
         />
       ) : null}
     </div>

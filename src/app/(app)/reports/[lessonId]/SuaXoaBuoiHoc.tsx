@@ -7,7 +7,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import type { ActionResult } from '@/lib/actions'
-import { suaBuoiHoc, xoaBuoiHoc } from '@/app/(app)/lessons/actions'
+import { danhDauMienPhi, suaBuoiHoc, xoaBuoiHoc } from '@/app/(app)/lessons/actions'
 
 /**
  * Khu vực sửa và xoá buổi học, đặt ở CUỐI màn hình báo cáo và mặc định đóng.
@@ -28,6 +28,8 @@ export function SuaXoaBuoiHoc({
   daKhoaLuong,
   giaoVienList,
   teacherId,
+  mienPhi,
+  lyDoMienPhi,
 }: {
   lessonId: string
   lessonDate: string
@@ -36,10 +38,13 @@ export function SuaXoaBuoiHoc({
   daKhoaLuong: boolean
   giaoVienList: { id: string; full_name: string }[]
   teacherId: string | null
+  mienPhi: boolean
+  lyDoMienPhi: string | null
 }) {
   const [mo, setMo] = useState(false)
   const [suaState, suaAction] = useActionState<ActionResult | null, FormData>(suaBuoiHoc, null)
   const [xoaState, xoaAction] = useActionState<ActionResult | null, FormData>(xoaBuoiHoc, null)
+  const [mpState, mpAction] = useActionState<ActionResult | null, FormData>(danhDauMienPhi, null)
 
   if (!mo) {
     return (
@@ -115,6 +120,50 @@ export function SuaXoaBuoiHoc({
 
         <SubmitButton size="sm" variant="secondary" pendingLabel="Đang lưu…">
           Lưu thay đổi
+        </SubmitButton>
+      </form>
+
+      {/* MIỄN PHÍ / THU PHÍ */}
+      <form action={mpAction} className="space-y-3 rounded-lg bg-amber-soft-50 p-4">
+        <input type="hidden" name="lesson_id" value={lessonId} />
+        <FormMessage state={mpState} />
+
+        <p className="text-[0.8125rem] text-navy-700">
+          {mienPhi ? (
+            <>
+              Buổi này <strong>đang miễn phí</strong> — học viên không bị trừ buổi, nhưng giáo viên
+              vẫn được trả lương đủ.
+              {lyDoMienPhi ? (
+                <>
+                  {' '}
+                  Lý do đã ghi: <em>{lyDoMienPhi}</em>
+                </>
+              ) : (
+                <> Chưa ai ghi lý do — đây chính là chỗ cần cô quyết.</>
+              )}
+            </>
+          ) : (
+            <>
+              Buổi này <strong>đang thu phí</strong>. Chuyển sang miễn phí sẽ hoàn lại buổi cho học
+              viên; lương giáo viên không đổi.
+            </>
+          )}
+        </p>
+
+        <input type="hidden" name="mien_phi" value={mienPhi ? '0' : '1'} />
+        <Field label={mienPhi ? 'Lý do thu phí trở lại' : 'Lý do miễn phí'} required>
+          <Input
+            name="ly_do"
+            placeholder={
+              mienPhi
+                ? 'Ví dụ: đánh dấu nhầm, buổi này có thu phí'
+                : 'Ví dụ: buổi kiểm tra đầu vào, không thu phí'
+            }
+          />
+        </Field>
+
+        <SubmitButton size="sm" variant="secondary" pendingLabel="Đang lưu…">
+          {mienPhi ? 'Chuyển sang thu phí' : 'Đánh dấu miễn phí'}
         </SubmitButton>
       </form>
 

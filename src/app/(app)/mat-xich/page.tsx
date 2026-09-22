@@ -28,7 +28,7 @@ export const metadata: Metadata = { title: 'Mắt xích buổi học' }
  * Hai loại đó không đứng chung một hàng.
  */
 
-type MucDo = 'tien' | 'bang_chung' | 'phu_huynh' | 'xac_minh' | 'du'
+type MucDo = 'tien' | 'can_quyet' | 'bang_chung' | 'phu_huynh' | 'xac_minh' | 'du'
 
 const NHOM: Record<
   MucDo,
@@ -39,6 +39,12 @@ const NHOM: Record<
     mo_ta:
       'Đã trả lương giáo viên nhưng không có bằng chứng dạy, hoặc không trừ học phí của học viên nào.',
     tone: 'danger',
+  },
+  can_quyet: {
+    nhan: 'Miễn phí nhưng chưa ghi lý do',
+    mo_ta:
+      'Học viên không bị trừ buổi mà không ai giải trình vì sao. Cần cô xác nhận là miễn phí có chủ ý, hay là ghi sót.',
+    tone: 'warning',
   },
   bang_chung: {
     nhan: 'Thiếu bằng chứng dạy',
@@ -58,7 +64,7 @@ const NHOM: Record<
   du: { nhan: 'Đủ tám mắt xích', mo_ta: 'Không thiếu gì.', tone: 'success' },
 }
 
-const THU_TU: MucDo[] = ['tien', 'bang_chung', 'phu_huynh', 'xac_minh', 'du']
+const THU_TU: MucDo[] = ['tien', 'can_quyet', 'bang_chung', 'phu_huynh', 'xac_minh', 'du']
 
 export default async function MatXichPage() {
   await requireFounder()
@@ -81,6 +87,11 @@ export default async function MatXichPage() {
 
   const nhomTien = theoNhom.get('tien') ?? []
   const tienRui = nhomTien.reduce((a, r) => a + Number(r.tien_tra_giao_vien ?? 0), 0)
+  // Những buổi trợ lý SUY RA là miễn phí chứ không có văn bản nào chốt. Lý do
+  // ghi kèm chữ "CAN FOUNDER XAC NHAN" nên lọc theo đúng dấu đó — không lọc
+  // theo chữ "gia dinh" vì "gia đình anh Bùi Luyện" cũng chứa hai chữ ấy.
+  const canXacNhan = rows.filter((r) => (r.ly_do_mien_phi ?? '').includes('CAN FOUNDER XAC NHAN'))
+
   const duMatXich = (theoNhom.get('du') ?? []).length
   const tyLe = tong > 0 ? Math.round((duMatXich / tong) * 100) : 0
 
@@ -113,12 +124,61 @@ export default async function MatXichPage() {
       </section>
 
       {duMatXich === 0 ? (
-        <Alert kind="warning" className="mb-5">
-          <strong>Chưa buổi nào đi hết tám mắt xích.</strong> Điều này không có nghĩa là trung tâm
-          dạy sai — nghĩa là chuỗi ghi nhận chưa khép. Hai bước cuối (gửi phụ huynh, xác minh video)
-          mới được thêm vào hệ thống nên chưa buổi cũ nào có. Hãy xử lý nhóm{' '}
-          <em>đứt ở chỗ có tiền</em> trước; ba nhóm còn lại là việc làm dần.
+        <Alert kind="info" className="mb-5">
+          <strong>Chưa buổi nào đi hết tám mắt xích.</strong> Không có nghĩa là trung tâm dạy sai —
+          nghĩa là chuỗi ghi nhận chưa khép. Hai bước cuối (gửi phụ huynh, xác minh video) mới thêm
+          vào hệ thống nên chưa buổi cũ nào có. Xử lý nhóm <em>đứt ở chỗ có tiền</em> trước; các
+          nhóm còn lại là việc làm dần.
         </Alert>
+      ) : null}
+
+      {canXacNhan.length > 0 ? (
+        <Card className="mb-5">
+          <CardHeader
+            title={`Miễn phí theo giả định · ${formatNumber(canXacNhan.length)} buổi`}
+            description="Trợ lý suy ra từ cách nhập liệu chứ không có văn bản nào chốt. Cô xác nhận đúng thì để nguyên; sai thì mở buổi đó và chuyển sang thu phí."
+          />
+          <Table>
+            <thead>
+              <tr>
+                <Th>Lớp</Th>
+                <Th>Số buổi</Th>
+                <Th>Lý do trợ lý đã ghi</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(
+                canXacNhan.reduce<Record<string, { so: number; ly_do: string; lesson_id: string }>>(
+                  (acc, r) => {
+                    const ma = r.class_code ?? '—'
+                    if (!acc[ma])
+                      acc[ma] = {
+                        so: 0,
+                        ly_do: r.ly_do_mien_phi ?? '',
+                        lesson_id: r.lesson_id ?? '',
+                      }
+                    acc[ma].so += 1
+                    return acc
+                  },
+                  {},
+                ),
+              ).map(([ma, v]) => (
+                <tr key={ma}>
+                  <Td>
+                    <Link
+                      href={`/reports/${v.lesson_id}`}
+                      className="font-medium text-navy-800 underline-offset-2 hover:underline"
+                    >
+                      {ma}
+                    </Link>
+                  </Td>
+                  <Td className="tabular-nums">{v.so}</Td>
+                  <Td className="max-w-lg text-[0.8125rem] text-navy-600">{v.ly_do}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card>
       ) : null}
 
       {THU_TU.map((muc) => {

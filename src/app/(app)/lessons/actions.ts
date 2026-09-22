@@ -318,9 +318,8 @@ export async function xoaBuoiHoc(
   })
   if (error) return { ok: false, error: loiTuHam(error.message) }
 
-  const kem =
-    ((data as unknown as { da_xoa_kem?: Record<string, unknown> } | null)?.da_xoa_kem ?? {}) as
-      Record<string, unknown>
+  const kem = ((data as unknown as { da_xoa_kem?: Record<string, unknown> } | null)?.da_xoa_kem ??
+    {}) as Record<string, unknown>
   const phan = [
     kem.co_bao_cao ? 'báo cáo buổi học' : null,
     Number(kem.so_dong_tru_hoc_phi ?? 0) > 0
@@ -338,5 +337,58 @@ export async function xoaBuoiHoc(
       phan.length > 0
         ? `Đã xoá buổi học, kèm theo: ${phan.join(', ')}. Bản cũ đã lưu trong nhật ký.`
         : 'Đã xoá buổi học. Bản cũ đã lưu trong nhật ký.',
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * ĐÁNH DẤU MIỄN PHÍ / THU PHÍ TRỞ LẠI.
+ *
+ * Bối cảnh (22/09/2026): màn hình Mắt xích ban đầu xếp 33 buổi vào nhóm "đã trả
+ * lương nhưng không trừ học phí của ai", ngụ ý thất thoát. Kiểm lại thì cả 33
+ * đều là buổi miễn phí CÓ CHỦ Ý, có ghi trong tài liệu nhập liệu — buổi kiểm
+ * tra đầu vào, buổi học thử, 14 buổi tặng gia đình anh Bùi Luyện, buổi 1 miễn
+ * phí cho Kiên/Vy/Công Duy.
+ *
+ * Lỗi thật là cờ miễn phí KHÔNG mang theo lý do, nên máy không phân biệt được
+ * "miễn phí có chủ ý" với "ai đó quên". Cảnh báo sai 33/33 lần thì lần sau
+ * không ai tin nữa.
+ *
+ * Từ nay mọi lần đánh dấu miễn phí đều phải ghi lý do, và lý do đó hiện ngay
+ * trên màn hình Mắt xích.
+ * ---------------------------------------------------------------------- */
+
+const mienPhiSchema = z.object({
+  lesson_id: z.string().uuid(),
+  mien_phi: z.enum(['0', '1']),
+  ly_do: z.string().trim().min(5, 'Lý do phải có ít nhất 5 ký tự').max(500),
+})
+
+export async function danhDauMienPhi(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireRole(['founder'])
+  const parsed = parseForm(mienPhiSchema, formData)
+  if (!parsed.ok) return parsed
+
+  const d = parsed.data
+  const mienPhi = d.mien_phi === '1'
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('fn_danh_dau_mien_phi', {
+    p_lesson_id: d.lesson_id,
+    p_mien_phi: mienPhi,
+    p_ly_do: d.ly_do,
+  })
+  if (error) return { ok: false, error: loiTuHam(error.message) }
+
+  revalidatePath('/mat-xich')
+  revalidatePath('/payments')
+  revalidatePath(`/reports/${d.lesson_id}`)
+  return {
+    ok: true,
+    message: mienPhi
+      ? 'Đã đánh dấu buổi này miễn phí, kèm lý do. Học viên không bị trừ buổi.'
+      : 'Đã chuyển sang thu phí. Buổi này vừa được trừ vào gói của học viên.',
   }
 }

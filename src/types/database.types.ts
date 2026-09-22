@@ -14,6 +14,7 @@ export type Database = {
           id: string
           is_billable: boolean
           lesson_id: string
+          ly_do_mien_phi: string | null
           minutes_attended: number | null
           notes: string | null
           recorded_at: string
@@ -27,6 +28,7 @@ export type Database = {
           id?: string
           is_billable?: boolean
           lesson_id: string
+          ly_do_mien_phi?: string | null
           minutes_attended?: number | null
           notes?: string | null
           recorded_at?: string
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           is_billable?: boolean
           lesson_id?: string
+          ly_do_mien_phi?: string | null
           minutes_attended?: number | null
           notes?: string | null
           recorded_at?: string
@@ -4909,6 +4912,8 @@ export type Database = {
           giao_vien: string | null
           lesson_date: string | null
           lesson_id: string | null
+          ly_do_mien_phi: string | null
+          mien_phi: boolean | null
           muc_do: string | null
           report_id: string | null
           so_hoc_vien_bi_tru: number | null
@@ -5440,6 +5445,10 @@ export type Database = {
       fn_alert_lesson_balance: { Args: never; Returns: number }
       fn_alert_missing_lesson_time: { Args: never; Returns: number }
       fn_alert_not_sent_to_parent: { Args: never; Returns: number }
+      fn_danh_dau_mien_phi: {
+        Args: { p_lesson_id: string; p_ly_do: string; p_mien_phi: boolean }
+        Returns: Json
+      }
       fn_sua_buoi_hoc: {
         Args: {
           p_duration_minutes: number | null
