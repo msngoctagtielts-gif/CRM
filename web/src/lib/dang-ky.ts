@@ -21,9 +21,15 @@ async function bamIP(): Promise<string> {
   const muoi = process.env.DANG_KY_SALT
   if (!muoi) return ''
 
+  // Mỗi nhà cung cấp đặt địa chỉ IP thật vào một header khác nhau. Đọc theo thứ
+  // tự ưu tiên để website chuyển nhà mà không phải sửa mã: Cloudflare, rồi
+  // Netlify, rồi header chuẩn chung. `x-forwarded-for` có thể bị giả mạo nếu
+  // đứng trước một proxy không làm sạch header, nên nó đứng cuối.
   const h = await headers()
   const ip =
+    h.get('cf-connecting-ip') ??
     h.get('x-nf-client-connection-ip') ??
+    h.get('x-real-ip') ??
     h.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     ''
   if (!ip) return ''
