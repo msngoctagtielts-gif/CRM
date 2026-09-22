@@ -1,5 +1,12 @@
 # Công cụ soi lỗi website
 
+> Cài lên máy khác (ví dụ máy có mã nguồn website) bằng hai dòng:
+> ```
+> curl.exe -sSLO https://raw.githubusercontent.com/msngoctagtielts-gif/CRM/claude/ai-agents-professional-website-oym91e/scripts/web-audit/cai-dat.mjs
+> node cai-dat.mjs
+> ```
+> Chi tiết: [`docs/website/CAI-DAT-TREN-MAY.md`](../../docs/website/CAI-DAT-TREN-MAY.md)
+
 Soi một trang web và chỉ ra chỗ chưa hoàn thiện — thiếu thẻ, ảnh không alt, nội dung
 còn dở dang, lời hứa quá mức, lỗi tiếp cận, lỗi hiệu năng.
 

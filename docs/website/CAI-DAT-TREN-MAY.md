@@ -8,64 +8,103 @@ C:\Users\User\MNEE-OS
 ```
 
 Phiên `session_01WCyrPE3GwSCJ6LE5NMYR1A` ("Miss Ngọc Elite English websites") làm
-việc trực tiếp trên thư mục đó qua Claude Desktop. Phiên này (kho `CRM`) chạy trên
+việc trực tiếp trên thư mục đó qua Claude Desktop. Phiên chạy trên kho `CRM` nằm ở
 máy chủ đám mây, **không với tới được ổ C của cô**.
 
 Nên sáu nhân sự và công cụ soi phải được **chép sang** thì mới dùng được ở đó.
 
 ---
 
-## Chép sang — mở PowerShell trên máy cô Ngọc
+## Cách làm — hai dòng lệnh
+
+Mở **PowerShell** (Windows) hoặc **Terminal** (Mac), vào thư mục có mã nguồn website:
 
 ```powershell
 cd C:\Users\User\MNEE-OS
-
-# 1. Công cụ soi lỗi
-mkdir -Force scripts\web-audit
-$b = 'https://raw.githubusercontent.com/msngoctagtielts-gif/CRM/claude/ai-agents-professional-website-oym91e'
-curl.exe -sSL "$b/scripts/web-audit/audit.mjs" -o scripts\web-audit\audit.mjs
-
-# 2. Sáu nhân sự
-mkdir -Force .claude\agents
-foreach ($a in 'web-planner','web-designer','web-copywriter','web-builder','web-qa','web-auditor') {
-  curl.exe -sSL "$b/.claude/agents/$a.md" -o ".claude\agents\$a.md"
-}
-
-# 3. Ba tài liệu
-mkdir -Force docs\website
-foreach ($d in 'README','KE-HOACH-XAY-DUNG','UY-TIN','DANH-MUC-KIEM-TRA') {
-  curl.exe -sSL "$b/docs/website/$d.md" -o "docs\website\$d.md"
-}
 ```
 
-## Chạy thử ngay
+Rồi chạy:
+
+```powershell
+curl.exe -sSLO https://raw.githubusercontent.com/msngoctagtielts-gif/CRM/claude/ai-agents-professional-website-oym91e/scripts/web-audit/cai-dat.mjs
+node cai-dat.mjs
+```
+
+> Trên Mac hoặc Linux, đổi `curl.exe` thành `curl`.
+> `curl.exe` có sẵn trong Windows 10 trở lên, không phải cài gì thêm.
+
+Trình cài sẽ:
+
+1. Kiểm Node trên máy có từ phiên bản 20 trở lên không
+2. Tải 13 tệp — công cụ soi, sáu nhân sự, năm tài liệu
+3. **Tự dựng một trang hỏng rồi soi thử**, để chắc công cụ chạy được trên máy đó
+   trước khi báo xong
+
+Nếu bước nào hỏng, nó dừng lại và nói rõ hỏng ở đâu, không báo xong khống.
+
+Chạy lại lệnh trên bất cứ lúc nào để lấy bản mới nhất. Tệp cũ bị ghi đè; tệp khác
+trong thư mục không bị đụng tới.
+
+| Tuỳ chọn | Tác dụng |
+|---|---|
+| `node cai-dat.mjs --nhanh` | Bỏ bước tự kiểm |
+| `node cai-dat.mjs --chi-cong-cu` | Chỉ tải công cụ soi, không tải nhân sự và tài liệu |
+
+---
+
+## Kiểm lại là đã cài đúng
 
 ```powershell
 node scripts\web-audit\audit.mjs .
 ```
 
-Soi toàn bộ tệp `.html` trong `MNEE-OS`. Hoặc soi trang đang chạy:
+Soi toàn bộ tệp `.html` trong thư mục. Hoặc soi hai trang đang chạy:
 
 ```powershell
 node scripts\web-audit\audit.mjs https://msngoc-elite-english.pages.dev
 node scripts\web-audit\audit.mjs https://msngoc-folio.pages.dev --profile=ca-nhan
 ```
 
-Cần Node 20 trở lên. Kiểm bằng `node -v`.
+---
 
 ## Rồi gọi nhân sự
 
-Sau khi chép xong, mở lại phiên làm việc trên `MNEE-OS` và gọi thẳng tên:
+Mở phiên làm việc ở thư mục `MNEE-OS` và gọi thẳng tên:
 
 ```
 Dùng web-auditor soi toàn bộ thư mục này
-Dùng web-qa kiểm lại trang chủ trước khi đẩy lên Cloudflare
+Dùng web-planner lên kế hoạch từ báo cáo vừa rồi
+```
+
+**Chạy `web-auditor` trước.** Phiên `MNEE-OS` đã tự sửa một đợt UX và hiệu năng rồi
+(thang chữ, vùng bấm 44px, chống nhảy layout, nén ảnh). Chốt hiện trạng trước khi
+sửa tiếp, nếu không hai phiên sẽ sửa chồng lên nhau mà phiên nào cũng tưởng mình
+đúng.
+
+---
+
+## Nếu mạng công ty chặn, tải tay
+
+Khi `cai-dat.mjs` báo tải hỏng, vào thẳng kho mã trên GitHub và tải từng tệp:
+
+```
+https://github.com/msngoctagtielts-gif/CRM/tree/claude/ai-agents-professional-website-oym91e
+```
+
+Đặt đúng chỗ, giữ nguyên cấu trúc thư mục:
+
+```
+MNEE-OS\
+  .claude\agents\        6 tệp nhân sự
+  scripts\web-audit\     audit.mjs + README.md
+  docs\website\          5 tệp tài liệu
 ```
 
 ---
 
-## Vì sao không để chung một kho mã
+## Về lâu dài nên nối GitHub
 
-Hiện `MNEE-OS` chưa nối GitHub. Nếu nối được thì tốt hơn hẳn — sửa ở đâu cũng thấy,
-và không phải chép tay mỗi lần công cụ soi có luật mới. Nhưng đó là việc riêng, làm
-sau cũng được. Chép tay như trên là đủ để bắt đầu ngay hôm nay.
+Hiện `MNEE-OS` chưa nối kho mã. Nối được thì tốt hơn hẳn: sửa ở đâu cũng thấy, có
+lịch sử thay đổi để lần ngược khi hỏng, và không phải chép tay mỗi lần công cụ soi
+có luật mới. Nhưng đó là việc riêng, làm sau cũng được — cách hai dòng lệnh ở trên
+đủ để bắt đầu ngay hôm nay.
