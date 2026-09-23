@@ -9,16 +9,16 @@
    =========================================================================== */
 
 :root {
-  --mnee-navy-950: #08142b;
-  --mnee-navy-900: #0f2040;
-  --mnee-navy-800: #13294b;
-  --mnee-navy-700: #1d3559;
-  --mnee-navy-600: #2f4a72;
-  --mnee-navy-300: #9ab0cd;
-  --mnee-navy-200: #c4d2e4;
-  --mnee-navy-50: #f2f5f9;
-  --mnee-gold-500: #c8a24a;
-  --mnee-gold-700: #856630;
+  --mnee-navy-950: #03122b;
+  --mnee-navy-900: #051d42;
+  --mnee-navy-800: #07285d;
+  --mnee-navy-700: #0e3677;
+  --mnee-navy-600: #1d4991;
+  --mnee-navy-300: #90a7cb;
+  --mnee-navy-200: #bcc8dc;
+  --mnee-navy-50: #f4f6f8;
+  --mnee-gold-500: #ecb551;
+  --mnee-gold-700: #926719;
 
   --mnee-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mnee-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
@@ -45,7 +45,7 @@
 
 /* ---------------------------------------------------------------------------
    Khối Founder — nền tối
-   gold/nền 7.62:1 · dòng bằng chứng 11.95:1 · tên 18.34:1
+   gold/nền 10.04:1 · dòng bằng chứng 11.05:1 · tên 18.66:1
    --------------------------------------------------------------------------- */
 
 .mnee-founder {
@@ -98,8 +98,8 @@
    Khối Đội ngũ — nền sáng
    Sau hai khối navy liên tiếp, mắt cần một khoảng thở.
 
-   CẢNH BÁO: gold-500 trên nền sáng chỉ đạt 2.20:1 — KHÔNG được làm chữ ở đây.
-   Vàng chỉ làm vạch. Dấu tích dùng gold-700 (4.87:1).
+   CẢNH BÁO: gold-500 trên nền sáng chỉ đạt 1.72:1 — KHÔNG được làm chữ ở đây.
+   Vàng chỉ làm vạch. Dấu tích dùng gold-700 (4.64:1).
    --------------------------------------------------------------------------- */
 
 .mnee-team {

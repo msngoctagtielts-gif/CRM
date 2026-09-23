@@ -76,8 +76,9 @@ Nếu trang có biểu mẫu để lại thông tin:
 - [ ] Mọi ảnh có `alt`; ảnh trang trí để `alt=""`
 - [ ] Tương phản chữ trên nền ≥ 4.5:1
 
-Nhắc: **gold `#c8a24a` trên nền trắng chỉ đạt 2.41:1 — không được dùng làm chữ.**
-Vàng chỉ làm nền cho chữ navy (6.71:1) hoặc làm viền.
+Nhắc: **gold `#ecb551` trên nền sáng chỉ đạt 1.72:1 — không được dùng làm chữ.**
+Vàng chỉ làm vạch, hoặc làm nền cho chữ navy. Cần chữ vàng trên nền sáng thì dùng
+`#926719` (4.64:1).
 
 ---
 

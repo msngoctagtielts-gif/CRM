@@ -59,13 +59,13 @@ Mã thoát `1` nếu còn lỗi nghiêm trọng — dùng được trong CI.
 
 | Cặp màu | Tỷ lệ | Kết luận |
 |---|---|---|
-| Trắng trên navy-950 | 18.34:1 | đạt |
-| Navy-900 trên navy-50 | 14.76:1 | đạt |
-| Navy-200 trên navy-950 | 11.95:1 | đạt |
-| Navy-600 trên navy-50 | 8.20:1 | đạt |
-| Gold-500 trên navy-950 | 7.62:1 | đạt |
-| Gold-700 trên navy-50 | 4.87:1 | đạt |
-| **Gold-500 trên navy-50** | **2.20:1** | **không đạt — vàng không được làm chữ trên nền sáng** |
+| Trắng trên navy-950 | 18.66:1 | đạt |
+| Navy-900 trên navy-50 | 15.37:1 | đạt |
+| Navy-200 trên navy-950 | 11.05:1 | đạt |
+| Navy-600 trên navy-50 | 8.03:1 | đạt |
+| Gold-500 trên navy-950 | 10.04:1 | đạt |
+| Gold-700 trên navy-50 | 4.64:1 | đạt |
+| **Gold-500 trên navy-50** | **1.72:1** | **không đạt — vàng không được làm chữ trên nền sáng** |
 | **Burgundy-600 trên navy-900** | **2.42:1** | **không đạt — lý do bỏ vệt chéo** |
 
 ---

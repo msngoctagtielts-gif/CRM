@@ -38,10 +38,10 @@ Xem bản dựng: kết quả nằm trong khung "B — cho chỗ đó làm việ
 
 ```css
 .mnee-founder {
-  --navy-950: #08142b;
-  --navy-700: #1d3559;
-  --navy-200: #c4d2e4;
-  --gold-500: #c8a24a;
+  --navy-950: #03122b;
+  --navy-700: #0e3677;
+  --navy-200: #bcc8dc;
+  --gold-500: #ecb551;
 
   background: var(--navy-950);
   color: #ffffff;
@@ -86,8 +86,8 @@ Xem bản dựng: kết quả nằm trong khung "B — cho chỗ đó làm việ
 }
 ```
 
-Tương phản đã kiểm: gold trên navy-950 **7.62:1**, navy-200 trên navy-950 trên 10:1,
-trắng trên navy-950 trên 16:1. Tất cả vượt chuẩn 4.5:1.
+Tương phản đã kiểm: gold trên navy-950 **10.04:1**, navy-200 trên navy-950 **11.05:1**,
+trắng trên navy-950 **18.66:1**. Tất cả vượt chuẩn 4.5:1.
 
 **13px là sàn, đừng hạ thêm.** Dòng bằng chứng là dòng người ta thật sự đọc để quyết
 định, không phải chú thích cho có.
@@ -112,7 +112,7 @@ trắng trên navy-950 trên 16:1. Tất cả vượt chuẩn 4.5:1.
   inset-block: 0;
   left: 0;
   width: 3px;
-  background: #c8a24a;
+  background: #ecb551;
 }
 ```
 
@@ -173,12 +173,12 @@ Thứ thật sự mạnh ở đây không phải khoảng kinh nghiệm — mà 
 
 ```css
 .mnee-team {
-  --navy-900: #0f2040;
-  --navy-800: #13294b;
-  --navy-600: #2f4a72;
-  --navy-50:  #f2f5f9;
-  --gold-500: #c8a24a;
-  --gold-700: #856630;
+  --navy-900: #051d42;
+  --navy-800: #07285d;
+  --navy-600: #1d4991;
+  --navy-50:  #f4f6f8;
+  --gold-500: #ecb551;
+  --gold-700: #926719;
 
   background: var(--navy-50);
   color: var(--navy-900);
@@ -236,9 +236,9 @@ Thứ thật sự mạnh ở đây không phải khoảng kinh nghiệm — mà 
 
 **Nền sáng là có chủ ý** — sau hai khối navy liên tiếp, mắt cần một khoảng thở.
 
-**Vàng ở khối này chỉ được làm vạch, không được làm chữ.** Gold `#c8a24a` trên nền
-`#f2f5f9` chỉ đạt **2.20:1**. Dấu tích dùng gold đậm `#856630` (**4.87:1**), nhãn nhỏ
-dùng navy-600 (**8.20:1**), tiêu đề và thân bài navy-900 (**14.76:1**).
+**Vàng ở khối này chỉ được làm vạch, không được làm chữ.** Gold `#ecb551` trên nền
+`#f4f6f8` chỉ đạt **1.72:1**. Dấu tích dùng gold đậm `#926719` (**4.64:1**), nhãn nhỏ
+dùng navy-600 (**8.03:1**), tiêu đề và thân bài navy-900 (**15.37:1**).
 
 Đây là một quy trình kiểm chứng được: học viên nào cũng xác nhận được là có buổi
 trao đổi trước hay không. Nó trả lời đúng câu hỏi mà khoảng "1–20 năm" đang làm
