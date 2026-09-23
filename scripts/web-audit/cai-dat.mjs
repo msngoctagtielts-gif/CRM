@@ -33,6 +33,10 @@ const NHAN_SU = [
   'web-auditor',
 ].map((t) => `.claude/agents/${t}.md`)
 
+const MA_MAU = ['mnee-blocks.css', 'khoi-founder.partial.html', 'xem-truoc.html'].map(
+  (t) => `docs/website/mau/${t}`,
+)
+
 const TAI_LIEU = [
   'README',
   'KE-HOACH-XAY-DUNG',
@@ -40,6 +44,7 @@ const TAI_LIEU = [
   'DANH-MUC-KIEM-TRA',
   'CAI-DAT-TREN-MAY',
   'khoi-founder',
+  'BAN-GIAO',
 ].map((t) => `docs/website/${t}.md`)
 
 // ---------------------------------------------------------------------------
@@ -140,6 +145,7 @@ async function main() {
   if (!chiMa) {
     hong += await taiNhom('Sáu nhân sự AI', NHAN_SU)
     hong += await taiNhom('Tài liệu', TAI_LIEU)
+    hong += await taiNhom('Mã hai khối trang chủ', MA_MAU)
   }
 
   if (hong > 0) {
