@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/types/database.types.ts",
     "test:unit": "node --test --experimental-strip-types \"src/lib/**/*.test.ts\"",
-    "audit:web": "node scripts/web-audit/audit.mjs"
+    "audit:web": "node scripts/web-audit/audit.mjs",
+    "audit:mau": "node scripts/web-audit/kiem-mau.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

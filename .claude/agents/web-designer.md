@@ -14,9 +14,9 @@ Nguồn chuẩn là **tệp logo**, không phải `src/app/globals.css`. Logo đ
 thiếp và phong bì nên không sửa được; web phải chạy theo logo. Hai màu dưới đây lấy
 đúng từ điểm ảnh của logo: navy `#07285d` và gold `#ecb551`.
 
-> `src/app/globals.css` (hệ thống quản lý nội bộ) vẫn dùng bảng màu cũ. Đó là phần
-> mềm nội bộ, không phải thương hiệu đối ngoại — chưa đồng bộ, và đồng bộ nó là một
-> việc riêng.
+> `src/app/globals.css` (hệ thống quản lý nội bộ) **đã đồng bộ** theo bảng màu này.
+> Đổi bất kỳ bậc màu nào thì chạy `npm run audit:mau` — nó đọc thẳng token từ tệp
+> và chặn nếu có cặp chữ/nền tụt dưới 4.5:1.
 
 | Vai trò | Màu | Dùng cho |
 |---|---|---|

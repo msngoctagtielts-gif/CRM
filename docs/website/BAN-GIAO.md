@@ -25,6 +25,7 @@ Gọi thẳng tên trong phiên làm việc: *"Dùng web-auditor soi toàn bộ 
 |---|---|
 | `audit.mjs` | 27 luật, sáu nhóm. Node thuần, không thư viện ngoài |
 | `cai-dat.mjs` | Trình cài, chép cả bộ sang máy khác |
+| `kiem-mau.mjs` | Đọc token từ CSS, kiểm 33 cặp tương phản. `npm run audit:mau` |
 | `README.md` | Cách dùng |
 
 Mã thoát `1` nếu còn lỗi nghiêm trọng — dùng được trong CI.
@@ -94,6 +95,7 @@ hai mẫu; kiểm lại `[2026]` và `[hình 3]` không bị báo nhầm.
 | **Ảnh chân dung founder** | cô Ngọc | Phiên `MNEE-OS` đang chờ: ảnh dọc, phông nền sạch |
 | **Kết nối lại máy** | cô Ngọc | Phiên `MNEE-OS` còn gói chưa đẩy được |
 | **Nối `MNEE-OS` với kho mã GitHub** | cô Ngọc | Làm sau cũng được, nhưng làm rồi thì hết cảnh chép tay |
+| **Đưa logo và ảnh chân dung vào kho** | cô Ngọc | Kho `CRM` là kho công khai — ảnh người thật là quyết định riêng |
 
 ---
 

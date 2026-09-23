@@ -149,7 +149,7 @@ export function Nav({
     <nav className="space-y-6">
       {groups.map((group) => (
         <div key={group.section}>
-          <p className="px-3 text-[0.625rem] font-semibold tracking-[0.12em] text-navy-400 uppercase">
+          <p className="px-3 text-[0.625rem] font-semibold tracking-[0.12em] text-navy-300 uppercase">
             {group.section}
           </p>
           <ul className="mt-2 space-y-0.5">
