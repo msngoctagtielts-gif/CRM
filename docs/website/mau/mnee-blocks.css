@@ -158,3 +158,39 @@
   margin-top: 2px;
   color: var(--mnee-gold-700);
 }
+
+/* ---------------------------------------------------------------------------
+   Chân dung founder trên nền tối
+
+   Áo vest navy #161a31 trên navy-900 chỉ đạt 1.03:1 — gần như tàng hình.
+   Không đặt ảnh đã tách nền thẳng lên nền navy phẳng.
+
+   Cách giải: vầng sáng sau lưng, đúng kỹ thuật đèn viền mà thợ chụp đã dùng
+   trong ảnh gốc. Tâm #3a588c, viền về navy-900. Đo tại mép vai: 1.61:1 — chưa
+   phải chuẩn chữ (không áp dụng cho ảnh), nhưng đủ để vai không tan vào nền.
+
+   Ảnh phải là PNG hoặc WebP ĐÃ TÁCH NỀN (nền trong suốt).
+   --------------------------------------------------------------------------- */
+
+.mnee-portrait {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse 88% 88% at 50% 50%, #3a588c 0%, var(--mnee-navy-900) 100%);
+}
+
+.mnee-portrait img {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+
+  /* Khi khung bị ép chiều cao, ảnh THU NHỎ chứ không bị xén.
+     Thiếu hai dòng này thì búi tóc bị cắt cụt ở mép trên — đã gặp thật
+     khi dựng thử trong trình duyệt. */
+  max-height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}

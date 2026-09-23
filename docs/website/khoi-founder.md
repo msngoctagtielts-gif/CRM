@@ -248,3 +248,48 @@ Cô Ngọc đã xác nhận **toàn bộ** giáo viên có chứng chỉ giảng
 câu đó được viết khẳng định. Nếu về sau tuyển thêm người chưa có chứng chỉ, phải sửa
 câu này trước khi người đó đứng lớp — đây là loại câu một phụ huynh hỏi lại là biết
 ngay.
+
+
+---
+
+## Chân dung đã tách nền
+
+Ảnh chân dung gốc có nền xám đen `#1a1a1a`–`#282828`, không phải navy. Đã tách nền
+bằng mô hình u2net, xuất ra PNG/WebP nền trong suốt ở ba cỡ: 1500, 900, 600px.
+Bản WebP 900px chỉ **67 KB** — dùng bản này cho trang chủ.
+
+### Đừng đặt thẳng lên nền navy phẳng
+
+Áo vest navy `#161a31` trên navy-900 chỉ đạt **1.03:1**. Vai tan vào nền.
+
+| Nền | Tương phản với áo vest |
+|---|---|
+| navy-950 | 1.09 |
+| navy-900 | **1.03** |
+| navy-800 | 1.20 |
+| navy-700 | 1.43 |
+| navy-50 (nền sáng) | 15.81 |
+
+Không bậc navy nào đủ. Ảnh gốc giải bằng **vầng sáng sau lưng** — chính kỹ thuật
+đèn viền của thợ chụp. Lớp `.mnee-portrait` dựng lại đúng thế bằng CSS:
+
+```html
+<div class="mnee-portrait" style="height: 520px">
+  <img src="ms-ngoc-900.webp" alt="Ms. Ngọc, người sáng lập Ms.Ngọc Elite English"
+       width="900" height="1200">
+</div>
+```
+
+Tâm vầng sáng `#3a588c`, toả về navy-900. Đo tại mép vai: **1.61:1** — không phải
+chuẩn chữ (chuẩn đó không áp cho ảnh), nhưng đủ để vai nổi khỏi nền.
+
+### Một cách tôi đã thử và loại
+
+Viền vàng mảnh quanh chủ thể. Dựng ra nhìn như hình dán, không hợp "tối giản,
+cao cấp". Loại.
+
+### Lỗi bắt được khi dựng thử trong trình duyệt
+
+Bản CSS đầu tiên làm **búi tóc bị cắt cụt** khi khung bị ép chiều cao. Đã thêm
+`max-height: 100%` và `object-fit: contain` để ảnh thu nhỏ chứ không bị xén. Kiểm
+lại ở 360px và 440px bằng Chromium: không xén, không cuộn ngang.
