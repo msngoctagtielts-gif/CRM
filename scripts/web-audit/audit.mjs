@@ -664,6 +664,25 @@ luat('hua-qua-muc', NHOM.NOI_DUNG, ({ html, chu }) => {
   return ra
 })
 
+luat('ielts-sai-thang-diem', NHOM.NOI_DUNG, ({ html, chu }) => {
+  // Band 0 của IELTS nghĩa là "không dự thi", band 1 mới là trình độ thấp nhất.
+  // Viết "IELTS: 0.0" như một điểm xuất phát là sai thang điểm.
+  const mau = /IELTS[^.\n]{0,24}\b0\s*[.,]\s*0\b/i
+  const m = chu.match(mau)
+  if (!m) return []
+  const viTri = html.search(mau)
+  return [
+    {
+      muc: MUC.CAN_SUA,
+      dong: viTri >= 0 ? dongTai(html, viTri) : undefined,
+      thongDiep: `Sai thang điểm IELTS: "${m[0].trim()}".`,
+      cachSua:
+        'Band 0 của IELTS nghĩa là "không dự thi", không phải trình độ thấp nhất — band 1 mới là "Non user". ' +
+        'Người biết IELTS đọc ra ngay. Viết "Luyện IELTS từ mất gốc đến mục tiêu 7.0" thay vì một khoảng số.',
+    },
+  ]
+})
+
 luat('do-day-noi-dung', NHOM.NOI_DUNG, ({ chu }) => {
   const soTu = chu.split(/\s+/).filter(Boolean).length
   if (soTu < 120) {

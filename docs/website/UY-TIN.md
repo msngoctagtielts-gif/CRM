@@ -101,6 +101,32 @@ quảng cáo. Công cụ soi (`audit.mjs`, luật `hua-qua-muc`) bắt các mẫ
 | "Giỏi sau 1 tháng" | "Sau 8 buổi, học viên tự giới thiệu bản thân được trong 2 phút không cần giấy" |
 | "Tốt nhất Việt Nam" / "Số 1" | Bỏ hẳn. Thay bằng một điều cụ thể chỉ nơi này làm |
 | "Giáo viên bản ngữ 100%" *(nếu không đúng)* | Nói đúng cơ cấu giáo viên hiện có |
+| **"IELTS: 0.0 – 7.0"** | **"Luyện IELTS từ mất gốc đến mục tiêu 7.0"** |
+
+### Về câu "IELTS: 0.0 – 7.0" trên danh thiếp
+
+Câu này **sai về mặt sự kiện**, không chỉ là cách diễn đạt.
+
+Theo thang điểm chính thức, **band 0 của IELTS nghĩa là "không dự thi"** (*Did not
+attempt the test*). Band 1 mới là mức thấp nhất của người có dự thi (*Non user*).
+Viết "IELTS: 0.0" như một điểm xuất phát là dùng sai thang điểm — và người đã từng
+thi IELTS đọc ra ngay.
+
+Chưa kể, ai lướt qua chỉ kịp thấy **số 0** nằm cạnh chữ IELTS. Cùng lỗi với khoảng
+"1–20 năm kinh nghiệm": khoảng số làm người ta nhớ đầu thấp.
+
+**Viết trên web:** *"Luyện IELTS từ mất gốc đến mục tiêu 7.0"*
+
+Cùng một sự thật — nhận cả người chưa biết gì, đồng hành tới 7.0 — nhưng đọc ra là
+**năng lực của trung tâm**, không phải một khoảng số khó hiểu. Chữ "mục tiêu" cũng
+đúng hơn: đó là đích nhắm, không phải lời hứa đầu ra.
+
+Công cụ soi có luật `ielts-sai-thang-diem` bắt câu này.
+
+**Danh thiếp đã in thì không sửa được.** Ghi lại để lần in sau thay, và từ giờ mọi
+chỗ khác — web, Facebook, Zalo, hồ sơ — dùng câu mới.
+
+---
 
 **Luật gốc: mọi con số phải truy được về nguồn.** Chưa có số thì viết
 `[CẦN SỐ THẬT: …]` trong bản thảo, **không bao giờ điền số ước lượng cho đủ câu**.
