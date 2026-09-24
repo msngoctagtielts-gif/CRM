@@ -71,6 +71,40 @@ node scripts\web-audit\audit.mjs https://msngoc-folio.pages.dev --profile=ca-nha
 
 ---
 
+## Áp vào trang thật — một lệnh
+
+Sau khi cài xong, chạy tiếp:
+
+```powershell
+curl.exe -sSLO https://raw.githubusercontent.com/msngoctagtielts-gif/CRM/claude/ai-agents-professional-website-oym91e/scripts/web-audit/ap-vao-trang.mjs
+node ap-vao-trang.mjs --ten-mien=https://msngoc-elite-english.pages.dev
+```
+
+Nó làm bốn việc:
+
+1. **Sao lưu** mọi tệp `.html` sẽ đụng tới, vào `.mnee-sao-luu-<ngày giờ>/`
+2. Tải bộ thương hiệu và `mnee-blocks.css`
+3. Chèn vào `<head>` **chỉ những thẻ còn thiếu** — liên kết CSS, favicon, thẻ chia sẻ,
+   canonical, và dữ liệu có cấu trúc cho trang chủ
+4. Soi trang **trước và sau**, in ra chênh lệch
+
+Chạy lại nhiều lần cũng không sao — đã kiểm, nó không nhân đôi thẻ nào.
+
+Thêm `--thu` để chạy thử mà không ghi gì. Thêm `--tep=index.html` để chỉ áp một tệp.
+
+### Nó KHÔNG tự đụng vào `<body>`
+
+Khối chân dung, khối Founder, khối Đội ngũ phải do người đặt đúng chỗ — máy không
+biết bố cục trang. Chạy xong nó in sẵn ba khối để dán, và nhắc xoá vệt chéo đỏ–vàng
+khỏi HTML.
+
+### Nó không bịa
+
+Thiếu `--ten-mien` thì bỏ qua canonical và og:url, vì hai thứ đó cần địa chỉ thật.
+Trang nào không có `meta description` thì không tự nghĩ ra một câu mô tả.
+
+---
+
 ## Rồi gọi nhân sự
 
 Mở phiên làm việc ở thư mục `MNEE-OS` và gọi thẳng tên:

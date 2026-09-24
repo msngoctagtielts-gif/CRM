@@ -26,6 +26,7 @@ Gọi thẳng tên trong phiên làm việc: *"Dùng web-auditor soi toàn bộ 
 | `audit.mjs` | 27 luật, sáu nhóm. Node thuần, không thư viện ngoài |
 | `cai-dat.mjs` | Trình cài, chép cả bộ sang máy khác |
 | `kiem-mau.mjs` | Đọc token từ CSS, kiểm 33 cặp tương phản. `npm run audit:mau` |
+| `ap-vao-trang.mjs` | Áp bộ thương hiệu vào trang thật — sao lưu, chèn thẻ, soi trước sau |
 | `README.md` | Cách dùng |
 
 Mã thoát `1` nếu còn lỗi nghiêm trọng — dùng được trong CI.

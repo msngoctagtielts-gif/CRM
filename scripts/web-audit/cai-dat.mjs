@@ -22,7 +22,12 @@ import process from 'node:process'
 const GOC =
   'https://raw.githubusercontent.com/msngoctagtielts-gif/CRM/claude/ai-agents-professional-website-oym91e'
 
-const CONG_CU = ['scripts/web-audit/audit.mjs', 'scripts/web-audit/README.md']
+const CONG_CU = [
+  'scripts/web-audit/audit.mjs',
+  'scripts/web-audit/kiem-mau.mjs',
+  'scripts/web-audit/ap-vao-trang.mjs',
+  'scripts/web-audit/README.md',
+]
 
 const NHAN_SU = [
   'web-planner',

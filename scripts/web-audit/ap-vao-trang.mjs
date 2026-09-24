@@ -19,8 +19,9 @@
  *   sẵn đoạn mã để dán.
  *
  * Tuỳ chọn:
- *   --tep=index.html   chỉ áp cho một tệp
- *   --thu              chạy thử, không ghi gì cả
+ *   --tep=index.html                 chỉ áp cho một tệp
+ *   --ten-mien=https://abc.pages.dev thêm canonical và og:url (cần địa chỉ thật)
+ *   --thu                            chạy thử, không ghi gì cả
  */
 
 import { readFile, writeFile, mkdir, readdir, stat, cp } from 'node:fs/promises'
@@ -47,28 +48,30 @@ const THE = [
   {
     ten: 'liên kết CSS',
     co: (h) => /mnee-blocks\.css/i.test(h),
-    ma: '<link rel="stylesheet" href="mnee-blocks.css">',
+    ma: ['<link rel="stylesheet" href="mnee-blocks.css">'],
   },
   {
     ten: 'favicon',
     co: (h) => /<link[^>]+rel=["']?(shortcut )?icon/i.test(h),
-    ma:
-      '<link rel="icon" href="thuong-hieu/favicon-32.png" sizes="32x32">\n' +
-      '  <link rel="icon" href="thuong-hieu/favicon-512.png" sizes="512x512">\n' +
-      '  <link rel="apple-touch-icon" href="thuong-hieu/favicon-180.png">',
+    ma: [
+      '<link rel="icon" href="thuong-hieu/favicon-32.png" sizes="32x32">',
+      '<link rel="icon" href="thuong-hieu/favicon-512.png" sizes="512x512">',
+      '<link rel="apple-touch-icon" href="thuong-hieu/favicon-180.png">',
+    ],
   },
   {
     ten: 'ảnh chia sẻ',
     co: (h) => /property=["']?og:image/i.test(h),
-    ma:
-      '<meta property="og:image" content="thuong-hieu/og.jpg">\n' +
-      '  <meta property="og:image:width" content="1200">\n' +
-      '  <meta property="og:image:height" content="630">',
+    ma: [
+      '<meta property="og:image" content="thuong-hieu/og.jpg">',
+      '<meta property="og:image:width" content="1200">',
+      '<meta property="og:image:height" content="630">',
+    ],
   },
   {
     ten: 'og:type',
     co: (h) => /property=["']?og:type/i.test(h),
-    ma: '<meta property="og:type" content="website">',
+    ma: ['<meta property="og:type" content="website">'],
   },
 ]
 
@@ -139,12 +142,75 @@ async function timHtml(thuMuc, chiMot) {
   return ra
 }
 
-/** Chèn `ma` ngay trước </head>, giữ nguyên thụt lề. */
-function chenVaoHead(html, ma) {
+/** Chèn các dòng trong `dong` ngay trước </head>, thụt lề đều theo tệp. */
+function chenVaoHead(html, dong) {
   const m = html.match(/([ \t]*)<\/head\s*>/i)
   if (!m) return null
-  const thut = m[1] || '  '
-  return html.replace(/([ \t]*)<\/head\s*>/i, `${thut}  ${ma}\n${thut}</head>`)
+  const thut = m[1] || ''
+  const khoi = dong.map((d) => `${thut}  ${d}`).join('\n')
+  return html.replace(/([ \t]*)<\/head\s*>/i, `${khoi}\n${thut}</head>`)
+}
+
+/** Lấy <title> và meta description sẵn có trên trang, để dựng thẻ chia sẻ. */
+function docSanCo(html) {
+  const t = html.match(/<title[^>]*>([\s\S]*?)<\/title\s*>/i)
+  const d = html.match(/<meta[^>]+name=["']?description["']?[^>]*content=["']([^"']*)["']/i)
+  return {
+    tieuDe: t ? t[1].replace(/\s+/g, ' ').trim() : null,
+    moTa: d ? d[1].trim() : null,
+  }
+}
+
+/** Thẻ dựng từ chính nội dung trang — chỉ thêm khi lấy được dữ liệu thật. */
+function theTuTrang(html, tenMien, tenTep) {
+  const { tieuDe, moTa } = docSanCo(html)
+  const ra = []
+  if (tieuDe && !/property=["']?og:title/i.test(html))
+    ra.push({ ten: 'og:title', dong: [`<meta property="og:title" content="${thoat(tieuDe)}">`] })
+  if (moTa && !/property=["']?og:description/i.test(html))
+    ra.push({
+      ten: 'og:description',
+      dong: [`<meta property="og:description" content="${thoat(moTa)}">`],
+    })
+  if (tenMien) {
+    const duong = /^index\.html?$/i.test(tenTep) ? '/' : `/${tenTep}`
+    const dc = tenMien.replace(/\/$/, '') + duong
+    if (!/property=["']?og:url/i.test(html))
+      ra.push({ ten: 'og:url', dong: [`<meta property="og:url" content="${dc}">`] })
+    if (!/rel=["']?canonical/i.test(html))
+      ra.push({ ten: 'canonical', dong: [`<link rel="canonical" href="${dc}">`] })
+  }
+  return ra
+}
+
+/**
+ * Dữ liệu có cấu trúc cho trang chủ. Chỉ dùng dữ liệu đã xác nhận:
+ * tên trung tâm, khẩu hiệu, người sáng lập. Không bịa thêm gì.
+ * Cần --ten-mien vì schema.org đòi địa chỉ thật.
+ */
+function duLieuCoCauTruc(html, tenMien, tenTep) {
+  if (!tenMien) return null
+  if (!/^index\.html?$/i.test(tenTep)) return null
+  if (/application\/ld\+json/i.test(html)) return null
+  const goc = tenMien.replace(/\/$/, '')
+  const d = {
+    '@context': 'https://schema.org',
+    '@type': 'EducationalOrganization',
+    name: 'Ms.Ngọc Elite English',
+    url: goc + '/',
+    slogan: 'Thấu hiểu để dẫn lối.',
+    logo: goc + '/thuong-hieu/logo.png',
+    founder: { '@type': 'Person', name: 'Nguyễn Thanh Mỹ Ngọc' },
+  }
+  return [
+    '<script type="application/ld+json">',
+    ...JSON.stringify(d, null, 2).split('\n'),
+    '</script>',
+  ]
+}
+
+function thoat(s) {
+  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 }
 
 async function soi(tep) {
@@ -170,10 +236,13 @@ async function main() {
   const args = process.argv.slice(2)
   const thu = args.includes('--thu')
   const chiMot = args.find((a) => a.startsWith('--tep='))?.split('=')[1]
+  const tenMien = args.find((a) => a.startsWith('--ten-mien='))?.split('=')[1] || null
 
   console.log('\nÁp bộ thương hiệu MNEE vào trang thật')
   console.log(`Thư mục: ${process.cwd()}`)
   if (thu) console.log('CHẠY THỬ — không ghi gì cả.')
+  if (!tenMien)
+    console.log('Chưa có --ten-mien nên bỏ qua canonical và og:url — hai thứ đó cần địa chỉ thật.')
 
   const danhSach = await timHtml(process.cwd(), chiMot)
   if (danhSach.length === 0) {
@@ -239,6 +308,7 @@ async function main() {
     const goc = html
     const them = []
     const bo = []
+    let loi = false
     for (const { ten, co, ma } of THE) {
       if (co(html)) {
         bo.push(ten)
@@ -247,10 +317,27 @@ async function main() {
       const moi = chenVaoHead(html, ma)
       if (moi === null) {
         console.log(`  ${tep}: không tìm thấy </head> — bỏ qua tệp này`)
+        loi = true
         break
       }
       html = moi
       them.push(ten)
+    }
+    if (!loi) {
+      const ld = duLieuCoCauTruc(html, tenMien, tep)
+      if (ld) {
+        const moi = chenVaoHead(html, ld)
+        if (moi !== null) {
+          html = moi
+          them.push('dữ liệu có cấu trúc')
+        }
+      }
+      for (const { ten, dong } of theTuTrang(html, tenMien, tep)) {
+        const moi = chenVaoHead(html, dong)
+        if (moi === null) break
+        html = moi
+        them.push(ten)
+      }
     }
     console.log(`\n  ${tep}`)
     if (them.length) console.log(`    thêm     : ${them.join(', ')}`)
