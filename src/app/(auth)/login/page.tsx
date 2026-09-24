@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { login } from './actions'
 import { Field, Input } from '@/components/ui/Field'
 import { Button } from '@/components/ui/Button'
@@ -84,6 +85,14 @@ export default async function LoginPage({
             <Button type="submit" size="lg" className="w-full">
               Đăng nhập
             </Button>
+            <p className="text-center text-[0.8125rem]">
+              <Link
+                href="/quen-mat-khau"
+                className="text-navy-600 underline-offset-2 hover:underline"
+              >
+                Quên mật khẩu?
+              </Link>
+            </p>
           </form>
         </div>
       </div>

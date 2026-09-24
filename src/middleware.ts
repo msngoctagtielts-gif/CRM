@@ -8,7 +8,15 @@ import { createServerClient } from '@supabase/ssr'
  * database cộng với kiểm tra trong server action. Middleware chỉ để người dùng
  * không lọt vào trang trống rồi không hiểu tại sao.
  */
-const PUBLIC_PATHS = ['/login', '/auth', '/unauthorized']
+/**
+ * `/quen-mat-khau` PHẢI nằm ở đây. Người quên mật khẩu thì đang ĐĂNG XUẤT —
+ * thiếu dòng này, middleware đá họ về /login, và nút "Quên mật khẩu?" trở thành
+ * một vòng tròn không lối ra.
+ *
+ * `/dat-mat-khau` thì KHÔNG cần: người bấm đường dẫn trong thư đi qua
+ * /auth/callback trước, nên tới trang đó là đã có phiên.
+ */
+const PUBLIC_PATHS = ['/login', '/quen-mat-khau', '/auth', '/unauthorized']
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
