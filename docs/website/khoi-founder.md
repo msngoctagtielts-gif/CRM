@@ -293,3 +293,38 @@ cao cấp". Loại.
 Bản CSS đầu tiên làm **búi tóc bị cắt cụt** khi khung bị ép chiều cao. Đã thêm
 `max-height: 100%` và `object-fit: contain` để ảnh thu nhỏ chứ không bị xén. Kiểm
 lại ở 360px và 440px bằng Chromium: không xén, không cuộn ngang.
+
+
+---
+
+## Bộ tệp thương hiệu — `docs/website/mau/thuong-hieu/`
+
+| Tệp | Dùng ở đâu |
+|---|---|
+| `logo.png` | Logo trên **nền sáng** |
+| `logo-dao-mau.png` | Logo trên **nền tối** — bắt buộc dùng bản này trên navy |
+| `favicon-32/180/512.png` | Biểu tượng tab, màn hình chính điện thoại |
+| `og.jpg` | Ảnh hiện khi dán link vào Zalo, Facebook (1200×630) |
+| `ms-ngoc-900.webp` | Chân dung cho trang chủ — 68 KB |
+| `ms-ngoc-600.webp` | Chân dung khổ nhỏ — 37 KB |
+| `ms-ngoc-1500.png` | Bản gốc lưu trữ |
+
+### Tệp logo gốc không có nền trong suốt
+
+Tệp logo nhận được là ảnh **RGB, không có kênh alpha** — ô ca-rô đã bị nướng thẳng
+vào ảnh thành các ô xám nhạt `#efefef` và `#fefefe`. Dùng nguyên là hiện ô ca-rô
+trên web. Đã tách nền và gỡ pha trộn ở viền để nét không bị bạc.
+
+### Logo không đặt được lên nền navy
+
+Chữ trong logo là navy. Trên navy-900 chỉ đạt **1.17:1** — tan hẳn. Bản đảo màu
+đưa chữ về trắng (**16.66:1**), giữ nguyên vàng (**8.96:1**).
+
+**Luật: nền sáng dùng `logo.png`, nền tối dùng `logo-dao-mau.png`.** Không có
+ngoại lệ.
+
+### Favicon phải là bản riêng, không thu nhỏ logo
+
+Thu nguyên biểu tượng xuống 32px thì các nét mảnh — ngôi sao, đường vàng — bết
+thành vệt nhoè. Đã dựng ba phương án rồi so ở đúng 32px: bản **nền navy đặc, nét
+trắng–vàng nổi lên** là bản duy nhất còn đọc được. Đó là `favicon-*.png`.
