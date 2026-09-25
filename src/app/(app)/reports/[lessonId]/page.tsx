@@ -4,7 +4,13 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate, formatDeadline, formatDuration, formatTime, toDateTimeLocal } from '@/lib/format'
+import {
+  formatDate,
+  formatDeadline,
+  formatDuration,
+  formatTime,
+  toDateTimeLocal,
+} from '@/lib/format'
 import { CLASS_TYPE, REPORT_AUTHOR, REPORT_STATUS, missingFieldLabels, qcTone } from '@/lib/labels'
 import { getOperatingSettings } from '@/lib/settings'
 import { isAIConfigured } from '@/lib/ai/provider'
@@ -15,6 +21,7 @@ import { ReportForm } from './ReportForm'
 import { ReportActions } from './ReportActions'
 import { SuaXoaBuoiHoc } from './SuaXoaBuoiHoc'
 import { XacMinhVideo } from './XacMinhVideo'
+import { NhungVideo } from '@/components/NhungVideo'
 
 export const metadata: Metadata = { title: 'Báo cáo giảng dạy' }
 
@@ -37,42 +44,54 @@ export default async function ReportFormPage({
   // RLS: buổi học không thuộc phạm vi của người dùng ⇒ không có dòng nào.
   if (!lesson) notFound()
 
-  const [{ data: roster }, { data: report }, { data: feedback }, { data: attendance }, { data: homework }, { data: recording }] =
-    await Promise.all([
-      supabase
-        .from('class_students')
-        .select('student_id, students(id, full_name, nickname, student_code)')
-        .eq('class_id', lesson.class_id!)
-        .eq('status', 'active')
-        .order('created_at'),
-      lesson.report_id
-        ? supabase.from('teaching_reports').select('*').eq('id', lesson.report_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      lesson.report_id
-        ? supabase
-            .from('teaching_report_students')
-            .select('*')
-            .eq('report_id', lesson.report_id)
-        : Promise.resolve({ data: [] }),
-      supabase.from('attendance').select('student_id, status').eq('lesson_id', lessonId),
-      supabase
-        .from('homework')
-        .select('title, description, due_date, sentence_patterns')
-        .eq('lesson_id', lessonId)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from('recordings')
-        .select('url')
-        .eq('lesson_id', lessonId)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle(),
-    ])
+  const [
+    { data: roster },
+    { data: report },
+    { data: feedback },
+    { data: attendance },
+    { data: homework },
+    { data: recording },
+  ] = await Promise.all([
+    supabase
+      .from('class_students')
+      .select('student_id, students(id, full_name, nickname, student_code)')
+      .eq('class_id', lesson.class_id!)
+      .eq('status', 'active')
+      .order('created_at'),
+    lesson.report_id
+      ? supabase.from('teaching_reports').select('*').eq('id', lesson.report_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    lesson.report_id
+      ? supabase.from('teaching_report_students').select('*').eq('report_id', lesson.report_id)
+      : Promise.resolve({ data: [] }),
+    supabase.from('attendance').select('student_id, status').eq('lesson_id', lessonId),
+    supabase
+      .from('homework')
+      .select('title, description, due_date, sentence_patterns')
+      .eq('lesson_id', lessonId)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle(),
+    // Lấy TẤT CẢ bản ghi, không phải một. Một buổi thường được tách thành
+    // hai phần video nối tiếp nhau; lấy .limit(1) thì phần sau biến mất.
+    supabase
+      .from('recordings')
+      .select('url')
+      .eq('lesson_id', lessonId)
+      .eq('status', 'active')
+      .order('created_at'),
+  ])
 
   const students = (roster ?? [])
-    .map((r) => r.students as { id: string; full_name: string; nickname: string | null; student_code: string | null } | null)
+    .map(
+      (r) =>
+        r.students as {
+          id: string
+          full_name: string
+          nickname: string | null
+          student_code: string | null
+        } | null,
+    )
     .filter((s): s is NonNullable<typeof s> => s !== null)
 
   const isFounder = user.role_code === 'founder'
@@ -86,27 +105,17 @@ export default async function ReportFormPage({
           .select('status')
           .eq('lesson_id', lessonId)
           .maybeSingle(),
-        supabase
-          .from('teachers')
-          .select('id, full_name')
-          .eq('status', 'active')
-          .order('full_name'),
-        supabase
-          .from('attendance')
-          .select('is_billable, ly_do_mien_phi')
-          .eq('lesson_id', lessonId),
+        supabase.from('teachers').select('id, full_name').eq('status', 'active').order('full_name'),
+        supabase.from('attendance').select('is_billable, ly_do_mien_phi').eq('lesson_id', lessonId),
       ])
     : [{ data: null }, { data: [] }, { data: [] }]
+
+  const dsBanGhi = recording ?? []
 
   // Gemini chỉ đọc được YouTube (Google tự tải từ phía họ). Zoom Clips là link
   // riêng tư nên không dịch vụ nào lấy được — kiểm ở đây để nút hiện đúng
   // trạng thái thay vì để Founder bấm rồi mới nhận lỗi.
-  const { data: banGhi } = isFounder
-    ? await supabase.from('recordings').select('url').eq('lesson_id', lessonId).eq('status', 'active')
-    : { data: [] }
-  const coYoutube = (banGhi ?? []).some(
-    (r) => classifyVideoSource(r.url) === 'youtube',
-  )
+  const coYoutube = dsBanGhi.some((r) => classifyVideoSource(r.url) === 'youtube')
 
   // Buổi coi là miễn phí khi MỌI dòng điểm danh đều không thu phí. Lớp nhóm có
   // thể một em chịu phí, các em còn lại đi kèm — trường hợp đó không phải buổi
@@ -157,9 +166,7 @@ export default async function ReportFormPage({
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {reportMeta ? <Badge tone={reportMeta.tone}>{reportMeta.label}</Badge> : null}
           {deadline ? (
-            <Badge tone={deadline.overdue ? 'danger' : 'info'}>
-              Hạn nộp: {deadline.label}
-            </Badge>
+            <Badge tone={deadline.overdue ? 'danger' : 'info'}>Hạn nộp: {deadline.label}</Badge>
           ) : null}
           {report ? (
             <Badge tone={qcTone(report.qc_score)}>Chất lượng {report.qc_score ?? 0}/100</Badge>
@@ -167,9 +174,7 @@ export default async function ReportFormPage({
           {report && report.authored_by !== 'teacher' ? (
             <Badge tone="info">{REPORT_AUTHOR[report.authored_by]}</Badge>
           ) : null}
-          {report?.sent_to_parent_at ? (
-            <Badge tone="success">Đã gửi phụ huynh</Badge>
-          ) : null}
+          {report?.sent_to_parent_at ? <Badge tone="success">Đã gửi phụ huynh</Badge> : null}
           {lesson.submitted_at ? (
             <span className="text-xs text-navy-400">
               Nộp lần đầu {formatDate(lesson.submitted_at)}
@@ -179,7 +184,11 @@ export default async function ReportFormPage({
       </header>
 
       {missing.length > 0 ? (
-        <Alert kind={deadline?.overdue ? 'danger' : 'warning'} title="Báo cáo chưa đầy đủ" className="mb-4">
+        <Alert
+          kind={deadline?.overdue ? 'danger' : 'warning'}
+          title="Báo cáo chưa đầy đủ"
+          className="mb-4"
+        >
           Còn thiếu: {missing.join(', ')}.
           {deadline?.overdue
             ? ` Buổi học đã quá hạn ${settings.reportDeadlineHours} giờ nên đang được tính là INCOMPLETE và có cảnh báo gửi tới Founder.`
@@ -211,8 +220,12 @@ export default async function ReportFormPage({
         deadlineHours={settings.reportDeadlineHours}
         students={students}
         defaults={{
-          start_time: toDateTimeLocal(report?.start_time ?? lesson.actual_start_at ?? lesson.scheduled_start_at),
-          end_time: toDateTimeLocal(report?.end_time ?? lesson.actual_end_at ?? lesson.scheduled_end_at),
+          start_time: toDateTimeLocal(
+            report?.start_time ?? lesson.actual_start_at ?? lesson.scheduled_start_at,
+          ),
+          end_time: toDateTimeLocal(
+            report?.end_time ?? lesson.actual_end_at ?? lesson.scheduled_end_at,
+          ),
           lesson_content: report?.lesson_content ?? '',
           teacher_comments: report?.teacher_comments ?? '',
           next_lesson_recommendation: report?.next_lesson_recommendation ?? '',
@@ -220,7 +233,7 @@ export default async function ReportFormPage({
           homework_description: homework?.description ?? '',
           homework_due_date: homework?.due_date ?? '',
           homework_sentence_patterns: homework?.sentence_patterns ?? '',
-          recording_url: recording?.url ?? '',
+          recording_url: dsBanGhi[0]?.url ?? '',
           video_timestamp: report?.video_timestamp ?? '',
           student_quote: report?.student_quote ?? '',
           strengths: report?.strengths ?? '',
@@ -242,6 +255,8 @@ export default async function ReportFormPage({
           ]),
         )}
       />
+
+      <NhungVideo urls={dsBanGhi.map((r) => r.url)} mocThoiGian={report?.video_timestamp ?? null} />
 
       {isFounder && lesson.lesson_id ? (
         <XacMinhVideo
