@@ -25,3 +25,34 @@ update public.lessons l
        updated_at = now()
   from buoi b where l.id = b.id;
 -- Kèm một dòng audit_logs ghi lại ảnh trước/sau.
+
+-- ---------------------------------------------------------------------------
+-- BỔ SUNG CÙNG NGÀY — CÔ NGỌC ĐÃ CHỐT
+-- ---------------------------------------------------------------------------
+--   "Giữ nguyên buổi dạy không có video trên vẫn tính phí, tức là không có
+--    video vì sự cố, HV và giáo viên trao đổi trực tiếp."
+--
+--   Vậy buổi NHI-PH 21/08/2026 GIỮ NGUYÊN 250.000đ. Tổng học phí của Uyển Nhi
+--   không đổi: 1.250.000đ (5 buổi tính phí × 250.000đ, 2 buổi được tặng).
+--
+--   Quyết định này làm rõ nguyên tắc "căn cứ vào video hoặc link để tính phí":
+--   SỰ CỐ THIẾT BỊ CỦA TRUNG TÂM KHÔNG LÀM MẤT QUYỀN TÍNH PHÍ CỦA MỘT BUỔI ĐÃ
+--   DẠY. Điều cần chứng minh là buổi học có diễn ra, không phải là có tệp video.
+--
+--   Đã ghi vào attendance.notes và một dòng audit_logs.
+--
+-- ẢNH HƯỞNG TỚI BẢN IN GỬI PHỤ HUYNH
+--   Buổi mất bản ghi vì sự cố kỹ thuật được trình bày KHÁC với buổi chưa có
+--   bản ghi — khác cả màu chữ lẫn lời văn. In cùng một kiểu thì phụ huynh đọc
+--   thành cùng một loại vấn đề, trong khi một bên là buổi đã dạy mà máy không
+--   lưu được, còn một bên là chưa có gì để đối chiếu.
+--
+--   Ba chỗ trong bản in nói rõ điều này:
+--     • Ô Bằng chứng ghi "Sự cố kỹ thuật", màu vàng đất chứ không phải đỏ.
+--     • Ô Nội dung ghi "Buổi học trao đổi trực tiếp giữa giáo viên và học viên".
+--     • Một ghi chú riêng dưới bảng, nêu đích danh ngày, khẳng định buổi học
+--       vẫn diễn ra đầy đủ và trung tâm nhận trách nhiệm về sự cố thiết bị.
+--
+--   Cũng bỏ câu "Nhận xét chi tiết của buổi này trung tâm sẽ gửi bổ sung" cho
+--   trường hợp này. Không có bản ghi thì không ai dựng lại được nhận xét có
+--   dẫn chứng — hứa gửi bổ sung là hứa một việc không làm được.

@@ -257,8 +257,14 @@ function theBuoi(r, k) {
   if (!coND) {
     return `<div class="buoi">
       <div class="buoi-h"><span class="n">Buổi ${k + 1} · ${ngayVN(r.ngay)}</span>${tang}</div>
-      <p class="trong">Nhận xét chi tiết của buổi này trung tâm sẽ gửi bổ sung.</p>
-      ${(r.video ?? []).length === 0 ? '<p class="trong">Buổi này chưa có video lưu lại.</p>' : nutVideo(r)}
+      <p class="trong">${
+        /sự cố/i.test(r.ly_do_khong_video ?? '')
+          ? 'Buổi học diễn ra đầy đủ, giáo viên trao đổi trực tiếp với học viên trong suốt buổi. '
+            + 'Bản ghi không lưu lại được do sự cố kỹ thuật, nên trung tâm không dựng lại được '
+            + 'phần nhận xét chi tiết có dẫn chứng cho buổi này.'
+          : 'Nhận xét chi tiết của buổi này trung tâm sẽ gửi bổ sung.'
+      }</p>
+      ${(r.video ?? []).length === 0 ? '' : nutVideo(r)}
     </div>`
   }
 
@@ -326,7 +332,9 @@ function baoCaoHocVien(hv, ds) {
       ? tachChuDe(boMocThoiGian(locGhiChuNoiBo(r.lesson_content))).chuDe
       : coVideoTam
         ? 'Nội dung đang được tổng hợp từ bản ghi buổi học'
-        : 'Buổi học đã diễn ra; không có bản ghi nên trung tâm chưa tổng hợp lại được nội dung'
+        : /sự cố/i.test(r.ly_do_khong_video ?? '')
+          ? 'Buổi học trao đổi trực tiếp giữa giáo viên và học viên'
+          : 'Buổi học đã diễn ra; không có bản ghi nên trung tâm chưa tổng hợp lại được nội dung'
     // Cắt ở RANH GIỚI TỪ, không cắt giữa chừng. "Nghe hội thoại Steve – Emm…"
     // đọc như lỗi đánh máy; cắt ở khoảng trắng gần nhất thì vẫn gọn mà sạch.
     if (cd.length > 105) {
@@ -341,12 +349,26 @@ function baoCaoHocVien(hv, ds) {
     // Cột bằng chứng: cô Ngọc chốt 25/09 — học phí căn cứ vào video hoặc link.
     // Buổi nào không có bản ghi thì nói thẳng là chưa có, kèm lý do nếu biết.
     const coVideo = Array.isArray(r.video) && r.video.length > 0
+    // Sự cố kỹ thuật KHÔNG cùng màu với "chưa có bản ghi". Một bên là buổi đã
+    // dạy mà máy không lưu được, một bên là chưa có gì để đối chiếu — in cùng
+    // màu đỏ thì phụ huynh đọc thành cùng một loại vấn đề.
+    const lyDo = r.ly_do_khong_video ?? 'Chưa có bản ghi'
+    const laSuCo = /sự cố/i.test(lyDo)
     const bc = coVideo
       ? `<span style="color:#3d6f4f;font-weight:700">Có bản ghi</span>`
-      : `<span style="color:#7b2d3b">${esc(r.ly_do_khong_video ?? 'Chưa có bản ghi')}</span>`
+      : `<span style="color:${laSuCo ? '#97651a' : '#7b2d3b'}">${esc(lyDo)}</span>`
     return `<tr><td class="p">${k + 1}</td><td>${ngayVN(r.ngay)}</td>
             <td>${esc(cd)}</td><td class="p">${bc}</td><td class="p">${hp}</td></tr>`
   }).join('')
+
+  // Buổi mất bản ghi vì sự cố kỹ thuật: nói rõ cho phụ huynh là buổi VẪN DẠY,
+  // nếu không thì một ô "không có bản ghi" dễ bị đọc thành buổi học không diễn ra.
+  const dsSuCo = ds.filter((r) => /sự cố/i.test(r.ly_do_khong_video ?? '') &&
+                                  !(Array.isArray(r.video) && r.video.length > 0))
+  const ghiChuSuCo = dsSuCo.length === 0 ? '' : `<div class="note"><b>Về buổi ${
+    dsSuCo.map((r) => ngayVN(r.ngay)).join(', ')}:</b> buổi học vẫn diễn ra đầy đủ, học viên và
+    giáo viên trao đổi trực tiếp trong suốt buổi. Bản ghi không lưu lại được do sự cố kỹ thuật
+    bên phía thiết bị của trung tâm. Trung tâm xin ghi nhận và đã khắc phục.</div>`
 
   const gt = String(d0.ghi_chu_hv ?? '')
     .split(/\n{2,}/)
@@ -394,8 +416,9 @@ ${hopTang}
     <tr class="tong"><td class="p">${ds.length}</td><td colspan="3">Tổng cộng</td>
         <td class="p">${tien(tongTien)}</td></tr></tbody></table>
 <div class="note">Cột <b>Bằng chứng</b> cho biết buổi học đó có bản ghi hình lưu lại hay không.
-Trung tâm chỉ tính học phí trên những buổi đối chiếu được với bản ghi; buổi nào chưa có bản ghi,
+Trung tâm đối chiếu từng buổi có tính phí với bản ghi tương ứng; buổi nào không có bản ghi,
 trung tâm ghi rõ lý do để Quý phụ huynh cùng nắm.</div>
+${ghiChuSuCo}
 
 <div class="muc-h"><span class="so">03</span><span class="tt">Nhận xét chi tiết từng buổi</span></div>
 ${ds.map(theBuoi).join('')}
