@@ -179,3 +179,32 @@ export function boMocThoiGian(text: string | null | undefined): string {
     .join('\n')
     .trim()
 }
+
+/**
+ * Viết hoa chữ cái đầu của một câu, giữ nguyên phần còn lại.
+ *
+ * VÌ SAO CẦN
+ *   Cô Ngọc chốt ngày 25/09/2026: bản gửi phụ huynh phải viết hoa chữ đầu.
+ *   Lỗi thật đã lọt vào bản in của Duy: nội dung buổi học trong cơ sở dữ liệu
+ *   ghi "Chủ đề: giao tiếp xã hội — ..."; khi in, phần nhãn "Chủ đề:" bị cắt
+ *   đi, để lại "giao tiếp xã hội" mở đầu một ô bảng bằng chữ thường.
+ *
+ *   Sửa ở tầng in chứ không chỉ sửa dữ liệu, vì dữ liệu do nhiều người nhập
+ *   qua nhiều tháng — một ô nhập sai không được phép thành lỗi trình bày
+ *   trước mặt phụ huynh.
+ *
+ * KHÔNG ĐỤNG TỚI
+ *   • Chuỗi rỗng.
+ *   • Câu mở đầu bằng số, dấu ngoặc kép, hay ký hiệu — không có chữ để hoa.
+ *   • Chữ đã hoa sẵn, kể cả từ viết hoa toàn bộ như "IELTS".
+ *   Dấu tiếng Việt được toUpperCase() xử lý đúng: "ế" thành "Ế".
+ */
+export function vietHoaDau(text: string | null | undefined): string {
+  const t = (text ?? '').trimStart()
+  if (t === '') return ''
+  // Bỏ qua dấu mở đầu (ngoặc kép, ngoặc đơn) để hoa đúng chữ cái thật sự đầu.
+  const m = /^([("'“‘«\[]*)(\p{L})([\s\S]*)$/u.exec(t)
+  if (!m) return t
+  const [, dauMo, chuDau, phanConLai] = m
+  return dauMo + chuDau.toLocaleUpperCase('vi') + phanConLai
+}

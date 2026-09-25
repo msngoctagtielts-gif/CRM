@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { locGhiChuNoiBo, laDongNoiBo, boMocThoiGian as locBo } from './bao-cao-in.ts'
+import { locGhiChuNoiBo, laDongNoiBo, boMocThoiGian as locBo, vietHoaDau } from './bao-cao-in.ts'
 
 test('không có gì để lọc thì giữ nguyên', () => {
   const t = '1. Luyện âm cuối /t/.\n2. Học 5 từ quần áo.'
@@ -153,4 +153,23 @@ test('bỏ cả cụm nhiều mốc nằm trong một ngoặc', () => {
   assert.equal(locBo('Nghe lại (1:02:30 và 1:05:00).'), 'Nghe lại.')
   // Không được ăn lem chữ trong ngoặc không phải mốc.
   assert.equal(locBo('Bài này (Unit 5) khá dài.'), 'Bài này (Unit 5) khá dài.')
+})
+
+test('viết hoa chữ cái đầu, giữ nguyên phần sau', () => {
+  // Lỗi thật đã lọt vào bản in của Duy ngày 25/09/2026: nhãn "Chủ đề:" bị cắt
+  // đi để lại một ô bảng mở đầu bằng chữ thường.
+  assert.equal(vietHoaDau('giao tiếp xã hội — phân biệt chuyện nên hỏi'),
+    'Giao tiếp xã hội — phân biệt chuyện nên hỏi')
+  assert.equal(vietHoaDau('ế ẩm quá'), 'Ế ẩm quá')
+  assert.equal(vietHoaDau('đọc lại bài'), 'Đọc lại bài')
+  // Không phá phần còn lại, kể cả từ viết hoa toàn bộ.
+  assert.equal(vietHoaDau('luyện thi IELTS'), 'Luyện thi IELTS')
+  // Đã hoa sẵn thì giữ nguyên.
+  assert.equal(vietHoaDau('Speak Now · Lesson 1'), 'Speak Now · Lesson 1')
+  // Mở đầu bằng dấu ngoặc kép: hoa chữ bên trong, không phải dấu.
+  assert.equal(vietHoaDau('"where are you from?"'), '"Where are you from?"')
+  // Mở đầu bằng số hoặc rỗng thì không đụng tới.
+  assert.equal(vietHoaDau('5 phút chuẩn bị'), '5 phút chuẩn bị')
+  assert.equal(vietHoaDau(''), '')
+  assert.equal(vietHoaDau(null), '')
 })

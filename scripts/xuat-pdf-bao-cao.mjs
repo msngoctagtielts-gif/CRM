@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { locGhiChuNoiBo, boMocThoiGian } from '../src/lib/bao-cao-in.ts'
+import { locGhiChuNoiBo, boMocThoiGian, vietHoaDau } from '../src/lib/bao-cao-in.ts'
 
 const [fileJson, thuMucRa] = process.argv.slice(2)
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
@@ -77,7 +77,8 @@ function thanhBullet(t) {
 }
 const dsBullet = (t) => {
   const b = thanhBullet(t)
-  return b.length === 0 ? '' : `<ul>${b.map((x) => `<li>${esc(x).replace(/\n/g, '<br>')}</li>`).join('')}</ul>`
+  return b.length === 0 ? '' :
+    `<ul>${b.map((x) => `<li>${esc(vietHoaDau(x)).replace(/\n/g, '<br>')}</li>`).join('')}</ul>`
 }
 const doan = (t) =>
   String(t ?? '')
@@ -226,7 +227,9 @@ function tachChuDe(noiDung) {
   const dongDau = t.split('\n')[0].trim()
   const conLai = t.split('\n').slice(1).join('\n').trim()
 
-  const bo = (x) => x.replace(/^(Chủ đề|Chu de)\s*:\s*/i, '')
+  // Bỏ nhãn rồi VIẾT HOA lại: cắt "Chủ đề: " khỏi "Chủ đề: giao tiếp xã hội"
+  // để lại một ô bảng mở đầu bằng chữ thường — cô Ngọc bắt lỗi này 25/09.
+  const bo = (x) => vietHoaDau(x.replace(/^(Chủ đề|Nội dung|Chu de|Noi dung)\s*:\s*/i, ''))
   if (dongDau.length <= 200) return { chuDe: bo(dongDau), moTa: conLai }
 
   // Dòng đầu quá dài: cắt ở dấu chấm câu, nếu không có thì ở khoảng trắng —
@@ -315,15 +318,34 @@ function baoCaoHocVien(hv, ds) {
   const denNgay = ngayVN(ds[ds.length - 1].ngay)
 
   const hangBuoi = ds.map((r, k) => {
+    // Không có nội dung thì nói thẳng vì sao, đừng hứa suông. Buổi không có
+    // bản ghi thì không ai tổng hợp lại được nội dung — viết "sẽ được cập nhật"
+    // là hứa một việc không làm được.
+    const coVideoTam = Array.isArray(r.video) && r.video.length > 0
     let cd = r.lesson_content
       ? tachChuDe(boMocThoiGian(locGhiChuNoiBo(r.lesson_content))).chuDe
-      : 'Nội dung sẽ được cập nhật'
-    if (cd.length > 105) cd = cd.slice(0, 102).trimEnd() + '…'
+      : coVideoTam
+        ? 'Nội dung đang được tổng hợp từ bản ghi buổi học'
+        : 'Buổi học đã diễn ra; không có bản ghi nên trung tâm chưa tổng hợp lại được nội dung'
+    // Cắt ở RANH GIỚI TỪ, không cắt giữa chừng. "Nghe hội thoại Steve – Emm…"
+    // đọc như lỗi đánh máy; cắt ở khoảng trắng gần nhất thì vẫn gọn mà sạch.
+    if (cd.length > 105) {
+      const tho = cd.slice(0, 105)
+      const khoangTrang = tho.lastIndexOf(' ')
+      cd = (khoangTrang > 70 ? tho.slice(0, khoangTrang) : tho)
+        .replace(/[\s,;:–—-]+$/, '') + '…'
+    }
     const hp = r.tinh_phi === false
       ? `<span style="color:#a9853a;font-weight:700">Được tặng</span>`
       : tien(donGia)
+    // Cột bằng chứng: cô Ngọc chốt 25/09 — học phí căn cứ vào video hoặc link.
+    // Buổi nào không có bản ghi thì nói thẳng là chưa có, kèm lý do nếu biết.
+    const coVideo = Array.isArray(r.video) && r.video.length > 0
+    const bc = coVideo
+      ? `<span style="color:#3d6f4f;font-weight:700">Có bản ghi</span>`
+      : `<span style="color:#7b2d3b">${esc(r.ly_do_khong_video ?? 'Chưa có bản ghi')}</span>`
     return `<tr><td class="p">${k + 1}</td><td>${ngayVN(r.ngay)}</td>
-            <td>${esc(cd)}</td><td class="p">${hp}</td></tr>`
+            <td>${esc(cd)}</td><td class="p">${bc}</td><td class="p">${hp}</td></tr>`
   }).join('')
 
   const gt = String(d0.ghi_chu_hv ?? '')
@@ -365,11 +387,15 @@ function baoCaoHocVien(hv, ds) {
 ${hopTang}
 
 <div class="muc-h"><span class="so">02</span><span class="tt">Danh sách buổi học</span></div>
-<table><thead><tr><th class="p" style="width:36px">Buổi</th><th style="width:80px">Ngày học</th>
-  <th>Nội dung</th><th class="p" style="width:86px">Học phí</th></tr></thead>
+<table><thead><tr><th class="p" style="width:34px">Buổi</th><th style="width:76px">Ngày học</th>
+  <th>Nội dung</th><th class="p" style="width:82px">Bằng chứng</th>
+  <th class="p" style="width:82px">Học phí</th></tr></thead>
   <tbody>${hangBuoi}
-    <tr class="tong"><td class="p">${ds.length}</td><td colspan="2">Tổng cộng</td>
+    <tr class="tong"><td class="p">${ds.length}</td><td colspan="3">Tổng cộng</td>
         <td class="p">${tien(tongTien)}</td></tr></tbody></table>
+<div class="note">Cột <b>Bằng chứng</b> cho biết buổi học đó có bản ghi hình lưu lại hay không.
+Trung tâm chỉ tính học phí trên những buổi đối chiếu được với bản ghi; buổi nào chưa có bản ghi,
+trung tâm ghi rõ lý do để Quý phụ huynh cùng nắm.</div>
 
 <div class="muc-h"><span class="so">03</span><span class="tt">Nhận xét chi tiết từng buổi</span></div>
 ${ds.map(theBuoi).join('')}
