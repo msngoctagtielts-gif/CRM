@@ -139,3 +139,58 @@
     display: none !important;
   }
 }
+
+/* ===========================================================================
+   BẢN IN BÁO CÁO HỌC TẬP
+   Founder mở /bao-cao/<id> rồi bấm Ctrl+P (Cmd+P) > "Lưu thành PDF".
+
+   VÌ SAO DÙNG TRÌNH DUYỆT IN RA PDF, KHÔNG DÙNG THƯ VIỆN SINH PDF
+     Thư viện như jsPDF hay pdfkit phải nhúng phông mới hiện được dấu tiếng
+     Việt; thiếu phông là "ế, ữ, ợ" vỡ hết. Puppeteer thì quá nặng cho hàm
+     Netlify. Trình duyệt vốn đã dựng tiếng Việt chuẩn, giữ link bấm được
+     trong PDF, và không thêm một phụ thuộc nào. Đổi lại là Founder phải bấm
+     Ctrl+P — một thao tác, đáng giá.
+   =========================================================================== */
+
+@page {
+  size: A4;
+  margin: 14mm 15mm 16mm 15mm;
+}
+
+.ban-in {
+  background-color: #fff;
+  color: var(--color-navy-900);
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Không cắt ngang một mục giữa chừng khi sang trang */
+  .giu-nguyen-khoi {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sang-trang {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Link trong PDF vẫn bấm được, nhưng in giấy thì phải đọc được địa chỉ */
+  .in-kem-dia-chi::after {
+    content: ' (' attr(href) ')';
+    font-size: 9pt;
+    font-weight: 400;
+    color: var(--color-navy-500);
+    word-break: break-all;
+  }
+
+  /* Trình duyệt mặc định bỏ màu nền khi in; giữ lại dải navy và ô vàng */
+  .in-giu-mau {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

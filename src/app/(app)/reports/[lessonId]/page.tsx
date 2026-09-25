@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FileDown } from 'lucide-react'
 import { requireUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -134,12 +134,24 @@ export default async function ReportFormPage({
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link
-        href="/reports"
-        className="mb-4 inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-navy-500 hover:text-navy-800"
-      >
-        <ArrowLeft className="size-4" /> Danh sách báo cáo
-      </Link>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Link
+          href="/reports"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-navy-500 hover:text-navy-800"
+        >
+          <ArrowLeft className="size-4" /> Danh sách báo cáo
+        </Link>
+
+        {/* Chỉ mở được khi báo cáo đã có nội dung — in một trang trống thì vô nghĩa */}
+        {report ? (
+          <Link
+            href={`/bao-cao/${lessonId}`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-navy-200 px-3 py-1.5 text-[0.8125rem] font-medium text-navy-700 hover:bg-navy-50"
+          >
+            <FileDown className="size-4" /> Xuất PDF gửi phụ huynh
+          </Link>
+        ) : null}
+      </div>
 
       <header className="mb-5">
         <h1 className="mnee-rule text-xl font-semibold text-navy-900">Báo cáo giảng dạy</h1>
