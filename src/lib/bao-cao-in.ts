@@ -106,3 +106,76 @@ export function locGhiChuNoiBo(text: string | null | undefined): string {
   // Gộp các dòng trống thừa do cắt đoạn để lại, rồi cắt trắng hai đầu.
   return giu.join('\n').replace(/\n{3,}/g, '\n\n').trim()
 }
+
+/**
+ * Bỏ mốc thời gian video ra khỏi nhận xét trước khi gửi phụ huynh.
+ *
+ * VÌ SAO
+ *   Cô Ngọc chốt ngày 25/09/2026: bản gửi phụ huynh không ghi giây phút.
+ *   Mốc thời gian là công cụ đối soát của trung tâm — nó chứng minh mỗi câu
+ *   nhận xét có căn cứ trong video. Nhưng với phụ huynh thì "27:03 con nói…"
+ *   đọc như biên bản giám sát, không phải như lời cô giáo nói về con.
+ *
+ *   Mốc vẫn được giữ NGUYÊN trong cơ sở dữ liệu. Chỉ bản in cho phụ huynh mới
+ *   lọc — để cô còn tra lại được bất cứ lúc nào.
+ *
+ * XOÁ NHỮNG DẠNG NÀO
+ *   "(25:10)"            "27:03 HV nói…"        "tại 36:05"
+ *   "đoạn 19:57–31:01"   "từ 59:00 đến 01:01:26"  "01:02:20 — cô dừng buổi"
+ */
+
+/** Một mốc: mm:ss hoặc hh:mm:ss. */
+const MOC = String.raw`\d{1,2}:\d{2}(?::\d{2})?`
+
+/** Khoảng: 19:57–31:01 · 19:57-31:01 · từ 59:00 đến 01:01:26 */
+const KHOANG = new RegExp(
+  String.raw`(?:từ\s+)?${MOC}\s*(?:[–—-]|đến)\s*${MOC}`,
+  'g',
+)
+
+export function boMocThoiGian(text: string | null | undefined): string {
+  let t = (text ?? '').replace(/\r\n/g, '\n')
+  if (t.trim() === '') return ''
+
+  // 1. Mốc trong ngoặc, kể cả khi một ngoặc chứa nhiều mốc:
+  //    "(25:10)" · "(1:00:50)" · "(17:43, 22:10, 30:05)" · "(05:10; 09:22)"
+  //    Phải bắt cả cụm. Chỉ bắt một mốc thì các mốc sau bị quy tắc 5 gỡ lẻ,
+  //    để lại cái vỏ "(17:43,)" — đúng lỗi đã lọt vào bản in của Nhi.
+  t = t.replace(
+    new RegExp(
+      String.raw`\s*\(\s*${MOC}(?:\s*(?:,|;|·|và)\s*${MOC})*\s*\)`,
+      'gi',
+    ),
+    '',
+  )
+
+  // 2. Khoảng thời gian, kèm giới từ đứng trước nếu có.
+  //    Cờ 'i' để bắt cả "Đoạn" viết hoa đầu câu — không có nó thì giới từ
+  //    còn lại lủng lẳng trước một khoảng trống.
+  t = t.replace(
+    new RegExp(String.raw`\s*(?:tại|ở|trong|vào|đoạn)?\s*` + KHOANG.source, 'gi'),
+    '',
+  )
+
+  // 3. Mốc lẻ có giới từ: "tại 36:05" · "ở 27:26" · "vào 12:31"
+  t = t.replace(new RegExp(String.raw`\s*(?:tại|ở|vào)\s+${MOC}`, 'gi'), '')
+
+  // 4. Mốc mở đầu một dòng hoặc một mệnh đề: "- 31:08 — vào bài" · "27:03 HV nói"
+  t = t.replace(new RegExp(String.raw`(^|\n)(\s*[-–•*]\s*)?${MOC}\s*(?:[–—-]\s*)?`, 'g'), '$1$2')
+
+  // 5. Mốc còn sót giữa câu
+  t = t.replace(new RegExp(String.raw`\s${MOC}(?=[\s,.;:)])`, 'g'), '')
+
+  // 6. Dọn dấu câu và khoảng trắng thừa do việc cắt để lại
+  return t
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\s+([,.;:])/g, '$1')
+    .replace(/([(,;:])\s*\)/g, ')')
+    .replace(/\(\s*\)/g, '')
+    .replace(/^[ \t]*[,;:]\s*/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n')
+    .map((d) => d.replace(/[ \t]+$/, ''))
+    .join('\n')
+    .trim()
+}

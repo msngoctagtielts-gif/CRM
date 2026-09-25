@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { locGhiChuNoiBo } from '../src/lib/bao-cao-in.ts'
+import { locGhiChuNoiBo, boMocThoiGian } from '../src/lib/bao-cao-in.ts'
 
 const [fileJson, thuMucRa] = process.argv.slice(2)
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
@@ -242,7 +242,10 @@ function tachChuDe(noiDung) {
 
 /* ------------------------------------------------- một thẻ buổi học */
 function theBuoi(r, k) {
-  const loc = (t) => locGhiChuNoiBo(t)
+  // Hai lớp lọc cho bản gửi phụ huynh:
+  //   1. bỏ đoạn ghi chú nội bộ (lương, nghi vấn giáo viên, chuyện riêng)
+  //   2. bỏ mốc thời gian video — cô Ngọc chốt 25/09: không ghi giây phút
+  const loc = (t) => boMocThoiGian(locGhiChuNoiBo(t))
   const coND = Boolean(r.lesson_content)
   const tang = laBuoiTang(r)
     ? `<span class="the the-tang">${k === 0 ? 'TẶNG TRẢI NGHIỆM' : 'MIỄN PHÍ'}</span>`
@@ -272,10 +275,9 @@ function theBuoi(r, k) {
     <div class="buoi-h"><span class="n">Buổi ${k + 1} · ${ngayVN(r.ngay)}</span>${nhanDanhGia(r)}${tang}</div>
     <p class="chu-de">${esc(chuDe)}</p>
     ${moTa ? `<div class="mo-ta">${doan(moTa)}</div>` : ''}
-    ${r.student_quote ? `<div class="tieu tieu-m">Câu học viên nói được</div><p style="font-style:italic;margin:0">${esc(r.student_quote)}</p>` : ''}
+    ${r.student_quote ? `<div class="tieu tieu-m">Câu học viên nói được</div><p style="font-style:italic;margin:0">${esc(boMocThoiGian(r.student_quote))}</p>` : ''}
     ${khoiNhanXet('Điểm mạnh', 'tieu-m', loc(r.strengths))}
     ${khoiNhanXet('Cần cải thiện', 'tieu-c', loc(r.improvements))}
-    ${dsBullet(loc(r.next_lesson_recommendation)) ? `<div class="tieu tieu-c">Định hướng buổi sau</div>${dsBullet(loc(r.next_lesson_recommendation))}` : ''}
     ${khoiBT}
     ${nutVideo(r)}
   </div>`
@@ -314,7 +316,7 @@ function baoCaoHocVien(hv, ds) {
 
   const hangBuoi = ds.map((r, k) => {
     let cd = r.lesson_content
-      ? tachChuDe(locGhiChuNoiBo(r.lesson_content)).chuDe
+      ? tachChuDe(boMocThoiGian(locGhiChuNoiBo(r.lesson_content))).chuDe
       : 'Nội dung sẽ được cập nhật'
     if (cd.length > 105) cd = cd.slice(0, 102).trimEnd() + '…'
     const hp = r.tinh_phi === false

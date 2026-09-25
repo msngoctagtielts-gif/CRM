@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { locGhiChuNoiBo, laDongNoiBo } from './bao-cao-in.ts'
+import { locGhiChuNoiBo, laDongNoiBo, boMocThoiGian as locBo } from './bao-cao-in.ts'
 
 test('không có gì để lọc thì giữ nguyên', () => {
   const t = '1. Luyện âm cuối /t/.\n2. Học 5 từ quần áo.'
@@ -92,4 +92,65 @@ test('cắt liên tiếp nhiều mục nội bộ', () => {
 
 test('toàn bộ là ghi chú nội bộ thì trả về rỗng', () => {
   assert.equal(locGhiChuNoiBo('GHI CHU CHO FOUNDER — chi tiet luong.'), '')
+})
+
+/* ---------- bỏ mốc thời gian trước khi gửi phụ huynh ---------- */
+
+test('bỏ mốc trong ngoặc', () => {
+  assert.equal(
+    locBo('"My mom doesn\'t like to go out." (25:10)'),
+    '"My mom doesn\'t like to go out."',
+  )
+})
+
+test('bỏ mốc mở đầu dòng có gạch đầu dòng', () => {
+  const t = '- 31:08 — vào bài. Cô hỏi về tính cách.\n- 42:15 — cô chốt bộ từ vựng.'
+  assert.equal(locBo(t), '- vào bài. Cô hỏi về tính cách.\n- cô chốt bộ từ vựng.')
+})
+
+test('bỏ khoảng thời gian', () => {
+  assert.equal(locBo('Đoạn 19:57–31:01 là phần nói chuyện ngoài bài.'),
+    'là phần nói chuyện ngoài bài.')
+  assert.equal(locBo('Từ 59:00 đến 01:01:26 em tự kể về gia đình.'),
+    'em tự kể về gia đình.')
+})
+
+test('bỏ mốc có giới từ đứng trước', () => {
+  assert.equal(locBo('Cô sửa lại tại 36:05 và em nhắc lại đúng.'),
+    'Cô sửa lại và em nhắc lại đúng.')
+})
+
+test('bỏ mốc mở đầu mệnh đề giữa câu', () => {
+  assert.equal(locBo('27:03 em nói "a big grain"; 27:26 cô sửa thành "heavy rain".'),
+    'em nói "a big grain"; cô sửa thành "heavy rain".')
+})
+
+test('không đụng vào số không phải mốc', () => {
+  const t = 'Em nói được 5 từ mới và giữ mạch 2,5 phút.'
+  assert.equal(locBo(t), t)
+  assert.equal(locBo('Học phí 250.000 đ mỗi buổi 60 phút.'),
+    'Học phí 250.000 đ mỗi buổi 60 phút.')
+})
+
+test('giữ nguyên nội dung tiếng Anh của học viên', () => {
+  const t = '"I am the baby of my family" và "I have an older brother".'
+  assert.equal(locBo(t), t)
+})
+
+test('rỗng và null trả về chuỗi rỗng', () => {
+  assert.equal(locBo(''), '')
+  assert.equal(locBo(null), '')
+})
+
+test('bỏ cả cụm nhiều mốc nằm trong một ngoặc', () => {
+  // Lỗi thật đã lọt vào bản in của Nhi ngày 25/09/2026: quy tắc cũ chỉ bắt
+  // ngoặc chứa MỘT mốc, nên "(17:43, 22:10, 30:05)" bị gỡ lẻ thành "(17:43,)".
+  assert.equal(
+    locBo('Các đoạn Nhi đọc to (17:43, 22:10, 30:05) đều nghe chưa rõ.'),
+    'Các đoạn Nhi đọc to đều nghe chưa rõ.',
+  )
+  assert.equal(locBo('Xem lại (05:10; 09:22) để nghe.'), 'Xem lại để nghe.')
+  assert.equal(locBo('Nghe lại (1:02:30 và 1:05:00).'), 'Nghe lại.')
+  // Không được ăn lem chữ trong ngoặc không phải mốc.
+  assert.equal(locBo('Bài này (Unit 5) khá dài.'), 'Bài này (Unit 5) khá dài.')
 })
