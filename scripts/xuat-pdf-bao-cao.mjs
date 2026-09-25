@@ -1,29 +1,33 @@
 /**
- * Sinh file PDF báo cáo học tập gửi phụ huynh.
+ * Sinh file PDF "Báo cáo học tập và học phí" gửi Quý phụ huynh.
  *
- * DÙNG KHI Founder muốn có sẵn file PDF mà không phải mở từng trang rồi
- * Ctrl+P. Trang /bao-cao/<id> trên web vẫn là đường chính thức; script này
- * dùng CÙNG bộ lọc ghi chú nội bộ và CÙNG bố cục để hai bên ra giống nhau.
+ * BỐ CỤC LẤY CHUẨN TỪ file mẫu cô Ngọc gửi ngày 25/09/2026:
+ *   MNEE_GiaDinh_Luan-Tan-MsLinh_BaoCaoHocTap_HocPhi.pdf
+ * Giữ nguyên thứ tự mục, cách đánh số 01/02/03, dải navy đầu trang, gạch vàng,
+ * thẻ từng buổi có viền trái burgundy, hộp bài tập viền đứt màu vàng, và nút
+ * video màu navy.
  *
- * CHẠY:  node --experimental-strip-types scripts/xuat-pdf-bao-cao.mjs <file-json> <thu-muc-ra>
+ * CHẠY:
+ *   node --experimental-strip-types scripts/xuat-pdf-bao-cao.mjs <file-json> <thư-mục-ra>
  *
- * Dựng PDF bằng Chromium sẵn có trong máy (--print-to-pdf) thay vì thư viện
- * sinh PDF: xem lý do ở phần BẢN IN trong src/app/globals.css.
+ * Dựng PDF bằng Chromium sẵn có (--print-to-pdf) thay vì thư viện sinh PDF:
+ * xem lý do ở phần BẢN IN trong src/app/globals.css.
  */
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { join, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { locGhiChuNoiBo } from '../src/lib/bao-cao-in.ts'
 
 const [fileJson, thuMucRa] = process.argv.slice(2)
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
 
-/* ---------- đọc dữ liệu ---------- */
+/* ---------------------------------------------------------------- dữ liệu */
 const vanBan = JSON.parse(readFileSync(fileJson, 'utf8')).result
-const i = vanBan.indexOf('[{"du_lieu"')
-const rows = JSON.parse(vanBan.slice(i, vanBan.lastIndexOf('}]') + 2))[0].du_lieu
+const rows = JSON.parse(
+  vanBan.slice(vanBan.indexOf('[{"du_lieu"'), vanBan.lastIndexOf('}]') + 2),
+)[0].du_lieu
 
-/* ---------- tiện ích ---------- */
+/* ------------------------------------------------------------- tiện ích */
 const esc = (s) =>
   String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -31,10 +35,8 @@ const ngayVN = (d) => {
   const [y, m, dd] = String(d).slice(0, 10).split('-')
   return `${dd}/${m}/${y}`
 }
-const gioVN = (iso) =>
-  new Date(iso).toLocaleTimeString('vi-VN', {
-    hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh',
-  })
+const tien = (n) =>
+  Number(n ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' đ'
 
 const mocGiay = (moc) => {
   if (!/^\d{1,2}(:\d{2}){1,2}$/.test(String(moc ?? '').trim())) return null
@@ -48,7 +50,35 @@ const linkVideo = (url, moc) => {
   return s ? `https://youtu.be/${m[1]}?t=${s}` : `https://youtu.be/${m[1]}`
 }
 
-/** Văn bản nhiều dòng -> các thẻ <p>, giữ xuống dòng trong một đoạn. */
+/**
+ * Tách văn bản thành các gạch đầu dòng.
+ *
+ * Hai định dạng cùng tồn tại trong hệ thống:
+ *   - Mục đánh số "1." / "2." — kiểu trợ lý viết khi đọc transcript.
+ *   - Một dòng dài, các ý ngăn bằng " · " — kiểu cô Phương nhập từ sheet.
+ * Không tách kiểu thứ hai thì cả đoạn dồn vào một gạch đầu dòng khổng lồ,
+ * đọc trên giấy rất nặng.
+ */
+function thanhBullet(t) {
+  const s = String(t ?? '').trim()
+  if (s === '') return []
+  const theoDong = s
+    .split(/\n(?=\s*(?:\d+[.)]|[-•*])\s)/)
+    .map((d) => d.replace(/^\s*(?:\d+[.)]|[-•*])\s*/, '').trim())
+    .filter(Boolean)
+  if (theoDong.length > 1) return theoDong
+
+  // Chỉ một khối: nếu dài và có dấu chấm giữa thì tách theo dấu đó
+  const mot = theoDong[0] ?? s
+  if (mot.length > 160 && mot.includes(' · ')) {
+    return mot.split(' · ').map((x) => x.trim()).filter(Boolean)
+  }
+  return [mot]
+}
+const dsBullet = (t) => {
+  const b = thanhBullet(t)
+  return b.length === 0 ? '' : `<ul>${b.map((x) => `<li>${esc(x).replace(/\n/g, '<br>')}</li>`).join('')}</ul>`
+}
 const doan = (t) =>
   String(t ?? '')
     .split(/\n{2,}/)
@@ -57,217 +87,318 @@ const doan = (t) =>
     .map((d) => `<p>${esc(d).replace(/\n/g, '<br>')}</p>`)
     .join('')
 
-let stt = 0
-const muc = (tieuDe, noiDung) =>
-  !noiDung || noiDung.trim() === ''
-    ? ''
-    : `<section class="muc"><h2><span class="so">${++stt}</span>${esc(tieuDe)}</h2><div class="than">${noiDung}</div></section>`
-
-/* ---------- CSS: bám đúng bảng màu navy–gold của hệ thống ---------- */
-const CSS = `
-@page { size: A4; margin: 14mm 15mm 16mm 15mm; }
-* { box-sizing: border-box; }
-body { margin:0; font-family:'Noto Sans','DejaVu Sans',Arial,sans-serif;
-       color:#0f2040; font-size:10.5pt; line-height:1.55; }
-.dau { border-bottom:2px solid #c8a24a; padding-bottom:10px;
-       display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
-.ten-tt { font-size:13pt; font-weight:700; letter-spacing:-0.01em; }
-.cham-ngon { font-size:9pt; font-style:italic; color:#456490; margin-top:2px; }
-.nhan { font-size:7.5pt; font-weight:700; letter-spacing:.07em;
-        text-transform:uppercase; color:#6885ad; }
-.ngay-bc { font-size:10pt; font-weight:600; color:#1d3559; margin-top:3px; }
-dl { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; margin:16px 0 0; }
-dd { margin:2px 0 0; font-size:10pt; }
-dd.dam { font-weight:700; }
-.trich { border-left:3px solid #c8a24a; background:#fdfaf1;
-         padding:11px 15px; margin:18px 0; page-break-inside:avoid; }
-.trich p { font-style:italic; margin:5px 0 0; font-size:10.5pt; }
-.muc { margin:0 0 18px; page-break-inside:avoid; }
-.muc h2 { font-size:11pt; font-weight:700; margin:0 0 8px; padding-bottom:5px;
-          border-bottom:1px solid #e2e9f2; display:flex; align-items:center; gap:7px; }
-.so { display:inline-flex; width:17px; height:17px; border-radius:50%;
-      background:#13294b; color:#fff; font-size:8pt; font-weight:700;
-      align-items:center; justify-content:center; flex:0 0 auto; }
-.than p { margin:0 0 8px; }
-.than p:last-child { margin-bottom:0; }
-.bt-ten { font-weight:700; margin:0 0 7px; }
-.mau-cau { border:1px solid #e2e9f2; background:#f2f5f9; border-radius:5px;
-           padding:10px 13px; margin-top:11px; }
-.mau-cau pre { margin:5px 0 0; font-family:'DejaVu Sans Mono',monospace;
-               font-size:9pt; line-height:1.5; white-space:pre-wrap; }
-.han { margin-top:9px; font-size:9.5pt; color:#2f4a72; }
-.vid a { color:#1d3559; font-weight:600; text-decoration:underline;
-         text-decoration-color:#c8a24a; word-break:break-all; }
-.vid .dc { font-size:8.5pt; color:#456490; }
-.chan { border-top:1px solid #e2e9f2; margin-top:26px; padding-top:10px;
-        font-size:8.5pt; color:#456490; }
-.chan p { margin:0 0 2px; }
-
-.tong-quan h1 { font-size:15pt; margin:22px 0 4px; }
-.tong-quan .phu { color:#456490; font-size:10pt; margin:0 0 18px; }
-table.ls { width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:6px; }
-table.ls th { text-align:left; font-size:7.5pt; letter-spacing:.06em;
-              text-transform:uppercase; color:#6885ad; font-weight:700;
-              border-bottom:1px solid #c4d2e4; padding:0 6px 5px 0; }
-table.ls td { padding:5px 6px 5px 0; border-bottom:1px solid #eef2f7;
-              vertical-align:top; }
-.tang { display:inline-block; background:#f9f1da; color:#856630; font-size:8pt;
-        font-weight:700; padding:1px 6px; border-radius:3px; white-space:nowrap; }
-.chua { color:#97651a; font-size:9pt; font-style:italic; }
-.hop-tang { border:1px solid #f1e0b2; background:#fdfaf1; border-radius:5px;
-            padding:11px 14px; margin:14px 0 0; }
-.hop-tang p { margin:4px 0 0; font-size:9.5pt; }
-.bang-so { display:flex; gap:28px; margin:14px 0 0; }
-.bang-so div { }
-.bang-so .n { font-size:17pt; font-weight:700; color:#13294b; line-height:1.1; }
-`
-
-/* ---------- dựng một trang báo cáo ---------- */
-function trang(r) {
-  stt = 0
-  const loc = (t) => locGhiChuNoiBo(t)
-  const nhanTang = laBuoiTang(r)
-    ? `<p style="margin:14px 0 0"><span class="tang">BUỔI HỌC ĐƯỢC TẶNG — KHÔNG TÍNH HỌC PHÍ</span></p>`
-    : ''
-  const bt = r.bai_tap
-  const vids = r.video ?? []
-
-  const khoiBaiTap = !bt
-    ? ''
-    : `<p class="bt-ten">${esc(bt.title)}</p>${doan(loc(bt.description))}` +
-      (bt.sentence_patterns
-        ? `<div class="mau-cau"><div class="nhan">Mẫu câu và từ vựng</div><pre>${esc(bt.sentence_patterns)}</pre></div>`
-        : '') +
-      (bt.due_date ? `<p class="han"><span class="nhan">Hạn nộp</span> ${ngayVN(bt.due_date)}</p>` : '')
-
-  const khoiVideo = vids.length === 0 ? '' :
-    `<p>${r.video_timestamp
-      ? `Bấm vào link dưới đây để xem lại buổi học. Link mở đúng phút ${esc(r.video_timestamp)} — khoảnh khắc được nhắc trong báo cáo.`
-      : 'Bấm vào link dưới đây để xem lại toàn bộ buổi học.'}</p>` +
-    `<div class="vid">${vids.map((u, k) => {
-      const href = linkVideo(u, k === 0 ? r.video_timestamp : null)
-      const ten = vids.length > 1 ? `Video phần ${k + 1}` : 'Video buổi học'
-      return `<p><a href="${esc(href)}">${ten}</a> <span class="dc">${esc(href)}</span></p>`
-    }).join('')}</div>`
-
-  return `<div class="bao-cao">
-  <header class="dau">
-    <div><div class="ten-tt">Ms.Ngọc Elite English</div>
-         <div class="cham-ngon">Thấu hiểu để dẫn lối.</div></div>
-    <div style="text-align:right">
-      <div class="nhan">Báo cáo học tập</div>
-      <div class="ngay-bc">${ngayVN(r.ngay)}</div></div>
-  </header>
-  <dl>
-    <div><div class="nhan">Học viên</div><dd class="dam">${esc(r.hv ?? '—')}</dd></div>
-    <div><div class="nhan">Giáo viên</div><dd>${esc(r.gv ?? 'Chưa phân công')}</dd></div>
-    <div><div class="nhan">Lớp</div><dd>${esc(r.ten_lop ?? r.class_code)}</dd></div>
-    <div><div class="nhan">Thời lượng</div><dd>${gioVN(r.bat_dau)}–${gioVN(r.ket_thuc)} · ${r.phut} phút</dd></div>
-  </dl>
-  ${nhanTang}
-  ${r.lesson_content ? muc('Nội dung buổi học', doan(loc(r.lesson_content)))
-    : `<section class="muc"><h2><span class="so">—</span>Buổi học này chưa có báo cáo</h2>
-       <div class="than"><p>Buổi học đã diễn ra và đã được ghi nhận trong hệ thống, nhưng giáo viên chưa nộp báo cáo chi tiết. Trung tâm đang thu lại.</p></div></section>`}
-  ${r.student_quote ? `<div class="trich"><div class="nhan">Câu học viên nói được trong buổi</div><p>${esc(r.student_quote)}</p></div>` : ''}
-  ${muc('Điểm mạnh', doan(loc(r.strengths)))}
-  ${muc('Cần cải thiện', doan(loc(r.improvements)))}
-  ${muc('Nhận xét của giáo viên', doan(loc(r.teacher_comments)))}
-  ${muc('Bài tập về nhà', khoiBaiTap)}
-  ${muc('Định hướng buổi sau', doan(loc(r.next_lesson_recommendation)))}
-  ${muc('Xem lại buổi học', khoiVideo)}
-  <footer class="chan">
-    <p>Ms.Ngọc Elite English · &ldquo;Thấu hiểu để dẫn lối.&rdquo; · Lập từ hệ thống MNEE ngày ${ngayVN(new Date().toISOString())}</p>
-    <p>Mọi nhận xét trong báo cáo này đều dẫn về một mốc thời gian cụ thể trong video buổi học.</p>
-  </footer>
-</div>`
+/* Nhãn mức tiếp thu và thái độ — chỉ hiện khi hệ thống thật sự có dữ liệu */
+const SAO = { excellent: '★★★★★', good: '★★★★', average: '★★★', poor: '★★' }
+const CHU_TIEP_THU = { excellent: 'Xuất sắc', good: 'Tốt', average: 'Khá', poor: 'Cần cố gắng' }
+const CHU_THAI_DO = {
+  excellent: 'Rất tích cực', good: 'Tích cực', average: 'Hợp tác', poor: 'Cần nhắc nhở',
+}
+const nhanDanhGia = (r) => {
+  const a = r.muc_tiep_thu ? `<span class="the the-sao">${SAO[r.muc_tiep_thu] ?? ''} ${esc(CHU_TIEP_THU[r.muc_tiep_thu] ?? r.muc_tiep_thu)}</span>` : ''
+  const b = r.thai_do ? `<span class="the the-td">${esc(CHU_THAI_DO[r.thai_do] ?? r.thai_do)}</span>` : ''
+  return a + b
 }
 
-/* ---------- trang tổng quan: toàn bộ lịch sử học ---------- */
 const laBuoiTang = (r) => r.tinh_phi === false
 
-function trangTongQuan(hv, ds, ghiChuHV) {
-  const tong = ds.length
-  const soTang = ds.filter(laBuoiTang).length
-  const coBaoCao = ds.filter((r) => r.lesson_content).length
-  const lop = ds[0]?.ten_lop ?? ''
-  const gv = [...new Set(ds.map((r) => r.gv).filter(Boolean))].join(', ')
+/** PRE_A1 -> Pre-A1, A2_PLUS -> A2+ — mã trong CSDL không hợp để in cho phụ huynh. */
+const chuTrinhDo = (ma) =>
+  !ma ? null : String(ma).replace(/_PLUS$/, '+').replace(/^PRE_/, 'Pre-').replace(/_/g, ' ')
 
-  const hang = ds.map((r, k) => {
-    const tang = laBuoiTang(r)
-      ? `<span class="tang">${k === 0 ? 'TẶNG TRẢI NGHIỆM' : 'MIỄN PHÍ'}</span>`
-      : ''
-    const bc = r.lesson_content
-      ? 'Có báo cáo'
-      : '<span class="chua">Chưa có báo cáo</span>'
-    return `<tr><td>${k + 1}</td><td>${ngayVN(r.ngay)}</td><td>${esc(r.gv ?? '—')}</td>
-            <td>${r.phut} phút</td><td>${bc}</td><td>${tang}</td></tr>`
-  }).join('')
+/* ------------------------------------------------------------------- CSS */
+const CSS = `
+@page { size: A4; margin: 13mm 14mm 15mm 14mm; }
+* { box-sizing: border-box; }
+body { margin:0; font-family:'DejaVu Sans',sans-serif; font-size:9.5pt;
+       line-height:1.55; color:#1d3559; }
+h1,h2,h3,.serif { font-family:'Liberation Serif','DejaVu Serif',serif; }
 
-  // Ghi chú quà tặng lấy từ hồ sơ học viên, chỉ phần dành cho phụ huynh đọc
-  const gt = String(ghiChuHV ?? '')
-    .split(/\n{2,}/)
-    .find((d) => d.trim().startsWith('QUÀ TẶNG'))
-  const hopTang = gt
-    ? `<div class="hop-tang"><div class="nhan">Ghi chú quà tặng</div><p>${esc(
-        gt.replace(/^QUÀ TẶNG:\s*/, '').split('Hai buổi này chưa')[0].trim(),
-      )}</p></div>`
-    : ''
+/* dải đầu trang */
+.bar { background:#13294b; border-top:3px solid #c8a24a; color:#fff;
+       padding:13px 18px; display:flex; justify-content:space-between;
+       align-items:center; margin-bottom:20px; }
+.bar .ten { font-family:'Liberation Serif',serif; font-size:14pt;
+            letter-spacing:.06em; }
+.bar .cn { font-size:8.5pt; font-style:italic; color:#e5c87f; }
 
-  return `<div class="tong-quan">
-  <header class="dau">
-    <div><div class="ten-tt">Ms.Ngọc Elite English</div>
-         <div class="cham-ngon">Thấu hiểu để dẫn lối.</div></div>
-    <div style="text-align:right"><div class="nhan">Hồ sơ học tập</div>
-         <div class="ngay-bc">${ngayVN(new Date().toISOString())}</div></div>
-  </header>
-  <h1>${esc(hv)}</h1>
-  <p class="phu">${esc(lop)} · Giáo viên: ${esc(gv || '—')}</p>
-  <div class="bang-so">
-    <div><div class="n">${tong}</div><div class="nhan">Buổi đã học</div></div>
-    <div><div class="n">${soTang}</div><div class="nhan">Buổi được tặng</div></div>
-    <div><div class="n">${coBaoCao}</div><div class="nhan">Buổi có báo cáo</div></div>
-    <div><div class="n">${ngayVN(ds[0].ngay)}</div><div class="nhan">Buổi đầu tiên</div></div>
-  </div>
-  ${hopTang}
-  <table class="ls"><thead><tr>
-    <th>#</th><th>Ngày học</th><th>Giáo viên</th><th>Thời lượng</th>
-    <th>Báo cáo</th><th>Học phí</th></tr></thead><tbody>${hang}</tbody></table>
-  <footer class="chan">
-    <p>Ms.Ngọc Elite English · &ldquo;Thấu hiểu để dẫn lối.&rdquo; · Hồ sơ lập ngày ${ngayVN(new Date().toISOString())}</p>
-  </footer>
-</div>`
+.eyebrow { text-align:center; font-size:7.5pt; font-weight:700;
+           letter-spacing:.18em; color:#7b2d3b; margin:0 0 8px; }
+h1 { text-align:center; font-size:22pt; color:#13294b; margin:0; line-height:1.2; }
+.sub { text-align:center; font-size:9.5pt; color:#456490; margin:6px 0 0; }
+.rule-gold { width:70px; height:2px; background:#c8a24a; margin:13px auto 20px; }
+
+/* lưới thông tin 2x2 */
+.luoi { display:grid; grid-template-columns:1fr 1fr; border:1px solid #c4d2e4;
+        margin-bottom:22px; }
+.luoi > div { padding:9px 14px; border-right:1px solid #c4d2e4;
+              border-bottom:1px solid #c4d2e4; }
+.luoi > div:nth-child(2n) { border-right:none; }
+.luoi > div:nth-last-child(-n+2) { border-bottom:none; }
+.nhan { font-size:6.8pt; font-weight:700; letter-spacing:.12em;
+        text-transform:uppercase; color:#6885ad; }
+.gt { font-family:'Liberation Serif',serif; font-size:11pt; color:#13294b;
+      margin-top:2px; }
+
+/* tiêu đề mục 01 / 02 / 03 */
+.muc-h { display:flex; align-items:baseline; gap:8px; margin:24px 0 9px;
+         padding-bottom:6px; border-bottom:1.5px solid #c8a24a; }
+.muc-h .so { font-family:'Liberation Serif',serif; font-size:10pt;
+             font-weight:700; color:#c8a24a; }
+.muc-h .tt { font-family:'Liberation Serif',serif; font-size:13pt;
+             font-weight:700; color:#13294b; }
+
+/* bảng */
+table { width:100%; border-collapse:collapse; font-size:9pt; }
+thead th { background:#13294b; color:#fff; text-align:left; font-weight:700;
+           font-size:8pt; padding:7px 10px; }
+thead th.p { text-align:right; }
+tbody td { padding:6px 10px; border-bottom:1px solid #eef2f7; vertical-align:top; }
+tbody td.p { text-align:right; white-space:nowrap; }
+tbody tr:nth-child(even) td { background:#f8fafc; }
+tr.tong td { background:#f2f5f9 !important; font-weight:700; color:#13294b;
+             font-size:9.5pt; border-top:2px solid #c4d2e4; border-bottom:none; }
+.bang-hp .dau-bang { background:#13294b; color:#fff; padding:9px 14px;
+                     font-family:'Liberation Serif',serif; font-size:11pt; }
+.bang-hp table tbody td { border-bottom:1px solid #eef2f7; }
+.bang-hp { border:1px solid #c4d2e4; }
+
+/* hộp ghi chú viền vàng bên trái */
+.note { border-left:3px solid #c8a24a; background:#f9fafb; padding:9px 14px;
+        margin:12px 0 0; font-size:8.5pt; color:#2f4a72; }
+
+/* thẻ từng buổi */
+.buoi { border:1px solid #e2e9f2; border-left:3px solid #7b2d3b;
+        padding:13px 16px; margin:13px 0 0; page-break-inside:avoid; }
+.buoi-h { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.buoi-h .n { font-family:'Liberation Serif',serif; font-size:13pt; color:#13294b; }
+.the { font-size:7.5pt; font-weight:700; padding:2px 8px; border-radius:11px;
+       white-space:nowrap; }
+.the-sao { background:#fdfaf1; color:#856630; border:1px solid #f1e0b2; }
+.the-td  { background:#f2f8f4; color:#315a40; border:1px solid #cfe6d8; }
+.the-tang{ background:#f9f1da; color:#7b2d3b; border:1px solid #e5c87f; }
+.chu-de { color:#7b2d3b; font-weight:700; font-size:8.8pt; margin:7px 0 5px; }
+.mo-ta { color:#5b7290; font-size:8.6pt; margin:0 0 9px; }
+.mo-ta p { margin:0 0 5px; }
+.tieu { font-size:7.2pt; font-weight:700; letter-spacing:.11em;
+        text-transform:uppercase; margin:10px 0 4px; }
+.tieu-m { color:#a9853a; }
+.tieu-c { color:#a82e49; }
+ul { margin:0; padding-left:17px; }
+li { margin:0 0 4px; }
+.bt { border:1px dashed #d7b058; background:#fdfbf5; padding:9px 13px;
+      margin:11px 0 0; font-size:8.6pt; }
+.bt b { color:#7b2d3b; }
+.bt pre { font-family:'DejaVu Sans Mono',monospace; font-size:7.8pt;
+          white-space:pre-wrap; margin:6px 0 0; color:#2f4a72; }
+.vid { margin:11px 0 0; display:flex; align-items:center; gap:9px;
+       flex-wrap:wrap; font-size:8.6pt; color:#456490; }
+.vid .nut { background:#13294b; color:#fff !important; text-decoration:none;
+            font-weight:700; font-size:8.2pt; padding:5px 12px;
+            display:inline-block; }
+.vid .dc { font-size:7.4pt; color:#8aa0bd; word-break:break-all; }
+.trong { color:#8aa0bd; font-style:italic; font-size:8.8pt; margin:6px 0 0; }
+.nguyen-van { border-left:2px solid #e2e9f2; padding:2px 0 2px 11px; margin:7px 0 0 3px;
+              font-size:8.1pt; color:#7d8fa8; font-style:italic; }
+
+.chan { border-top:1px solid #c4d2e4; margin-top:26px; padding-top:10px;
+        font-size:8pt; color:#5b7290; }
+.chan p { margin:0 0 3px; }
+.ngat { page-break-before:always; }
+`
+
+/**
+ * Tách khối nguyên văn tiếng Anh của giáo viên ra khỏi phần nhận xét.
+ *
+ * Các báo cáo tháng 8 của cô Sheba được dịch sang tiếng Việt và giữ nguyên bản
+ * gốc ở cuối, mở đầu bằng "— Nguyên văn". Nếu để nguyên trong danh sách gạch
+ * đầu dòng thì cả đoạn tiếng Anh bị nhét vào một dấu chấm, đọc rất rối.
+ */
+function tachNguyenVan(t) {
+  const s = String(t ?? '')
+  const i = s.search(/\n\s*—\s*Nguyên văn/)
+  if (i === -1) return { viet: s, goc: '' }
+  return { viet: s.slice(0, i).trim(), goc: s.slice(i).replace(/^\s*—\s*/, '').trim() }
 }
 
-/* ---------- gom theo học viên, mỗi em một file ---------- */
+/** Cắt câu đầu làm chủ đề; phần còn lại là mô tả diễn biến. */
+function tachChuDe(noiDung) {
+  const t = String(noiDung ?? '').trim()
+  const dongDau = t.split('\n')[0].trim()
+  const conLai = t.split('\n').slice(1).join('\n').trim()
+
+  const bo = (x) => x.replace(/^(Chủ đề|Chu de)\s*:\s*/i, '')
+  if (dongDau.length <= 200) return { chuDe: bo(dongDau), moTa: conLai }
+
+  // Dòng đầu quá dài: cắt ở dấu chấm câu, nếu không có thì ở khoảng trắng —
+  // KHÔNG cắt giữa từ, vì phần đuôi rơi xuống mô tả trông như lỗi đánh máy.
+  const cat = dongDau.slice(0, 200)
+  const dauCau = Math.max(cat.lastIndexOf('. '), cat.lastIndexOf('; '), cat.lastIndexOf(' – '))
+  const diem = dauCau > 60 ? dauCau + 1 : Math.max(cat.lastIndexOf(' '), 60)
+  return {
+    chuDe: bo(dongDau.slice(0, diem).trim().replace(/[.;,]$/, '')),
+    moTa: [dongDau.slice(diem).trim(), conLai].filter(Boolean).join('\n\n'),
+  }
+}
+
+/* ------------------------------------------------- một thẻ buổi học */
+function theBuoi(r, k) {
+  const loc = (t) => locGhiChuNoiBo(t)
+  const coND = Boolean(r.lesson_content)
+  const tang = laBuoiTang(r)
+    ? `<span class="the the-tang">${k === 0 ? 'TẶNG TRẢI NGHIỆM' : 'MIỄN PHÍ'}</span>`
+    : ''
+
+  if (!coND) {
+    return `<div class="buoi">
+      <div class="buoi-h"><span class="n">Buổi ${k + 1} · ${ngayVN(r.ngay)}</span>${tang}</div>
+      <p class="trong">Nhận xét chi tiết của buổi này trung tâm sẽ gửi bổ sung.</p>
+      ${(r.video ?? []).length === 0 ? '<p class="trong">Buổi này chưa có video lưu lại.</p>' : nutVideo(r)}
+    </div>`
+  }
+
+  // Chủ đề là CÂU đầu tiên, không phải cả dòng đầu — nhiều báo cáo nhập từ
+  // sheet có dòng đầu dài cả đoạn, để nguyên thì dòng chủ đề màu đỏ chiếm
+  // bốn dòng và mất tác dụng dẫn mắt.
+  const { chuDe, moTa } = tachChuDe(loc(r.lesson_content))
+
+  const bt = r.bai_tap
+  const khoiBT = !bt ? '' : `<div class="bt"><b>Bài tập về nhà:</b> ${esc(bt.title)}${
+    bt.description ? ' — ' + esc(loc(bt.description).replace(/\n+/g, ' ').slice(0, 900)) : ''
+  }${bt.due_date ? ` <i>(hạn ${ngayVN(bt.due_date)})</i>` : ''}${
+    bt.sentence_patterns ? `<pre>${esc(bt.sentence_patterns)}</pre>` : ''
+  }</div>`
+
+  return `<div class="buoi">
+    <div class="buoi-h"><span class="n">Buổi ${k + 1} · ${ngayVN(r.ngay)}</span>${nhanDanhGia(r)}${tang}</div>
+    <p class="chu-de">${esc(chuDe)}</p>
+    ${moTa ? `<div class="mo-ta">${doan(moTa)}</div>` : ''}
+    ${r.student_quote ? `<div class="tieu tieu-m">Câu học viên nói được</div><p style="font-style:italic;margin:0">${esc(r.student_quote)}</p>` : ''}
+    ${khoiNhanXet('Điểm mạnh', 'tieu-m', loc(r.strengths))}
+    ${khoiNhanXet('Cần cải thiện', 'tieu-c', loc(r.improvements))}
+    ${dsBullet(loc(r.next_lesson_recommendation)) ? `<div class="tieu tieu-c">Định hướng buổi sau</div>${dsBullet(loc(r.next_lesson_recommendation))}` : ''}
+    ${khoiBT}
+    ${nutVideo(r)}
+  </div>`
+}
+
+/** Một khối nhận xét: tiêu đề + gạch đầu dòng + (nếu có) nguyên văn của giáo viên. */
+function khoiNhanXet(tieuDe, lop, text) {
+  const { viet, goc } = tachNguyenVan(text)
+  const bullets = dsBullet(viet)
+  if (!bullets && !goc) return ''
+  return `<div class="tieu ${lop}">${tieuDe}</div>${bullets}` +
+    (goc ? `<div class="nguyen-van">${esc(goc).replace(/\n/g, '<br>')}</div>` : '')
+}
+
+function nutVideo(r) {
+  const vids = r.video ?? []
+  if (vids.length === 0) return ''
+  const nut = vids.map((u, i) => {
+    const href = linkVideo(u, i === 0 ? r.video_timestamp : null)
+    const ten = vids.length > 1 ? `▶ Phần ${i + 1}` : '▶ Xem lại buổi học'
+    return `<a class="nut" href="${esc(href)}">${ten}</a><span class="dc">${esc(href)}</span>`
+  }).join(' ')
+  return `<div class="vid"><span>Video buổi học</span>${nut}</div>`
+}
+
+/* --------------------------------------------- toàn bộ báo cáo một học viên */
+function baoCaoHocVien(hv, ds) {
+  const d0 = ds[0]
+  const tinhPhi = ds.filter((r) => r.tinh_phi !== false)
+  const donGia = Number(d0.don_gia ?? 0)
+  const tongTien = tinhPhi.length * donGia
+  const soTang = ds.length - tinhPhi.length
+  const gv = [...new Set(ds.map((r) => r.gv).filter(Boolean))].join(', ')
+  const tuNgay = ngayVN(ds[0].ngay)
+  const denNgay = ngayVN(ds[ds.length - 1].ngay)
+
+  const hangBuoi = ds.map((r, k) => {
+    let cd = r.lesson_content
+      ? tachChuDe(locGhiChuNoiBo(r.lesson_content)).chuDe
+      : 'Nội dung sẽ được cập nhật'
+    if (cd.length > 105) cd = cd.slice(0, 102).trimEnd() + '…'
+    const hp = r.tinh_phi === false
+      ? `<span style="color:#a9853a;font-weight:700">Được tặng</span>`
+      : tien(donGia)
+    return `<tr><td class="p">${k + 1}</td><td>${ngayVN(r.ngay)}</td>
+            <td>${esc(cd)}</td><td class="p">${hp}</td></tr>`
+  }).join('')
+
+  const gt = String(d0.ghi_chu_hv ?? '')
+    .split(/\n{2,}/)
+    .find((x) => x.trim().startsWith('QUÀ TẶNG'))
+  const hopTang = gt
+    ? `<div class="note"><b>Quà tặng của trung tâm:</b> ${esc(
+        gt.replace(/^QUÀ TẶNG:\s*/, '').split('Hai buổi này chưa')[0].trim(),
+      )}</div>`
+    : ''
+
+  return `
+<div class="bar"><span class="ten">MS.NGỌC ELITE ENGLISH</span>
+     <span class="cn">"Thấu hiểu để dẫn lối"</span></div>
+
+<p class="eyebrow">BÁO CÁO HỌC TẬP VÀ HỌC PHÍ · ${tuNgay} – ${denNgay}</p>
+<h1>${esc(hv)}</h1>
+<p class="sub">${esc(d0.ten_lop ?? d0.class_code)}${d0.trinh_do ? ' · ' + esc(chuTrinhDo(d0.trinh_do)) : ''}</p>
+<div class="rule-gold"></div>
+
+<div class="luoi">
+  <div><div class="nhan">Giáo viên phụ trách</div><div class="gt">${esc(gv || '—')}</div></div>
+  <div><div class="nhan">Trình độ</div><div class="gt">${esc(chuTrinhDo(d0.trinh_do) ?? 'Đang đánh giá')}</div></div>
+  <div><div class="nhan">Kỳ báo cáo</div><div class="gt">${tuNgay} – ${denNgay}</div></div>
+  <div><div class="nhan">Số buổi đã học</div><div class="gt">${ds.length} buổi${soTang ? ` · ${soTang} buổi được tặng` : ''}</div></div>
+</div>
+
+<div class="muc-h"><span class="so">01</span><span class="tt">Học phí kỳ này</span></div>
+<div class="bang-hp">
+  <div class="dau-bang">Bảng tính học phí</div>
+  <table><tbody>
+    <tr><td>Học phí mỗi buổi ${d0.phut} phút</td><td class="p">${tien(donGia)}</td></tr>
+    <tr><td>Số buổi có tính phí</td><td class="p">${tinhPhi.length} buổi</td></tr>
+    ${soTang ? `<tr><td>Số buổi được trung tâm tặng</td><td class="p" style="color:#a9853a;font-weight:700">${soTang} buổi · 0 đ</td></tr>` : ''}
+    <tr class="tong"><td>TỔNG HỌC PHÍ KỲ NÀY</td><td class="p">${tien(tongTien)}</td></tr>
+  </tbody></table>
+</div>
+<div class="note">Học phí chỉ tính trên số buổi thực học; buổi nghỉ hoặc hoãn lịch không tính phí. Buổi đầu tiên của khoá là buổi trung tâm tặng trải nghiệm, không tính phí.</div>
+${hopTang}
+
+<div class="muc-h"><span class="so">02</span><span class="tt">Danh sách buổi học</span></div>
+<table><thead><tr><th class="p" style="width:36px">Buổi</th><th style="width:80px">Ngày học</th>
+  <th>Nội dung</th><th class="p" style="width:86px">Học phí</th></tr></thead>
+  <tbody>${hangBuoi}
+    <tr class="tong"><td class="p">${ds.length}</td><td colspan="2">Tổng cộng</td>
+        <td class="p">${tien(tongTien)}</td></tr></tbody></table>
+
+<div class="muc-h"><span class="so">03</span><span class="tt">Nhận xét chi tiết từng buổi</span></div>
+${ds.map(theBuoi).join('')}
+
+<footer class="chan">
+  <p>Ms.Ngọc Elite English · "Thấu hiểu để dẫn lối" · Báo cáo lập ngày ${ngayVN(new Date().toISOString())}.</p>
+  <p>Mọi thắc mắc về nội dung học hoặc học phí, kính mời Quý phụ huynh và học viên liên hệ trực tiếp với trung tâm.</p>
+</footer>`
+}
+
+/* ------------------------------------------------------------- xuất file */
 mkdirSync(thuMucRa, { recursive: true })
 const theoHV = new Map()
 for (const r of rows) {
-  const k = r.hv ?? 'Khong ro'
-  if (!theoHV.has(k)) theoHV.set(k, [])
-  theoHV.get(k).push(r)
+  if (!theoHV.has(r.hv)) theoHV.set(r.hv, [])
+  theoHV.get(r.hv).push(r)
 }
-
 const khongDau = (s) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[^A-Za-z0-9]+/g, '_')
 
-const daTao = []
 for (const [hv, ds] of theoHV) {
   ds.sort((a, b) => String(a.ngay).localeCompare(String(b.ngay)))
-  const than = [trangTongQuan(hv, ds, ds[0].ghi_chu_hv), ...ds.map(trang)]
-    .join('<div style="page-break-before:always"></div>')
   const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
-<title>Bao cao hoc tap — ${esc(hv)}</title><style>${CSS}</style></head><body>${than}</body></html>`
+<title>Báo cáo học tập — ${esc(hv)}</title><style>${CSS}</style></head>
+<body>${baoCaoHocVien(hv, ds)}</body></html>`
 
-  // Chromium cần đường dẫn tuyệt đối cho file:// — đường dẫn tương đối cho ERR_INVALID_URL
   const tam = resolve(thuMucRa, `.${khongDau(hv)}.html`)
-  const ra = resolve(thuMucRa, `Bao_cao_hoc_tap_${khongDau(hv)}_Toan_bo_qua_trinh_hoc.pdf`)
+  const ra = resolve(thuMucRa, `MNEE_BaoCaoHocTap_HocPhi_${khongDau(hv)}.pdf`)
   writeFileSync(tam, html, 'utf8')
-  execFileSync(CHROME, [
-    '--headless', '--disable-gpu', '--no-sandbox', '--no-pdf-header-footer',
-    `--print-to-pdf=${ra}`, `file://${tam}`,
-  ], { stdio: 'pipe' })
+  execFileSync(CHROME, ['--headless', '--disable-gpu', '--no-sandbox',
+    '--no-pdf-header-footer', `--print-to-pdf=${ra}`, `file://${tam}`], { stdio: 'pipe' })
   rmSync(tam)
-  daTao.push({ hv, soBuoi: ds.length, ra })
+  console.log(`${ds.length} buổi · ${hv}  ->  ${ra}`)
 }
-
-for (const t of daTao) console.log(`${t.soBuoi} buoi · ${t.hv}  ->  ${t.ra}`)
