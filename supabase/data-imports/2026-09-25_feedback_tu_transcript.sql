@@ -23,9 +23,48 @@
 --   4. Y Khoa 22/09   report be3c3d94  video ifvA9hz4LGw
 --   5. Diệp 23/09     report 1827ca67  video cGAAxLfMEt0
 --   6. Thảo 23/09     report 6123ff7b  video 2Oj-OQxtSVQ
+--   7. Thảo 21/09     report 49d24252  video 8DSzjl2gFuI
 --
--- CÒN LẠI 6 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
---   Duy 21/09 · Thảo 21/09
+-- CÒN LẠI 5 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
+--   Duy 21/09
+--
+-- =====================================================================
+-- PHÁT HIỆN ĐỢT 3 — buổi Thảo 21/09. ĐÂY LÀ PHÁT HIỆN NẶNG NHẤT.
+-- =====================================================================
+--
+-- (15) "TEACHER SHANE" DẠY BUỔI THỨ HAI — VÀ VẪN KHÔNG CÓ TRONG HỆ THỐNG.
+--      25:22 "My name is Teacher Shane. I am 35 years old. And I work
+--      as a teacher in the Philippines." Nhắc lại 44:06 và 56:35.
+--      Cùng người này đã dạy lớp Y Khoa 22/09.
+--      => HAI buổi tháng 9 do một người KHÔNG có hợp đồng trong hệ
+--         thống dạy, cả hai đang ghi lương cho Ms. Phương.
+--
+-- (16) GIÁO VIÊN DẠY SAI CÙNG MỘT MẪU CÂU — LẦN THỨ HAI, NẶNG HƠN.
+--      11:06 GV: "Where do you CAME from?"
+--      11:15 học viên đọc lại ĐÚNG: "Where do you COME from?"
+--      11:17 GV: "Yes."
+--      11:19 GV lại nói sai tiếp: "Where you came from?"
+--      Học viên nói đúng, giáo viên nói sai đè lên. Cùng lỗi này đã
+--      xuất hiện ở buổi Y Khoa 22/09 (33:35–35:18, lặp 5 lần).
+--      Đây là lỗi hệ thống của người dạy, không phải lỡ miệng.
+--
+-- (17) GIÁO VIÊN LẶP LẠI LỖI PHÁT ÂM CỦA HỌC VIÊN THAY VÌ SỬA.
+--      Học viên đọc "apartment" thành "appointment". Từ 42:30 giáo
+--      viên nói theo "What is appointment?", lặp lại ở 51:20, 58:53,
+--      01:01:07. Đến cuối buổi học viên vẫn đọc sai. Chị Thảo đang
+--      sống ở Canada nên đây là từ phải dùng hằng ngày.
+--
+-- (18) NHÃN "VÀO DẠY MUỘN" CỦA SỔ ZOOM SAI LẦN THỨ BA.
+--      Sổ ghi "21:58–22:05 Vào dạy muộn (7')". Transcript: 07:05 học
+--      viên nói "Hello? Sorry!", 07:08 GV nói "I thought there's
+--      something wrong in my link". Không đủ căn cứ kết luận GV muộn.
+--      Ba lần sai trên ba buổi đã đối chiếu (Vy 24/09, Duy 23/09,
+--      Thảo 21/09) => nên bỏ hoặc sửa lại quy tắc gắn nhãn này.
+--
+-- (19) BỐI CẢNH HỌC VIÊN — chị Thảo đang ở Toronto, Canada.
+--      38 tuổi, làm trong nhà máy táo và cà rốt, ở cùng chồng, hai
+--      con còn ở Việt Nam (23:45, 20:14, 25:01). Giải thích vì sao
+--      lịch học khó sắp và vì sao buổi 23/09 mất 4 phút bàn lịch.
 --
 -- =====================================================================
 -- PHÁT HIỆN THÊM — đợt 2 (Diệp 23/09 và Thảo 23/09)
