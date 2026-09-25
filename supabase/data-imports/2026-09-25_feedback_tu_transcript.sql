@@ -16,13 +16,14 @@
 --   - Bài tập về nhà chỉ ghi "đã giao" khi GV thật sự giao trong video.
 --     Bài do trung tâm đề xuất phải gắn nhãn [TRUNG TAM DE XUAT].
 --
--- ĐÃ LÀM (3 buổi, cả 3 lên QC 100/100 từ 0):
+-- ĐÃ LÀM (4 buổi, cả 4 lên QC 100/100 từ 0):
 --   1. Vy 24/09       report 2aa244fd  video 0gjG_Ts7rKY
 --   2. Công Duy 23/09 report 8d7faa98  video k9F73N0xlpo
 --   3. Bé Ngân 23/09  report 1161450d  video ti2sC9-epB8
+--   4. Y Khoa 22/09   report be3c3d94  video ifvA9hz4LGw
 --
--- CÒN LẠI 9 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
---   Duy 21/09 · Thảo 21/09 · Y Khoa 22/09 · Diệp 23/09 · Thảo 23/09
+-- CÒN LẠI 8 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
+--   Duy 21/09 · Thảo 21/09 · Diệp 23/09 · Thảo 23/09
 --
 -- =====================================================================
 -- BA PHÁT HIỆN PHẢI BÁO FOUNDER — không nằm trong nội dung feedback
@@ -54,6 +55,33 @@
 --     [54:04] "is it okay if Teacher ends the class early, because
 --     teacher's stomach is hurting?" — đây là lý do buổi chỉ 50/60 phút.
 --     Sổ Zoom chỉ báo "Dạy thiếu 10 phút" mà không nói vì sao.
+--
+-- (4) BUỔI Y KHOA 22/09 DO MỘT NGƯỜI KHÔNG CÓ TRONG HỆ THỐNG DẠY.
+--     CRM ghi Ms. Phương. [06:18] người dạy tự giới thiệu:
+--       "I am a teacher Shane. I am from the Philippines. I am 35 years
+--        old. I am a college teacher in the morning, and an ESL teacher
+--        in the evening."
+--     Ms. Phương là người Việt. Bảng teachers KHÔNG có ai tên Shane —
+--     cả đang dạy lẫn đã nghỉ. Đây không phải Ms. Sheba: trong buổi
+--     Bé Ngân cùng tuần, Ms. Sheba nói "I am 26".
+--     Ảnh hưởng lương tháng 9. Đã gắn cờ, không tự đổi.
+--
+-- (5) SĨ SỐ LỚP Y KHOA KHÔNG KHỚP.
+--     CRM: Ms. Min, Mr. Max, Mr. John.
+--     Người dự thật: Mr. Max, Ms. Min, "Ngô Hoàng Tín".
+--     Cần xác nhận Ngô Hoàng Tín có phải Mr. John không.
+--
+-- (6) MỘT LỖI NGỮ PHÁP GIÁO VIÊN DẠY SAI — buổi Y Khoa 22/09.
+--     Từ 33:35 đến 35:18, GV lặp 5 lần "Where do you CAME from?" và ở
+--     34:44 chốt lại rằng đó là câu đúng. Câu đúng là "Where do you
+--     COME from?". Ba học viên là người đi làm, học để giao tiếp công
+--     việc — mẫu câu sai được chốt như đúng sẽ thành thói quen khó sửa.
+--
+-- (7) MỘT DÒNG TỤC TĨU TRONG TRANSCRIPT LÀ LỖI MÁY, KHÔNG PHẢI GV.
+--     Dòng 51:55 buổi Y Khoa. Học viên vừa nói "Best? Bist?" khi cố
+--     phát âm "beach"; GV nhắc lại "a beach". Máy nhận giọng ghi sai
+--     thành một câu chửi. Ghi ra đây để sau này ai đọc transcript
+--     không hiểu nhầm.
 --
 -- =====================================================================
 -- Nội dung SQL đã chạy: xem lịch sử thao tác. Ba lệnh chính là
