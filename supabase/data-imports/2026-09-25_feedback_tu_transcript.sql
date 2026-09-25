@@ -1,0 +1,65 @@
+-- =====================================================================
+-- Viết feedback buổi học TỪ TRANSCRIPT — đợt 1 (3/12 buổi tháng 9)
+-- Ngày chạy: 25/09/2026
+-- =====================================================================
+--
+-- NGUỒN: Google Doc transcript do hệ thống Zoom -> YouTube của cô Ngọc tự
+-- sinh. Mỗi doc gồm phần đầu (học viên, ngày, chủ đề, GV, số phút có mặt,
+-- link video), phần phân tích tự động (số phút dạy thật, % HV nói, số lượt
+-- nói) và transcript đầy đủ có mốc thời gian + nhãn người nói.
+--
+-- NGUYÊN TẮC ÁP DỤNG KHI VIẾT (theo stop-slop, nhóm A):
+--   - Mọi nhận xét phải dẫn được về MỘT mốc thời gian trong video.
+--     Không dẫn được thì không viết câu đó.
+--   - Không suy ra trình độ CEFR, không bịa nội dung sách.
+--   - Chỗ nào là suy đoán thì ghi rõ là suy đoán.
+--   - Bài tập về nhà chỉ ghi "đã giao" khi GV thật sự giao trong video.
+--     Bài do trung tâm đề xuất phải gắn nhãn [TRUNG TAM DE XUAT].
+--
+-- ĐÃ LÀM (3 buổi, cả 3 lên QC 100/100 từ 0):
+--   1. Vy 24/09       report 2aa244fd  video 0gjG_Ts7rKY
+--   2. Công Duy 23/09 report 8d7faa98  video k9F73N0xlpo
+--   3. Bé Ngân 23/09  report 1161450d  video ti2sC9-epB8
+--
+-- CÒN LẠI 9 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
+--   Duy 21/09 · Thảo 21/09 · Y Khoa 22/09 · Diệp 23/09 · Thảo 23/09
+--
+-- =====================================================================
+-- BA PHÁT HIỆN PHẢI BÁO FOUNDER — không nằm trong nội dung feedback
+-- =====================================================================
+--
+-- (1) SỬA MỘT CÁO BUỘC SAI VỚI GIÁO VIÊN.
+--     Sổ Zoom tự gắn nhãn "Vào dạy muộn" cho buổi Vy 24/09 và Duy 23/09,
+--     và bản nhập ngày 25/09 đã chép nguyên nhãn đó vào cột notes.
+--     Đọc transcript thì CẢ HAI ĐỀU LÀ HỌC VIÊN VÀO MUỘN:
+--       Vy 24/09  [18:58] GV: "why were you late?"
+--                 [19:04] HV: "I am in the bathroom to take a shower"
+--       Duy 23/09 [12:47] GV: "if you cannot access the link, you can
+--                 message me directly" — HV không vào được link.
+--     Máy chỉ đo được "19 phút đầu không ai nói" rồi suy ra GV đến muộn.
+--     Suy luận đó SAI. Đã sửa lại cột notes của cả hai buổi.
+--
+-- (2) BUỔI BÉ NGÂN 23/09 CÓ THỂ DO MS. SHEBA DẠY, KHÔNG PHẢI MS. PHƯƠNG.
+--     Ảnh hưởng trực tiếp đến lương tháng 9. Bằng chứng:
+--       (a) nhãn người nói suốt buổi là "Teacher Sheba";
+--       (b) [09:27] GV nói "Philippines is also very hot" — Ms. Sheba ở
+--           Philippines, Ms. Phương ở Việt Nam;
+--       (c) [42:29] và [50:48] GV nói "I am 26";
+--       (d) phòng Zoom dùng PMI 2167216983 — cùng phòng với buổi Vy 24/09
+--           của Ms. Sheba;
+--       (e) chính sổ Zoom đã ghi "Nhận diện GV: không khớp tên GV".
+--     KHÔNG tự đổi giáo viên. Đã ghi cờ vào lessons.notes để Founder quyết.
+--
+-- (3) BUỔI BÉ NGÂN 23/09 KẾT THÚC SỚM VÌ GIÁO VIÊN ĐAU BỤNG.
+--     [54:04] "is it okay if Teacher ends the class early, because
+--     teacher's stomach is hurting?" — đây là lý do buổi chỉ 50/60 phút.
+--     Sổ Zoom chỉ báo "Dạy thiếu 10 phút" mà không nói vì sao.
+--
+-- =====================================================================
+-- Nội dung SQL đã chạy: xem lịch sử thao tác. Ba lệnh chính là
+--   update public.teaching_reports set lesson_content/student_quote/
+--     strengths/improvements/next_lesson_recommendation/video_timestamp
+--     where id in (...)
+--   insert into public.homework (...)   -- 3 bài, 1 bài gắn [TRUNG TAM DE XUAT]
+--   update public.lessons set notes = ...  -- sửa nhãn sai + gắn cờ GV
+-- =====================================================================
