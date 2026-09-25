@@ -24,9 +24,56 @@
 --   5. Diệp 23/09     report 1827ca67  video cGAAxLfMEt0
 --   6. Thảo 23/09     report 6123ff7b  video 2Oj-OQxtSVQ
 --   7. Thảo 21/09     report 49d24252  video 8DSzjl2gFuI
+--   8. Công Duy 21/09 report ed6ae65a  video ggQhzjhn8wU
+--   9. Nhi 19/09      report 20911d49  video GkiuoRdrv7g
 --
--- CÒN LẠI 5 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
---   Duy 21/09
+-- CÒN LẠI 3 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09
+--
+-- =====================================================================
+-- PHÁT HIỆN ĐỢT 4 — buổi Duy 21/09 và Nhi 19/09
+-- =====================================================================
+--
+-- (20) TÌM RA GỐC CỦA HAI BÀI TẬP DUY CHƯA NỘP.
+--      Buổi 21/09 lúc 01:01:30 Ms. Sheba giao: gửi lại đoạn đã viết
+--      qua Zalo. Đến buổi 23/09 — hai ngày sau — vẫn chưa nộp, cô
+--      phải nhắc lại tại 21:28. Cộng một bài video tự giới thiệu cũng
+--      chưa nộp là HAI bài tồn đọng. Đề nghị báo phụ huynh thay vì
+--      nhắc lần thứ ba.
+--
+-- (21) SỨC KHOẺ Ms. SHEBA — HAI LẦN TRONG BA NGÀY.
+--      21/09 lúc 19:22: "I need to drink this one, because my stomach
+--      is kinda not in good condition."
+--      23/09 lúc 54:04: xin kết thúc lớp sớm vì đau bụng.
+--      Đề nghị Founder hỏi thăm. Đây có thể là vấn đề sức khoẻ cần
+--      nghỉ, không phải thiếu trách nhiệm.
+--
+-- (22) 12 PHÚT IM LẶNG TRONG BUỔI DUY 21/09.
+--      25:17–28:52 (3,5') và 48:11–56:42 (8,5', trong khi GV chỉ cho
+--      5 phút). Sổ Zoom đã bắt "19:49–19:57 Cả lớp im lặng (8')" —
+--      nay đã rõ nguyên nhân: học viên chuẩn bị bài nói quá lâu và
+--      giáo viên không nhắc giờ.
+--
+-- (23) 33 PHÚT TRÊN 56 PHÚT CỦA BUỔI NHI 19/09 LÀ LÀM BÀI MỘT MÌNH.
+--      04:33–14:59 làm bài đọc (10' im lặng) và 28:59–52:03 viết bài
+--      (23' im lặng). Chỉ còn ~23 phút có trao đổi thật. Đây là lớp
+--      1-1 75 phút — giờ đắt nhất của trung tâm.
+--      Đề nghị: giao phần đọc/viết thành bài về nhà TRƯỚC buổi, giờ
+--      lớp dành cho chữa bài và luyện nói. Riêng việc này đưa tỉ lệ
+--      học viên nói từ 20% lên trên 50% mà không cần đổi gì khác.
+--
+-- (24) HỌC VIÊN DÙNG GOOGLE DỊCH LÀM BÀI VIẾT — buổi Nhi 19/09.
+--      GV phát hiện tại 52:03–56:46 vì bài "đúng hết" bất thường;
+--      học viên tự nhận đã viết tiếng Việt rồi dịch. GV xử lý đúng:
+--      bắt viết lại, chỉ được dùng mẫu câu trong bài, chụp màn hình
+--      dàn ý cho học viên làm theo.
+--      Nên ra quy ước rõ về máy dịch cho cả trung tâm. Học viên đã
+--      trung thực nhận nên đây là cơ hội đặt quy tắc, không phải lỗi
+--      để trách.
+--
+-- (25) TRANSCRIPT BUỔI NHI 19/09 BỊ LẪN NHÃN NGƯỜI NÓI NẶNG.
+--      Phần lớn câu của giáo viên bị ghi thành "uyển nhi". Mọi trích
+--      dẫn trong báo cáo chỉ lấy từ đoạn xác định được chắc chắn qua
+--      ngữ cảnh. Ai đọc lại transcript này cần lưu ý.
 --
 -- =====================================================================
 -- PHÁT HIỆN ĐỢT 3 — buổi Thảo 21/09. ĐÂY LÀ PHÁT HIỆN NẶNG NHẤT.
