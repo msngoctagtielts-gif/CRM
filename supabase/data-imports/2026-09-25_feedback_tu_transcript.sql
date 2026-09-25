@@ -26,8 +26,70 @@
 --   7. Thảo 21/09     report 49d24252  video 8DSzjl2gFuI
 --   8. Công Duy 21/09 report ed6ae65a  video ggQhzjhn8wU
 --   9. Nhi 19/09      report 20911d49  video GkiuoRdrv7g
+--  10. Ngân 16/09     report 63d5aa9b  video G9vTTFfO4hg
+--  11. Ngân 17/09     report bfe4c319  video Xjg3e3QJs-g
+--  12. Thảo 14/09     report abe1bd29  video 8NUuKwgkDSU
 --
--- CÒN LẠI 3 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09
+-- XONG 12/12. Cả 12 báo cáo đạt QC 100/100 (trước đó là 0), mỗi buổi
+-- đều có bài tập về nhà ghi rõ nguồn: GV giao thật, hay trung tâm đề
+-- xuất (gắn nhãn [TRUNG TAM DE XUAT]).
+--
+-- =====================================================================
+-- TỔNG KẾT — 5 BUỔI CẦN FOUNDER XÁC NHẬN GIÁO VIÊN
+-- Tổng tiền liên quan: 640.000₫, tất cả đang ở trạng thái 'pending'
+-- (chưa chi) nên còn kịp xử lý trước khi chốt lương tháng 9.
+-- =====================================================================
+--
+--   Ngân 17/09  CRM: Ms. Phương  120.000₫  giảng hoàn toàn bằng tiếng Anh
+--   Thảo 21/09  CRM: Ms. Phương  120.000₫  "Teacher Shane" tự giới thiệu
+--   Y Khoa 22/09 CRM: Ms. Phương 160.000₫  "Teacher Shane" tự giới thiệu
+--   Diệp 23/09  CRM: Ms. Rose    120.000₫  người dạy nói tiếng Việt
+--   Ngân 23/09  CRM: Ms. Phương  120.000₫  Ms. Sheba (Philippines, 26 tuổi)
+--
+-- =====================================================================
+-- MỘT VẤN ĐỀ DỮ LIỆU HỆ THỐNG — 5 lớp, không lớp nào chạy đủ giờ chuẩn
+-- =====================================================================
+--   Thảo 14/09  63/75   Ngân 16/09  54/75   Ngân 17/09  59/75
+--   Nhi 19/09   56/75   Diệp 23/09  56/75
+-- Năm buổi, năm lớp, không buổi nào đạt. Riêng lớp THAO-PH thì buổi
+-- 21/09 và 23/09 lại ghi chuẩn 60 phút. Cùng một lớp mà chuẩn đổi giữa
+-- các buổi => gần như chắc chắn là lỗi dữ liệu, không phải giáo viên
+-- dạy thiếu. Cần kiểm lại thoả thuận thật với từng phụ huynh rồi sửa
+-- chuẩn trong hệ thống. Để nguyên thì mọi buổi đều bị tính là dạy
+-- thiếu — sai cả báo cáo chất lượng lẫn cơ sở tính lương.
+--
+-- =====================================================================
+-- PHÁT HIỆN ĐỢT 5 — ba buổi cuối
+-- =====================================================================
+--
+-- (26) BÉ NGÂN CÓ ÍT NHẤT HAI NGƯỜI DẠY TRONG THÁNG 9.
+--      16/09 Ms. Phương giảng hoàn toàn bằng tiếng Việt, phải dịch
+--      từng từ cho bé. 17/09 — hôm sau — giảng hoàn toàn bằng tiếng
+--      Anh. 23/09 là Ms. Sheba. CRM chỉ có một lớp NGAN-PH gán cho
+--      Ms. Phương.
+--      Về chuyên môn, buổi tiếng Anh tốt hơn hẳn: 245 lượt nói (cao
+--      nhất trong ba buổi của bé) và bé nói được cả câu "It is a green
+--      crocodile" (47:45). Nếu Founder chốt cách dạy cho lớp này thì
+--      nên chốt theo hướng đó.
+--
+-- (27) BUỔI NGÂN 16/09 MẤT HƠN 11 PHÚT VÌ TRỤC TRẶC ÂM THANH.
+--      11:56–23:22, câu "nghe chưa?" lặp hơn 15 lần. Bên GV đang mưa
+--      to nên phải đeo tai nghe (01:22).
+--      Giáo viên nhiều lần không nghe được bé, đến 51:11 nghi bé cố
+--      tình nói nhỏ. ĐỀ NGHỊ: kiểm thiết bị trước khi coi là vấn đề
+--      thái độ. Một bé 7 tuổi bị nghi oan sẽ ngại nói hơn.
+--      Camera tắt hoặc bị che ở cả hai buổi 16/09 và 23/09 — nên trao
+--      đổi với phụ huynh về cách đặt máy.
+--
+-- (28) SỨC KHOẺ Ms. PHƯƠNG — buổi Thảo 14/09, 00:50.
+--      Cô cho biết vừa phẫu thuật, hiện chưa đi xe được, phải nhờ
+--      chồng chở đi dạy. Cô nói "mọi thứ nó đã qua rồi". Ghi lại để
+--      Founder biết mà sắp lịch và hỗ trợ; không ghi chi tiết hơn vì
+--      là chuyện riêng.
+--
+-- (29) VIỆC SẮP LỊCH ĐANG CHIẾM GIỜ LỚP CÓ TRẢ TIỀN.
+--      Thảo 14/09: 3 phút đầu buổi. Thảo 23/09: 4 phút giữa buổi.
+--      Nên chuyển hẳn sang Zalo.
 --
 -- =====================================================================
 -- PHÁT HIỆN ĐỢT 4 — buổi Duy 21/09 và Nhi 19/09
