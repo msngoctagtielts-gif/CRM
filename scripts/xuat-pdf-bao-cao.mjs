@@ -12,7 +12,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { locGhiChuNoiBo } from '../src/lib/bao-cao-in.ts'
 
 const [fileJson, thuMucRa] = process.argv.slice(2)
@@ -102,12 +102,33 @@ dd.dam { font-weight:700; }
 .chan { border-top:1px solid #e2e9f2; margin-top:26px; padding-top:10px;
         font-size:8.5pt; color:#456490; }
 .chan p { margin:0 0 2px; }
+
+.tong-quan h1 { font-size:15pt; margin:22px 0 4px; }
+.tong-quan .phu { color:#456490; font-size:10pt; margin:0 0 18px; }
+table.ls { width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:6px; }
+table.ls th { text-align:left; font-size:7.5pt; letter-spacing:.06em;
+              text-transform:uppercase; color:#6885ad; font-weight:700;
+              border-bottom:1px solid #c4d2e4; padding:0 6px 5px 0; }
+table.ls td { padding:5px 6px 5px 0; border-bottom:1px solid #eef2f7;
+              vertical-align:top; }
+.tang { display:inline-block; background:#f9f1da; color:#856630; font-size:8pt;
+        font-weight:700; padding:1px 6px; border-radius:3px; white-space:nowrap; }
+.chua { color:#97651a; font-size:9pt; font-style:italic; }
+.hop-tang { border:1px solid #f1e0b2; background:#fdfaf1; border-radius:5px;
+            padding:11px 14px; margin:14px 0 0; }
+.hop-tang p { margin:4px 0 0; font-size:9.5pt; }
+.bang-so { display:flex; gap:28px; margin:14px 0 0; }
+.bang-so div { }
+.bang-so .n { font-size:17pt; font-weight:700; color:#13294b; line-height:1.1; }
 `
 
 /* ---------- dựng một trang báo cáo ---------- */
 function trang(r) {
   stt = 0
   const loc = (t) => locGhiChuNoiBo(t)
+  const nhanTang = laBuoiTang(r)
+    ? `<p style="margin:14px 0 0"><span class="tang">BUỔI HỌC ĐƯỢC TẶNG — KHÔNG TÍNH HỌC PHÍ</span></p>`
+    : ''
   const bt = r.bai_tap
   const vids = r.video ?? []
 
@@ -143,7 +164,10 @@ function trang(r) {
     <div><div class="nhan">Lớp</div><dd>${esc(r.ten_lop ?? r.class_code)}</dd></div>
     <div><div class="nhan">Thời lượng</div><dd>${gioVN(r.bat_dau)}–${gioVN(r.ket_thuc)} · ${r.phut} phút</dd></div>
   </dl>
-  ${muc('Nội dung buổi học', doan(loc(r.lesson_content)))}
+  ${nhanTang}
+  ${r.lesson_content ? muc('Nội dung buổi học', doan(loc(r.lesson_content)))
+    : `<section class="muc"><h2><span class="so">—</span>Buổi học này chưa có báo cáo</h2>
+       <div class="than"><p>Buổi học đã diễn ra và đã được ghi nhận trong hệ thống, nhưng giáo viên chưa nộp báo cáo chi tiết. Trung tâm đang thu lại.</p></div></section>`}
   ${r.student_quote ? `<div class="trich"><div class="nhan">Câu học viên nói được trong buổi</div><p>${esc(r.student_quote)}</p></div>` : ''}
   ${muc('Điểm mạnh', doan(loc(r.strengths)))}
   ${muc('Cần cải thiện', doan(loc(r.improvements)))}
@@ -154,6 +178,62 @@ function trang(r) {
   <footer class="chan">
     <p>Ms.Ngọc Elite English · &ldquo;Thấu hiểu để dẫn lối.&rdquo; · Lập từ hệ thống MNEE ngày ${ngayVN(new Date().toISOString())}</p>
     <p>Mọi nhận xét trong báo cáo này đều dẫn về một mốc thời gian cụ thể trong video buổi học.</p>
+  </footer>
+</div>`
+}
+
+/* ---------- trang tổng quan: toàn bộ lịch sử học ---------- */
+const laBuoiTang = (r) => r.tinh_phi === false
+
+function trangTongQuan(hv, ds, ghiChuHV) {
+  const tong = ds.length
+  const soTang = ds.filter(laBuoiTang).length
+  const coBaoCao = ds.filter((r) => r.lesson_content).length
+  const lop = ds[0]?.ten_lop ?? ''
+  const gv = [...new Set(ds.map((r) => r.gv).filter(Boolean))].join(', ')
+
+  const hang = ds.map((r, k) => {
+    const tang = laBuoiTang(r)
+      ? `<span class="tang">${k === 0 ? 'TẶNG TRẢI NGHIỆM' : 'MIỄN PHÍ'}</span>`
+      : ''
+    const bc = r.lesson_content
+      ? 'Có báo cáo'
+      : '<span class="chua">Chưa có báo cáo</span>'
+    return `<tr><td>${k + 1}</td><td>${ngayVN(r.ngay)}</td><td>${esc(r.gv ?? '—')}</td>
+            <td>${r.phut} phút</td><td>${bc}</td><td>${tang}</td></tr>`
+  }).join('')
+
+  // Ghi chú quà tặng lấy từ hồ sơ học viên, chỉ phần dành cho phụ huynh đọc
+  const gt = String(ghiChuHV ?? '')
+    .split(/\n{2,}/)
+    .find((d) => d.trim().startsWith('QUÀ TẶNG'))
+  const hopTang = gt
+    ? `<div class="hop-tang"><div class="nhan">Ghi chú quà tặng</div><p>${esc(
+        gt.replace(/^QUÀ TẶNG:\s*/, '').split('Hai buổi này chưa')[0].trim(),
+      )}</p></div>`
+    : ''
+
+  return `<div class="tong-quan">
+  <header class="dau">
+    <div><div class="ten-tt">Ms.Ngọc Elite English</div>
+         <div class="cham-ngon">Thấu hiểu để dẫn lối.</div></div>
+    <div style="text-align:right"><div class="nhan">Hồ sơ học tập</div>
+         <div class="ngay-bc">${ngayVN(new Date().toISOString())}</div></div>
+  </header>
+  <h1>${esc(hv)}</h1>
+  <p class="phu">${esc(lop)} · Giáo viên: ${esc(gv || '—')}</p>
+  <div class="bang-so">
+    <div><div class="n">${tong}</div><div class="nhan">Buổi đã học</div></div>
+    <div><div class="n">${soTang}</div><div class="nhan">Buổi được tặng</div></div>
+    <div><div class="n">${coBaoCao}</div><div class="nhan">Buổi có báo cáo</div></div>
+    <div><div class="n">${ngayVN(ds[0].ngay)}</div><div class="nhan">Buổi đầu tiên</div></div>
+  </div>
+  ${hopTang}
+  <table class="ls"><thead><tr>
+    <th>#</th><th>Ngày học</th><th>Giáo viên</th><th>Thời lượng</th>
+    <th>Báo cáo</th><th>Học phí</th></tr></thead><tbody>${hang}</tbody></table>
+  <footer class="chan">
+    <p>Ms.Ngọc Elite English · &ldquo;Thấu hiểu để dẫn lối.&rdquo; · Hồ sơ lập ngày ${ngayVN(new Date().toISOString())}</p>
   </footer>
 </div>`
 }
@@ -173,12 +253,14 @@ const khongDau = (s) =>
 const daTao = []
 for (const [hv, ds] of theoHV) {
   ds.sort((a, b) => String(a.ngay).localeCompare(String(b.ngay)))
-  const than = ds.map(trang).join('<div style="page-break-before:always"></div>')
+  const than = [trangTongQuan(hv, ds, ds[0].ghi_chu_hv), ...ds.map(trang)]
+    .join('<div style="page-break-before:always"></div>')
   const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
 <title>Bao cao hoc tap — ${esc(hv)}</title><style>${CSS}</style></head><body>${than}</body></html>`
 
-  const tam = join(thuMucRa, `.${khongDau(hv)}.html`)
-  const ra = join(thuMucRa, `Bao_cao_hoc_tap_${khongDau(hv)}_T9-2026.pdf`)
+  // Chromium cần đường dẫn tuyệt đối cho file:// — đường dẫn tương đối cho ERR_INVALID_URL
+  const tam = resolve(thuMucRa, `.${khongDau(hv)}.html`)
+  const ra = resolve(thuMucRa, `Bao_cao_hoc_tap_${khongDau(hv)}_Toan_bo_qua_trinh_hoc.pdf`)
   writeFileSync(tam, html, 'utf8')
   execFileSync(CHROME, [
     '--headless', '--disable-gpu', '--no-sandbox', '--no-pdf-header-footer',
