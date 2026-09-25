@@ -16,14 +16,61 @@
 --   - Bài tập về nhà chỉ ghi "đã giao" khi GV thật sự giao trong video.
 --     Bài do trung tâm đề xuất phải gắn nhãn [TRUNG TAM DE XUAT].
 --
--- ĐÃ LÀM (4 buổi, cả 4 lên QC 100/100 từ 0):
+-- ĐÃ LÀM (6 buổi, cả 6 lên QC 100/100 từ 0):
 --   1. Vy 24/09       report 2aa244fd  video 0gjG_Ts7rKY
 --   2. Công Duy 23/09 report 8d7faa98  video k9F73N0xlpo
 --   3. Bé Ngân 23/09  report 1161450d  video ti2sC9-epB8
 --   4. Y Khoa 22/09   report be3c3d94  video ifvA9hz4LGw
+--   5. Diệp 23/09     report 1827ca67  video cGAAxLfMEt0
+--   6. Thảo 23/09     report 6123ff7b  video 2Oj-OQxtSVQ
 --
--- CÒN LẠI 8 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
---   Duy 21/09 · Thảo 21/09 · Diệp 23/09 · Thảo 23/09
+-- CÒN LẠI 6 buổi: Thảo 14/09 · Ngân 16/09 · Ngân 17/09 · Nhi 19/09 ·
+--   Duy 21/09 · Thảo 21/09
+--
+-- =====================================================================
+-- PHÁT HIỆN THÊM — đợt 2 (Diệp 23/09 và Thảo 23/09)
+-- =====================================================================
+--
+-- (8) BUỔI DIỆP 23/09 GIẢNG GẦN NHƯ HOÀN TOÀN BẰNG TIẾNG VIỆT.
+--     Học viên chỉ đọc từ và câu tiếng Anh, không tự nói câu nào.
+--     Diệp học hệ giao tiếp Pre A2. Cần chốt với GV tỉ lệ tiếng Anh
+--     tối thiểu trong buổi.
+--
+-- (9) BUỔI DIỆP 23/09 — NGƯỜI DẠY NÓI TIẾNG VIỆT, CRM GHI Ms. Rose.
+--     Đây là gán tạm thời của bản nhập 25/09, đã ghi rõ cần xác nhận.
+--     Bằng chứng thêm từ transcript: 48:05 người dạy nói mình dạy học
+--     sinh "cấp một tiểu học", 48:13 "dạy thêm ở nhà", 53:05 có con
+--     nhỏ 2 tuổi. Sổ Zoom ghi "Rose / Phương" — cần chốt một người.
+--
+-- (10) BUỔI DIỆP 23/09 — 19 PHÚT THIẾU và 6 PHÚT NGOÀI BÀI.
+--      Buổi chạy 56/75 phút. Trong đó 50:58–54:23 GV nói chuyện với
+--      con nhỏ của mình trên micro rồi hai cô trò bàn về con GV;
+--      44:00–48:46 nói chuyện Trung thu và quà GV mua cho học sinh
+--      tiểu học của cô.
+--
+-- (11) TIÊU ĐỀ SỔ ZOOM GHI SAI "IELTS" cho buổi Thảo 23/09.
+--      Buổi đó không có nội dung IELTS nào — thực tế là mẫu câu hỏi
+--      sinh hoạt hằng ngày trình độ A1–A2. Nếu xuất báo cáo cho học
+--      viên mà để chữ IELTS thì sai. Nên sửa quy tắc đặt tiêu đề.
+--
+-- (12) LỊCH HỌC CHƯA THỐNG NHẤT GIỮA BA BÊN — buổi Thảo 23/09.
+--      40:24–44:34 (4 phút) cô trò dùng giờ lớp để bàn lịch: GV, học
+--      viên và cô nước ngoài chưa có lịch chung; học viên phải tự
+--      nhắn vào nhóm, GV nói "em hiểu sai tin nhắn của chị". Đây là
+--      lỗ hổng vận hành, không phải lỗi của ai. Việc hành chính nên
+--      chuyển sang Zalo thay vì dùng giờ lớp có trả tiền.
+--
+-- (13) KẾ HOẠCH CHUYỂN GIAO CHƯA AI BIẾT — buổi Thảo 23/09.
+--      29:44 Ms. Phương nói "vài bữa nữa là chị sẽ học với cô nước
+--      ngoài thôi... em thấy chị ổn rồi thì em sẽ thả chị qua đó bơi".
+--      Founder nên biết để sắp lịch và tính học phí.
+--
+-- (14) MỘT HỌC VIÊN CẦN CHĂM SÓC — buổi Thảo 23/09.
+--      01:01:14–01:03:17 học viên chia sẻ một biến cố tài chính lớn
+--      trong gia đình và đang rất buồn. GV cũng ghi nhận lâu nay đều
+--      là học viên chủ động nhắn tin xin học. Đề nghị Founder theo dõi
+--      khả năng học viên tạm dừng, và ứng xử tế nhị. Chi tiết không
+--      ghi vào hệ thống vì là chuyện riêng — nằm trong video nếu cần.
 --
 -- =====================================================================
 -- BA PHÁT HIỆN PHẢI BÁO FOUNDER — không nằm trong nội dung feedback
