@@ -27,3 +27,6 @@ backups/
 # Thông tin định danh cá nhân của Bên A (số CCCD) — KHÔNG BAO GIỜ commit.
 # Dùng .ben-a.example.json làm mẫu.
 supabase/data-imports/scripts/.ben-a.json
+
+# File PDF sinh ra tu script — khong commit, sinh lai duoc bat cu luc nao
+bao-cao-pdf/
