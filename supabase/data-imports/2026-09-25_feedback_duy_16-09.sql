@@ -1,0 +1,52 @@
+-- ---------------------------------------------------------------------------
+-- 2026-09-25 · Feedback buổi DUY-SH 16/09/2026
+-- ---------------------------------------------------------------------------
+-- NGUỒN BẰNG CHỨNG KHÁC MỌI BUỔI KHÁC — ĐỌC KỸ TRƯỚC KHI DÙNG
+--   Buổi này KHÔNG có transcript trên Google Drive: hệ thống tự sinh transcript
+--   chỉ chạy từ 18/09/2026. Và YouTube bị chặn ở tầng mạng của môi trường làm
+--   việc (403 CONNECT), nên không mở được video để nghe lại.
+--
+--   Toàn bộ báo cáo viết từ file feedback gốc của cô Sheba, do cô Ngọc tải lên
+--   ngày 25/09/2026:
+--     Duy_September_16_2026_Feedback_4_With_Assignment_2.docx
+--
+--   Năm câu nguyên văn của học viên và bản sửa đều lấy từ bảng đối chiếu
+--   "Grammar & Pronunciation Corrections" trong file đó. Đây vẫn là bằng chứng
+--   sơ cấp do giáo viên ghi, nhưng KHÔNG phải bằng chứng từ video. Muốn đối
+--   soát tuyệt đối thì phải xem lại hai video YouTube của buổi.
+--
+-- ĐIỂM QC 83/100 — CỐ Ý, KHÔNG PHẢI THIẾU SÓT
+--   Tiêu chí duy nhất chưa đạt là mốc thời gian video. Không có transcript thì
+--   không có mốc thật, và trợ lý không bịa một con số không kiểm chứng được.
+--   Khi nào có người xem video ghi lại mốc, điền vào cột video_timestamp là đủ
+--   100 điểm. Xem thêm: quy ước A1 trong skill stop-slop.
+--
+-- KHÔNG CHÉP ĐỊA CHỈ EMAIL CÁ NHÂN
+--   File gốc ghi địa chỉ Gmail riêng của giáo viên để học viên gửi bài. Địa chỉ
+--   này KHÔNG được chép vào homework.description, vì trường đó in ra bản PDF
+--   gửi phụ huynh. Bài tập chỉ ghi "địa chỉ Gmail cô đã cho trong buổi học".
+-- ---------------------------------------------------------------------------
+
+-- UPDATE public.teaching_reports điền lesson_content · strengths ·
+-- improvements · student_quote · next_lesson_recommendation cho buổi
+-- DUY-SH 16/09/2026. Toàn văn nằm trong cơ sở dữ liệu, xem ở /reports/<id>.
+-- video_timestamp CỐ Ý để trống.
+
+-- INSERT public.homework — bài tập viết email qua Gmail, hạn 19/09/2026,
+-- kèm sentence_patterns (một trong sáu tiêu chí QC).
+
+-- UPDATE qc_strengths_deep = true, qc_improvements_deep = true.
+-- Kết quả: QC 17/100 -> 83/100, status incomplete -> submitted.
+
+-- ---------------------------------------------------------------------------
+-- MƯỜI BUỔI CHƯA CÓ VIDEO YOUTUBE (cô Ngọc yêu cầu 25/09: mọi buổi phải có video)
+-- ---------------------------------------------------------------------------
+--   DUY-SH  24/08 · 26/08 · 28/08          — chỉ có Zoom Clips
+--   VY-SH   04/08 · 11/08 · 16/08 · 23/08 · 25/08 · 27/08  — chỉ có Zoom Clips
+--   NHI-PH  21/08                          — KHÔNG có bản ghi nào
+--
+--   Zoom Clips là link riêng tư, không dịch vụ nào tải về được, nên chín buổi
+--   trên không viết được nhận xét có bằng chứng. Cần nhờ giáo viên tải bản ghi
+--   lên YouTube ở chế độ Unlisted rồi dán link vào bảng Nhật ký lớp Zoom —
+--   đúng cách cô đã làm cho năm buổi ngày 25/09.
+--   Riêng NHI-PH 21/08 chưa có bản ghi nào, cần hỏi lại giáo viên.
