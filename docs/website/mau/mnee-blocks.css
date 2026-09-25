@@ -1,0 +1,196 @@
+/* ===========================================================================
+   MNEE — khối Founder và khối Đội ngũ
+   Ms.Ngọc Elite English · "Thấu hiểu để dẫn lối."
+
+   Bảng màu lấy từ hệ nhận diện: Navy / Gold / Trắng / Burgundy.
+   Burgundy KHÔNG có mặt ở đây — nó dành riêng cho cảnh báo và công nợ.
+
+   Mọi cặp màu chữ/nền dưới đây đã đo và vượt chuẩn 4.5:1.
+   =========================================================================== */
+
+:root {
+  --mnee-navy-950: #03122b;
+  --mnee-navy-900: #051d42;
+  --mnee-navy-800: #07285d;
+  --mnee-navy-700: #0e3677;
+  --mnee-navy-600: #1d4991;
+  --mnee-navy-300: #90a7cb;
+  --mnee-navy-200: #bcc8dc;
+  --mnee-navy-50: #f4f6f8;
+  --mnee-gold-500: #ecb551;
+  --mnee-gold-700: #926719;
+
+  --mnee-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mnee-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Khối hero — đường vàng dọc
+   Thay cho vệt chéo đỏ–vàng cũ ở góc dưới trái.
+   Vệt chéo đó phải được XOÁ khỏi HTML, không chỉ display:none.
+   --------------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 3px;
+  background: var(--mnee-gold-500);
+}
+
+/* ---------------------------------------------------------------------------
+   Khối Founder — nền tối
+   gold/nền 10.04:1 · dòng bằng chứng 11.05:1 · tên 18.66:1
+   --------------------------------------------------------------------------- */
+
+.mnee-founder {
+  background: var(--mnee-navy-950);
+  color: #ffffff;
+  padding: 40px 44px;
+  border-top: 1px solid var(--mnee-navy-700);
+}
+
+.mnee-founder__eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--mnee-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--mnee-gold-500);
+}
+
+.mnee-founder__name {
+  margin: 0 0 16px;
+  font-family: var(--mnee-serif);
+  font-size: clamp(36px, 9vw, 46px);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.mnee-founder__motto {
+  margin: 0;
+  font-family: var(--mnee-sans);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mnee-founder__rule {
+  width: 40px;
+  height: 2px;
+  margin: 24px 0 16px;
+  background: var(--mnee-gold-500);
+}
+
+.mnee-founder__proof {
+  margin: 0;
+  font-family: var(--mnee-sans);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--mnee-navy-200);
+}
+
+/* ---------------------------------------------------------------------------
+   Khối Đội ngũ — nền sáng
+   Sau hai khối navy liên tiếp, mắt cần một khoảng thở.
+
+   CẢNH BÁO: gold-500 trên nền sáng chỉ đạt 1.72:1 — KHÔNG được làm chữ ở đây.
+   Vàng chỉ làm vạch. Dấu tích dùng gold-700 (4.64:1).
+   --------------------------------------------------------------------------- */
+
+.mnee-team {
+  background: var(--mnee-navy-50);
+  color: var(--mnee-navy-900);
+  padding: 56px 44px;
+}
+
+.mnee-team__eyebrow {
+  margin: 0 0 20px;
+  font-family: var(--mnee-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--mnee-navy-600);
+}
+
+.mnee-team__heading {
+  margin: 0 0 20px;
+  font-family: var(--mnee-serif);
+  font-size: clamp(26px, 7vw, 32px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mnee-team__rule {
+  width: 40px;
+  height: 2px;
+  margin-bottom: 20px;
+  background: var(--mnee-gold-500);
+}
+
+.mnee-team__body {
+  margin: 0 0 24px;
+  font-family: var(--mnee-sans);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--mnee-navy-800);
+}
+
+.mnee-team__fact {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  font-family: var(--mnee-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.mnee-team__fact svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--mnee-gold-700);
+}
+
+/* ---------------------------------------------------------------------------
+   Chân dung founder trên nền tối
+
+   Áo vest navy #161a31 trên navy-900 chỉ đạt 1.03:1 — gần như tàng hình.
+   Không đặt ảnh đã tách nền thẳng lên nền navy phẳng.
+
+   Cách giải: vầng sáng sau lưng, đúng kỹ thuật đèn viền mà thợ chụp đã dùng
+   trong ảnh gốc. Tâm #3a588c, viền về navy-900. Đo tại mép vai: 1.61:1 — chưa
+   phải chuẩn chữ (không áp dụng cho ảnh), nhưng đủ để vai không tan vào nền.
+
+   Ảnh phải là PNG hoặc WebP ĐÃ TÁCH NỀN (nền trong suốt).
+   --------------------------------------------------------------------------- */
+
+.mnee-portrait {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse 88% 88% at 50% 50%, #3a588c 0%, var(--mnee-navy-900) 100%);
+}
+
+.mnee-portrait img {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+
+  /* Khi khung bị ép chiều cao, ảnh THU NHỎ chứ không bị xén.
+     Thiếu hai dòng này thì búi tóc bị cắt cụt ở mép trên — đã gặp thật
+     khi dựng thử trong trình duyệt. */
+  max-height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}

@@ -88,7 +88,7 @@ export function TimKiem() {
     <div ref={boc} className="relative px-3">
       <div className="relative">
         <Search
-          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-navy-400"
+          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-navy-300"
           strokeWidth={1.75}
         />
         <input
@@ -99,11 +99,11 @@ export function TimKiem() {
           onKeyDown={phim}
           placeholder="Tìm học viên, lớp, giáo viên…"
           aria-label="Tìm kiếm toàn hệ thống"
-          className="w-full rounded-lg bg-navy-700/50 py-2 pr-8 pl-8 text-[0.8125rem] text-white placeholder:text-navy-400 focus:bg-navy-700 focus:ring-1 focus:ring-gold-400/60 focus:outline-none"
+          className="w-full rounded-lg bg-navy-700/50 py-2 pr-8 pl-8 text-[0.8125rem] text-white placeholder:text-navy-300 focus:bg-navy-700 focus:ring-1 focus:ring-gold-400/60 focus:outline-none"
         />
         {dangChay ? (
           <Loader2
-            className="absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 animate-spin text-navy-400"
+            className="absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 animate-spin text-navy-300"
             strokeWidth={1.75}
           />
         ) : null}
